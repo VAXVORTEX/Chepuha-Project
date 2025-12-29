@@ -1,0 +1,20 @@
+{
+  "kind": "collectionType",
+  "collectionName": "game_sessions",
+  "info": {
+    "singularName": "game-session",
+    "pluralName": "game-sessions",
+    "displayName": "gameSession"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "session_name": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    }
+  }
+}
