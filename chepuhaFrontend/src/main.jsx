@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import {createBrowserRouter, RouterProvider } from 'react-router-dom'
-import './index.css'
+import './index.scss'
 import App from './App.jsx'
 
 async function dataLoader(){
