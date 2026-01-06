@@ -1,13 +1,13 @@
 import { useState } from 'react'
 import { useLoaderData } from 'react-router-dom'
-import {LoaderData} from './shared/types'
+import { LoaderData } from './shared/types'
 import reactLogo from './assets/react.svg'
 import './App.scss'
 
 function App() {
   const [count, setCount] = useState(0)
 
-  const {users} = useLoaderData() as LoaderData;
+  const { users } = useLoaderData() as LoaderData;
 
   return (
     <>

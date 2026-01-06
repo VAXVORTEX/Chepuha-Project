@@ -1,4 +1,4 @@
-import {User} from '../shared/types'
+import { User } from '../shared/types'
 
 export async function fetchUser(): Promise <{users: User[]}>{
   const response = await fetch('https://jsonplaceholder.typicode.com/users');//поки тестовий апі
