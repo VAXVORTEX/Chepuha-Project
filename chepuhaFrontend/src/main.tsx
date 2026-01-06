@@ -1,22 +1,16 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import {createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { fetchUser } from './api/users'
 import './index.scss'
-import App from './App.jsx'
-
-async function dataLoader(){
-  const response = await fetch('https://jsonplaceholder.typicode.com/users'); //поки тестовий json файл
-  const data = await response.json();
-  return {users: data};
-}
-
+import App from './App'
 
 const router = createBrowserRouter(
   [
     {
       path: "/", 
       element:<App />,
-      loader: dataLoader,
+      loader: fetchUser,
     },
   ],
   {
@@ -31,7 +25,12 @@ v7_singleFetch:true,
   },
 );
 
-createRoot(document.getElementById('root')).render(
-<StrictMode>
+const rootElement = document.getElementById('root');
+if (!rootElement){
+  throw new Error ("Не вийшло знайти кореневий елемент")
+};
+
+const root = createRoot (rootElement);
+root.render(<StrictMode>
   <RouterProvider router = {router}/>
-</StrictMode>,)
+</StrictMode>);
