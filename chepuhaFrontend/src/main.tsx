@@ -1,28 +1,16 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import {createBrowserRouter, RouterProvider } from 'react-router-dom'
+import {fetchUser} from './api/users'
 import './index.scss'
 import App from './App'
-
-interface User {
-  id: number;
-  name: string;
-}
-
-
-async function dataLoader(): Promise <{users: User[]}>{
-  const response = await fetch('https://jsonplaceholder.typicode.com/users');//поки тестовий апі
-  const data: User[] = await response.json();
-  return {users: data};
-}
-
 
 const router = createBrowserRouter(
   [
     {
       path: "/", 
       element:<App />,
-      loader: dataLoader,
+      loader: fetchUser,
     },
   ],
   {

@@ -1,18 +1,8 @@
 import { useState } from 'react'
 import { useLoaderData } from 'react-router-dom'
+import {LoaderData} from './shared/types'
 import reactLogo from './assets/react.svg'
 import './App.scss'
-
-interface User {
-  id: number;
-  name: string;
-}
-
-interface LoaderData{
-  users: User[];
-}
-
-
 
 function App() {
   const [count, setCount] = useState(0)
