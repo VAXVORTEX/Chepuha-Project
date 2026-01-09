@@ -132,3 +132,18 @@ build
 .strapi-updater.json
 .strapi-cloud.json
 
+. v s / 
+
+# Editor directories and files
+.vscode/*
+.vs/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+.ntvs
+*.njsproj
+*.sln
+*.sw?
+ 
+ 
