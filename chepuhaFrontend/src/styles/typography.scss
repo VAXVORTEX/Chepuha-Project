@@ -1,0 +1,27 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Pangolin&display=swap');
+
+
+%pangolin-base {
+  font-family: "Pangolin", cursive;
+  font-weight: 400;
+  font-style: normal;
+}
+
+ 
+@mixin font-style ($size, $weight:400, $line-height: 1.2){
+    @extend %pangolin-base;
+    font-size: #{$size}px;
+    font-weight: $weight;
+    line-height: $line-height;
+}
+
+@mixin font-100  { @include font-style (100); }
+@mixin font-80  { @include font-style (80); }
+@mixin font-72 { @include font-style (72); }
+@mixin font-64  { @include font-style (64); }
+@mixin font-60 { @include font-style (60); }
+@mixin font-50  { @include font-style (50); }
+@mixin font-48  { @include font-style (48); }
+@mixin font-40  { @include font-style (40); }
+@mixin font-32 { @include font-style (32); }
