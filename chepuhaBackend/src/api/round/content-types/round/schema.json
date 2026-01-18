@@ -1,0 +1,52 @@
+{
+  "kind": "collectionType",
+  "collectionName": "rounds",
+  "info": {
+    "singularName": "round",
+    "pluralName": "rounds",
+    "displayName": "Rounds"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "round_id": {
+      "type": "uid",
+      "private": true,
+      "required": true
+    },
+    "session_id": {
+      "type": "uid"
+    },
+    "round_number": {
+      "type": "integer"
+    },
+    "question_type": {
+      "type": "enumeration",
+      "enum": [
+        "who",
+        "when",
+        "where",
+        "with_whom",
+        "what_did",
+        "what_said",
+        "how_ended"
+      ]
+    },
+    "rounds_status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "active",
+        "completed"
+      ]
+    },
+    "started_at": {
+      "type": "datetime"
+    },
+    "completed_at": {
+      "type": "datetime"
+    }
+  }
+}

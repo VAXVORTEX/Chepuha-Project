@@ -11,8 +11,34 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "player_id": {
+      "type": "uid",
+      "private": true,
+      "required": true
+    },
+    "session_id": {
+      "type": "uid"
+    },
     "nickname": {
       "type": "string"
+    },
+    "player_order": {
+      "type": "integer"
+    },
+    "players_status": {
+      "type": "enumeration",
+      "enum": [
+        "joined",
+        "ready",
+        "playing",
+        "finished"
+      ]
+    },
+    "current_sheet_id": {
+      "type": "uid"
+    },
+    "joined_at": {
+      "type": "datetime"
     }
   }
 }

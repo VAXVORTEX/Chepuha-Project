@@ -430,6 +430,42 @@ export interface AdminUser extends Struct.CollectionTypeSchema {
   };
 }
 
+export interface ApiAnswerAnswer extends Struct.CollectionTypeSchema {
+  collectionName: 'answers';
+  info: {
+    displayName: 'Answers';
+    pluralName: 'answers';
+    singularName: 'answer';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    answer_id: Schema.Attribute.UID &
+      Schema.Attribute.Required &
+      Schema.Attribute.Private;
+    answer_text: Schema.Attribute.String;
+    answers_created_at: Schema.Attribute.DateTime;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::answer.answer'
+    > &
+      Schema.Attribute.Private;
+    player_id: Schema.Attribute.UID;
+    position_in_sheet: Schema.Attribute.Integer;
+    publishedAt: Schema.Attribute.DateTime;
+    round_id: Schema.Attribute.UID;
+    sheet_id: Schema.Attribute.UID;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiGameSessionGameSession extends Struct.CollectionTypeSchema {
   collectionName: 'game_sessions';
   info: {
@@ -444,16 +480,25 @@ export interface ApiGameSessionGameSession extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    current_players_count: Schema.Attribute.Integer;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::game-session.game-session'
     > &
       Schema.Attribute.Private;
+    max_players: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
-    session_name: Schema.Attribute.String &
+    session_created_at: Schema.Attribute.DateTime;
+    session_ended_at: Schema.Attribute.DateTime;
+    session_id: Schema.Attribute.UID &
       Schema.Attribute.Required &
-      Schema.Attribute.Unique;
+      Schema.Attribute.Private;
+    session_name: Schema.Attribute.String;
+    session_started_at: Schema.Attribute.DateTime;
+    session_status: Schema.Attribute.Enumeration<
+      ['waiting', 'active', 'completed']
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -474,6 +519,8 @@ export interface ApiPlayerPlayer extends Struct.CollectionTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    current_sheet_id: Schema.Attribute.UID;
+    joined_at: Schema.Attribute.DateTime;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
@@ -481,7 +528,60 @@ export interface ApiPlayerPlayer extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     nickname: Schema.Attribute.String;
+    player_id: Schema.Attribute.UID &
+      Schema.Attribute.Required &
+      Schema.Attribute.Private;
+    player_order: Schema.Attribute.Integer;
+    players_status: Schema.Attribute.Enumeration<
+      ['joined', 'ready', 'playing', 'finished']
+    >;
     publishedAt: Schema.Attribute.DateTime;
+    session_id: Schema.Attribute.UID;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiRoundRound extends Struct.CollectionTypeSchema {
+  collectionName: 'rounds';
+  info: {
+    displayName: 'Rounds';
+    pluralName: 'rounds';
+    singularName: 'round';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    completed_at: Schema.Attribute.DateTime;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<'oneToMany', 'api::round.round'> &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    question_type: Schema.Attribute.Enumeration<
+      [
+        'who',
+        'when',
+        'where',
+        'with_whom',
+        'what_did',
+        'what_said',
+        'how_ended',
+      ]
+    >;
+    round_id: Schema.Attribute.UID &
+      Schema.Attribute.Required &
+      Schema.Attribute.Private;
+    round_number: Schema.Attribute.Integer;
+    rounds_status: Schema.Attribute.Enumeration<
+      ['pending', 'active', 'completed']
+    >;
+    session_id: Schema.Attribute.UID;
+    started_at: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -499,18 +599,29 @@ export interface ApiStorySheetStorySheet extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    content: Schema.Attribute.Text;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
+    current_owner_id: Schema.Attribute.UID;
+    final_story: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::story-sheet.story-sheet'
     > &
       Schema.Attribute.Private;
+    original_owner_id: Schema.Attribute.UID;
     publishedAt: Schema.Attribute.DateTime;
-    status_story_sheets: Schema.Attribute.Enumeration<['active', 'completed']>;
+    session_id: Schema.Attribute.UID;
+    sheet_id: Schema.Attribute.UID &
+      Schema.Attribute.Required &
+      Schema.Attribute.Private;
+    sheet_number: Schema.Attribute.Integer;
+    storysheets_completed_at: Schema.Attribute.DateTime;
+    storysheets_created_at: Schema.Attribute.DateTime;
+    storysheets_status: Schema.Attribute.Enumeration<
+      ['in_progress', 'completed']
+    >;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1027,8 +1138,10 @@ declare module '@strapi/strapi' {
       'admin::transfer-token': AdminTransferToken;
       'admin::transfer-token-permission': AdminTransferTokenPermission;
       'admin::user': AdminUser;
+      'api::answer.answer': ApiAnswerAnswer;
       'api::game-session.game-session': ApiGameSessionGameSession;
       'api::player.player': ApiPlayerPlayer;
+      'api::round.round': ApiRoundRound;
       'api::story-sheet.story-sheet': ApiStorySheetStorySheet;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
