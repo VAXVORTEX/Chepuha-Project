@@ -1,0 +1,42 @@
+@import "../../styles/typography.scss";
+
+
+.button {
+    display: inline-flex;
+    border: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background: none;
+
+}
+ 
+.primary{
+    @include font-100;
+    color: #34373C;
+    text-transform: uppercase;
+
+    &:hover{
+        opacity: 0.8;
+        transform: scale(1.06);
+    }
+
+    &.main{ color: #34373C; }
+    &.waiting { color: #999EA5; }
+    &.end { color: #34373C; }
+}
+
+.secondary{
+    background-color: #7D7C7C;
+    border-radius: 40px;
+    color: #FFFFFF;
+   @include font-32;
+    padding: 12px 32px;
+    font-family: 'Able', sans-serif;
+    border: none;
+
+    &.main{ background-color: #7D7C7C; }
+    &.waiting { opacity: 0.8;cursor: not-allowed; }
+    &.end { background-color: #7D7C7C; }
+}
