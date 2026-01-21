@@ -11,15 +11,38 @@
   },
   "pluginOptions": {},
   "attributes": {
-    "content": {
-      "type": "text"
+    "sheet_id": {
+      "type": "uid",
+      "private": true,
+      "required": true
     },
-    "status_story_sheets": {
+    "session_id": {
+      "type": "uid"
+    },
+    "original_owner_id": {
+      "type": "uid"
+    },
+    "current_owner_id": {
+      "type": "uid"
+    },
+    "sheet_number": {
+      "type": "integer"
+    },
+    "storysheets_status": {
       "type": "enumeration",
       "enum": [
-        "active",
+        "in_progress",
         "completed"
       ]
+    },
+    "final_story": {
+      "type": "string"
+    },
+    "storysheets_created_at": {
+      "type": "datetime"
+    },
+    "storysheets_completed_at": {
+      "type": "datetime"
     }
   }
 }
