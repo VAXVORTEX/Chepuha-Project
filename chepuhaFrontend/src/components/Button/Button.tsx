@@ -1,11 +1,12 @@
 import React from 'react';
 import styles from './Button.module.scss';
+import { Phases } from '../../types/phasevariant';
 
 
 interface ButtonSet{
     label: string;
     variant: 'primary' | 'secondary';
-    phase: 'main' | 'waiting' | 'end';
+    phase: Phases;
     onClick: ()=> void;
 }
 

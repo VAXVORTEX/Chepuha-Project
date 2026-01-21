@@ -1,30 +1,27 @@
 import { useState } from 'react'
 import Button from './components/Button/Button'
 import './App.scss'
+import './App/scss'
+import { Phases } from './types/phasevariant'
 
 
 function App(){
-  const [phase, setPhase] = useState<'main' | 'waiting' | 'end'> ('main');
+  const [phase, setPhase] = useState<Phases>(Phases.Main);
 
   return (
-    <div style={{
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems:'center',
-        height: '100vh'
-    }}>
+    <div className='app-view'>
 
 {
-    phase === 'main' && (
-        <Button label='Створити гру' variant="primary" phase={phase} onClick={() => setPhase('waiting')}/>
+    phase === Phases.Main && (
+        <Button label='Створити гру' variant="primary" phase={phase} onClick={() => setPhase(Phases.Waiting)}/>
 )}
 
-{phase === 'waiting' && (
-        <Button label='Зберегти' variant="secondary" phase={phase} onClick={() => setPhase('end')}/>
+{phase === Phases.Waiting && (
+        <Button label='Зберегти' variant="secondary" phase={phase} onClick={() => setPhase(Phases.End)}/>
 )}
 
-{phase === 'end' && (
-        <Button label='Повернутись' variant="primary" phase={phase} onClick={() => setPhase('main')}/>
+{phase === Phases.End && (
+        <Button label='Повернутись' variant="primary" phase={phase} onClick={() => setPhase(Phases.Main)}/>
 )}
 </div>
   )

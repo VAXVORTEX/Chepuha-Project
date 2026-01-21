@@ -9,12 +9,12 @@
     transition: all 0.2s ease;
     cursor: pointer;
     background: none;
-
+    @include font-able;
 }
  
 .primary{
     @include font-100;
-    color: #34373C;
+    color: $gray-dark;
     text-transform: uppercase;
 
     &:hover{
@@ -22,21 +22,20 @@
         transform: scale(1.06);
     }
 
-    &.main{ color: #34373C; }
-    &.waiting { color: #999EA5; }
-    &.end { color: #34373C; }
+    &.main{ color: $gray-dark; }
+    &.waiting { color: $gray-medium; }
+    &.end { color: $gray-dark; }
 }
 
 .secondary{
-    background-color: #7D7C7C;
+    background-color: $gray-medium;
     border-radius: 40px;
-    color: #FFFFFF;
-   @include font-32;
+    color: $white;
+   @include font-able-32;
     padding: 12px 32px;
-    font-family: 'Able', sans-serif;
     border: none;
 
-    &.main{ background-color: #7D7C7C; }
-    &.waiting { opacity: 0.8;cursor: not-allowed; }
-    &.end { background-color: #7D7C7C; }
+    &.main{ background-color: $gray-medium; }
+    &.waiting { opacity: 0.8; cursor: not-allowed; }
+    &.end { background-color: $gray-medium; }
 }
