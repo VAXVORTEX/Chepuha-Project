@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import Button from './components/Button/Button'
 import './App.scss'
-import './App/scss'
 import { Phases } from './types/phasevariant'
 
 
