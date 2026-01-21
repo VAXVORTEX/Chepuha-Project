@@ -489,6 +489,7 @@ export interface ApiGameSessionGameSession extends Struct.CollectionTypeSchema {
       Schema.Attribute.Private;
     max_players: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
+    rounds: Schema.Attribute.Relation<'oneToMany', 'api::round.round'>;
     session_created_at: Schema.Attribute.DateTime;
     session_ended_at: Schema.Attribute.DateTime;
     session_id: Schema.Attribute.UID &
@@ -580,7 +581,10 @@ export interface ApiRoundRound extends Struct.CollectionTypeSchema {
     rounds_status: Schema.Attribute.Enumeration<
       ['pending', 'active', 'completed']
     >;
-    session_id: Schema.Attribute.UID;
+    session_id: Schema.Attribute.Relation<
+      'manyToOne',
+      'api::game-session.game-session'
+    >;
     started_at: Schema.Attribute.DateTime;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &

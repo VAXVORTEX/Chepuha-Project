@@ -17,7 +17,10 @@
       "required": true
     },
     "session_id": {
-      "type": "uid"
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::game-session.game-session",
+      "inversedBy": "rounds"
     },
     "round_number": {
       "type": "integer"

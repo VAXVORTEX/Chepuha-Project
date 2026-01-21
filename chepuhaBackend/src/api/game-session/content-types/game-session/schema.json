@@ -41,6 +41,12 @@
     },
     "session_ended_at": {
       "type": "datetime"
+    },
+    "rounds": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::round.round",
+      "mappedBy": "session_id"
     }
   }
 }
