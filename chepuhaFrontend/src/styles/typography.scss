@@ -1,15 +1,15 @@
 
 @font-face {
-   font-family: "Pangolin";
-   src: url('../assets/fonts/Pangolin-Regular.ttf') format('truetype');
+  font-family: "Pangolin";
+  src: url('../assets/fonts/Pangolin-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-   font-family: 'Able';
-   src: url('../assets/fonts/Able-Regilar.ttf') format('truetype');
+  font-family: 'Able';
+  src: url('../assets/fonts/Able-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -29,29 +29,31 @@
 }
 
  
-@mixin font-style ($size, $weight:400, $line-height: 1.2, $family: "pangolin"){
-    @if $family == "able"{
-      @extend %able-base;}
-      @else{
-      @extend %pangolin-base;
-      }
-  
+@mixin font-pangolin ($size, $weight:400, $line-height: 1.2){
+   @extend %pangolin-base;
     font-size: #{$size}px;
     font-weight: $weight;
     line-height: $line-height;
 }
 
-@mixin font-100  { @include font-style (100); }
-@mixin font-80  { @include font-style (80); }
-@mixin font-72 { @include font-style (72); }
-@mixin font-64  { @include font-style (64); }
-@mixin font-60 { @include font-style (60); }
-@mixin font-50  { @include font-style (50); }
-@mixin font-48  { @include font-style (48); }
-@mixin font-40  { @include font-style (40); }
-@mixin font-32 { @include font-style (32); }
-@mixin font-117 { @include font-style (117); }
+@mixin font-able ($size, $weight:400, $line-height: 1.2){
+   @extend %able-base;
+    font-size: #{$size}px;
+    font-weight: $weight;
+    line-height: $line-height;
+}
 
-@mixin font-able-32{ @include font-style(32, 400, 1.2, "able" );}
+@mixin font-100  { @include font-pangolin (100); }
+@mixin font-80  { @include font-pangolin (80); }
+@mixin font-72 { @include font-pangolin (72); }
+@mixin font-64  { @include font-pangolin (64); }
+@mixin font-60 { @include font-pangolin (60); }
+@mixin font-50  { @include font-pangolin (50); }
+@mixin font-48  { @include font-pangolin (48); }
+@mixin font-40  { @include font-pangolin (40); }
+@mixin font-32 { @include font-pangolin (32); }
+@mixin font-117 { @include font-pangolin (117); }
+
+@mixin font-able-32{ @include font-able(32);}
 
 

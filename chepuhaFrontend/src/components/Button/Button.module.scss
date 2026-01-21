@@ -9,7 +9,6 @@
     transition: all 0.2s ease;
     cursor: pointer;
     background: none;
-    @include font-able;
 }
  
 .primary{
@@ -31,7 +30,7 @@
     background-color: $gray-medium;
     border-radius: 40px;
     color: $white;
-   @include font-able-32;
+    @include font-able-32;
     padding: 12px 32px;
     border: none;
 
