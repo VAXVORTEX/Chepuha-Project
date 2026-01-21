@@ -1,0 +1,40 @@
+@import "../../styles/typography.scss";
+
+
+.button {
+    display: inline-flex;
+    border: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background: none;
+}
+ 
+.primary{
+    @include font-100;
+    color: $gray-dark;
+    text-transform: uppercase;
+
+    &:hover{
+        opacity: 0.8;
+        transform: scale(1.06);
+    }
+
+    &.main{ color: $gray-dark; }
+    &.waiting { color: $gray-medium; }
+    &.end { color: $gray-dark; }
+}
+
+.secondary{
+    background-color: $gray-medium;
+    border-radius: 40px;
+    color: $white;
+    @include font-able-32;
+    padding: 12px 32px;
+    border: none;
+
+    &.main{ background-color: $gray-medium; }
+    &.waiting { opacity: 0.8; cursor: not-allowed; }
+    &.end { background-color: $gray-medium; }
+}

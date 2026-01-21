@@ -1,44 +1,28 @@
 import { useState } from 'react'
-import { useLoaderData } from 'react-router-dom'
-import { LoaderData } from './shared/types'
-import reactLogo from './assets/react.svg'
+import Button from './components/Button/Button'
 import './App.scss'
+import { Phases } from './types/phasevariant'
 
-function App() {
-  const [count, setCount] = useState(0)
 
-  const { users } = useLoaderData() as LoaderData;
+function App(){
+  const [phase, setPhase] = useState<Phases>(Phases.Main);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src= "/vite.svg "className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
+    <div className='app-view'>
 
-      <h3>(Users found: {users?.length})</h3>
+{
+    phase === Phases.Main && (
+        <Button label='Створити гру' variant="primary" phase={phase} onClick={() => setPhase(Phases.Waiting)}/>
+)}
 
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <ul style = {{ textAlign: 'left'}}>
-        {users.map ((user) => (<li key = {user.id}> {user.name}</li>))}
-      </ul>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+{phase === Phases.Waiting && (
+        <Button label='Зберегти' variant="secondary" phase={phase} onClick={() => setPhase(Phases.End)}/>
+)}
+
+{phase === Phases.End && (
+        <Button label='Повернутись' variant="primary" phase={phase} onClick={() => setPhase(Phases.Main)}/>
+)}
+</div>
   )
 }
-
 export default App
