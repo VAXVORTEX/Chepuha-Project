@@ -1,44 +1,50 @@
-import { useState } from 'react'
-import { useLoaderData } from 'react-router-dom'
-import { LoaderData } from './shared/types'
-import reactLogo from './assets/react.svg'
-import './App.scss'
+import { useState } from 'react';
+import Button from './components/Button/Button';
+import './App.scss';
+import { Phases } from './types/phasevariant';
+import { RoundCard } from './components/RoundCard/RoundCard';
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  const { users } = useLoaderData() as LoaderData;
+  const [phase, setPhase] = useState<Phases>(Phases.Main);
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src= "/vite.svg "className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
+    <div className='app-view'>
 
-      <h3>(Users found: {users?.length})</h3>
+      <RoundCard 
+         playerName="PLAYER 1"
+         phase={phase}
+         question="Хто запросив на паті?"
+         playerReady={1}
+         playerTotal={4}
+         onSubmitAnswer={() => setPhase(Phases.Waiting)}
+      />
 
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
+        
+        <Button 
+            label='Створити гру' 
+            variant="primary" 
+            phase={Phases.Main} 
+            onClick={() => {}} 
+        />
+
+        <Button 
+            label='Зберегти' 
+            variant="secondary" 
+            phase={Phases.Waiting} 
+            onClick={() => {}} 
+        />
+
+        <Button 
+            label='Повернутись' 
+            variant="primary" 
+            phase={Phases.End} 
+            onClick={() => {}} 
+        />
       </div>
-      <ul style = {{ textAlign: 'left'}}>
-        {users.map ((user) => (<li key = {user.id}> {user.name}</li>))}
-      </ul>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+
+    </div>
+  );
 }
 
-export default App
+export default App;
