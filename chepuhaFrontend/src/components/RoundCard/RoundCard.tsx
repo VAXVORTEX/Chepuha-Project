@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
 import styles from './RoundCard.module.scss';
 import Button from '../Button/Button';
-import { Phases } from '../../types/phasevariant';
+import Input from '../Input/Input';
+import { Phases } from '../../types/phaseVariant';
 
 interface RoundCardProps{
     playerName: string;
@@ -49,14 +50,13 @@ export const RoundCard = ({
                 ) : (
                     <div className={styles.activeContent}>
                         <h3 className={styles.question}>{question}</h3>
-                        <input
-                            className={styles.input}
-                            type="text"
-                            maxLength={50}
-                            autoFocus
-                            placeholder='Введіть відповідь'
+                        <Input
                             value={answer}
-                            onChange={(e) => setAnswer(e.target.value)}
+                            onChange={setAnswer}
+                            placeholder='Введіть вашу відповідь...'
+                            maxLength={200}
+                            autoFocus ={true}
+                            className={styles.cardInput}
                         />
 
                         <div className={styles.buttonContainer}>
