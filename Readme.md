@@ -1,1 +1,0 @@
-Program version = 0.1 "Alpha" ----------- Test for connection remote repository 
