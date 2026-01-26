@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Button from './components/Button/Button';
 import './App.scss';
-import { Phases } from './types/phasevariant';
+import { Phases } from './types/phaseVariant';
 import { RoundCard } from './components/RoundCard/RoundCard';
 
 function App() {
