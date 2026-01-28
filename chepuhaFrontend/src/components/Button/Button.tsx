@@ -1,22 +1,21 @@
-import React from 'react';
-import styles from './Button.module.scss';
-import { Phases } from '../../types/phasevariant';
+import React from "react";
+import styles from "./Button.module.scss";
+import { Phases } from "../../types/phasevariant";
 
-
-interface ButtonSet{
-    label: string;
-    variant: 'primary' | 'secondary';
-    phase: Phases;
-    onClick: ()=> void;
+interface ButtonSet {
+  label: string;
+  variant: "primary" | "secondary";
+  phase: Phases;
+  onClick: () => void;
 }
 
-const Button: React.FC<ButtonSet> = ({label, variant, phase, onClick }) =>{
-    const combClasses = `${styles.button} ${styles[variant]} ${styles[phase]}`;
-    return (
-        <button className = {combClasses} onClick = {onClick}>
-            {label}
-        </button>
-    );
+const Button: React.FC<ButtonSet> = ({ label, variant, phase, onClick }) => {
+  const combClasses = `${styles.button} ${styles[variant]} ${styles[phase]}`;
+  return (
+    <button className={combClasses} onClick={onClick}>
+      {label}
+    </button>
+  );
 };
 
 export default Button;
