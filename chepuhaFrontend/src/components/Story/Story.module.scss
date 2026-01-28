@@ -1,0 +1,131 @@
+@import "../../styles/typography.scss";
+@import "../../styles/_colors.scss";
+
+.wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  width: 100vw;
+  margin: 0;
+  box-sizing: border-box;
+  overflow-x: hidden;
+  padding: 150px 20px;
+  box-sizing: border-box;
+
+  background-image: url("../../assets/images/gameBackground.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.box {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  min-height: 400px;
+  padding: 20px 30px;
+  background-color: $red;
+  border-radius: 40px;
+  color: $white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
+  border: 5px solid $gray-medium;
+
+  &.waiting {
+    opacity: 0.8;
+  }
+  &.end {
+    opacity: 1;
+  }
+}
+
+.container {
+  position: relative;
+  width: 100%;
+  max-width: 850px;
+  display: flex;
+  flex-direction: column;
+}
+
+.shadow {
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  background-color: $gray-medium;
+  border-radius: 40px;
+  left: 0;
+  top: 20px;
+
+  &.waiting {
+    opacity: 0.8;
+  }
+  &.end {
+    opacity: 1;
+  }
+}
+
+.title {
+  @include font-48;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.part {
+  flex-grow: 1;
+  width: 100%;
+  .text {
+    @include font-32;
+    text-align: left;
+  }
+}
+
+.GoBackButton {
+  align-self: flex-end;
+  margin-top: 20px;
+  padding: 5px 20px;
+  background-color: $gray-medium;
+  color: $white;
+  border-radius: 40px;
+  cursor: pointer;
+  @include font-32;
+  transition: background 0.2s, opacity 0.3s;
+
+  &.waiting {
+    opacity: 0.8;
+  }
+  &.end {
+    opacity: 1;
+  }
+}
+
+.home {
+  position: absolute;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background-color: transparent;
+  border: 2px solid $black;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+
+  &:hover {
+    transform: scale(1.2);
+  }
+
+  .homeSign {
+    width: 45px;
+    height: 45px;
+    background-image: url("../../assets/images/house.png");
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+  }
+}
