@@ -1,28 +1,50 @@
-import { useState } from 'react'
-import Button from './components/Button/Button'
-import './App.scss'
-import { Phases } from './types/phasevariant'
+import { useState } from 'react';
+import Button from './components/Button/Button';
+import './App.scss';
+import { Phases } from './types/phaseVariant';
+import { RoundCard } from './components/RoundCard/RoundCard';
 
-
-function App(){
+function App() {
   const [phase, setPhase] = useState<Phases>(Phases.Main);
 
   return (
     <div className='app-view'>
 
-{
-    phase === Phases.Main && (
-        <Button label='Створити гру' variant="primary" phase={phase} onClick={() => setPhase(Phases.Waiting)}/>
-)}
+      <RoundCard 
+         playerName="PLAYER 1"
+         phase={phase}
+         question="Хто запросив на паті?"
+         playerReady={1}
+         playerTotal={4}
+         onSubmitAnswer={() => setPhase(Phases.Waiting)}
+      />
 
-{phase === Phases.Waiting && (
-        <Button label='Зберегти' variant="secondary" phase={phase} onClick={() => setPhase(Phases.End)}/>
-)}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
+        
+        <Button 
+            label='Створити гру' 
+            variant="primary" 
+            phase={Phases.Main} 
+            onClick={() => {}} 
+        />
 
-{phase === Phases.End && (
-        <Button label='Повернутись' variant="primary" phase={phase} onClick={() => setPhase(Phases.Main)}/>
-)}
-</div>
-  )
+        <Button 
+            label='Зберегти' 
+            variant="secondary" 
+            phase={Phases.Waiting} 
+            onClick={() => {}} 
+        />
+
+        <Button 
+            label='Повернутись' 
+            variant="primary" 
+            phase={Phases.End} 
+            onClick={() => {}} 
+        />
+      </div>
+
+    </div>
+  );
 }
-export default App
+
+export default App;

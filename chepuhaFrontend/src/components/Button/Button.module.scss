@@ -1,4 +1,5 @@
 @import "../../styles/typography.scss";
+@import "../../styles/_colors.scss";
 
 
 .button {
@@ -6,6 +7,7 @@
     border: none;
     align-items: center;
     justify-content: center;
+    white-space: nowrap;
     transition: all 0.2s ease;
     cursor: pointer;
     background: none;
@@ -28,10 +30,10 @@
 
 .secondary{
     background-color: $gray-medium;
-    border-radius: 40px;
+    border-radius: 50px;
     color: $white;
     @include font-able-32;
-    padding: 12px 32px;
+    padding: 12px 60px;
     border: none;
 
     &.main{ background-color: $gray-medium; }
