@@ -7,15 +7,15 @@ import { Phases } from "./types/phasevariant";
 
 function App() {
   const [phase, setPhase] = useState<Phases>(Phases.Main);
-  const [didGameStarted, setdidGameStarted] = useState(false);
+  const [didGameStarted, setDidGameStarted] = useState(false);
 
   const goHome = () => {
     setPhase(Phases.Main);
-    setdidGameStarted(false);
+    setDidGameStarted(false);
   };
 
   const doGameStart = () => {
-    setdidGameStarted(true);
+    setDidGameStarted(true);
     setPhase(Phases.Main);
   };
 
