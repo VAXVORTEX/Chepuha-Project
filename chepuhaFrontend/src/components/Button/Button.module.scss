@@ -1,14 +1,16 @@
 @import "../../styles/typography.scss";
 @import "../../styles/_colors.scss";
 
+
 .button {
-  display: inline-flex;
-  border: none;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  background: none;
+    display: inline-flex;
+    border: none;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    background: none;
 }
 
 .primary {
@@ -32,13 +34,13 @@
   }
 }
 
-.secondary {
-  background-color: $gray-medium;
-  border-radius: 40px;
-  color: $white;
-  @include font-able-32;
-  padding: 12px 32px;
-  border: none;
+.secondary{
+    background-color: $gray-medium;
+    border-radius: 50px;
+    color: $white;
+    @include font-able-32;
+    padding: 12px 60px;
+    border: none;
 
   &.main {
     background-color: $gray-medium;

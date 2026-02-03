@@ -26,7 +26,7 @@ const Story: React.FC<Story> = ({
           <div className={styles.part}>
             <p className={styles.text}> {content}</p>
           </div>
-          {phase === Phases.Waiting && (
+          {(phase === Phases.Waiting || phase === Phases.End) &&(
             <button className={styles.GoBackButton} onClick={onGoBack}>
               Назад
             </button>
