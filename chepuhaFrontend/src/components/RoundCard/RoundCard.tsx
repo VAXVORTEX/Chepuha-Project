@@ -2,7 +2,7 @@ import React, {useState} from 'react';
 import styles from './RoundCard.module.scss';
 import Button from '../Button/Button';
 import Input from '../Input/Input';
-import { Phases } from '../../types/phasevariant';
+import { Phases } from '../../types/phaseVariant';
 
 interface RoundCardProps{
     playerName: string;

@@ -2,8 +2,9 @@ import { useState } from "react";
 import Button from "./components/Button/Button";
 import Story from "./components/Story/Story";
 import { RoundCard } from "./components/RoundCard/RoundCard";
+import GameCode from "./components/GameCode/GameCode";
 import "./App.scss";
-import { Phases } from "./types/phasevariant";
+import { Phases } from "./types/phaseVariant";
 
 function App() {
   const [phase, setPhase] = useState<Phases>(Phases.Main);
@@ -30,12 +31,15 @@ function App() {
   return (
     <div className="app-view">
       {!didGameStarted && phase === Phases.Main && (
+        <>
+        <GameCode code="A7B9G6TR" className="gameCodePos" />
         <Button
           label="Створити гру"
           variant="primary"
           phase={phase}
           onClick={doGameStart}
         />
+        </>
       )}
 
       {didGameStarted &&
