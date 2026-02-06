@@ -15,12 +15,19 @@
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Acme';
+  src: url('../assets/fonts/Acme-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 %pangolin-base {
   font-family: "Pangolin", cursive;
   font-weight: 400;
   font-style: normal;
 }
-
 
 %able-base {
   font-family: "Able", sans-serif;
@@ -28,7 +35,12 @@
   font-style: normal;
 }
 
- 
+%acme-base {
+  font-family: "Acme", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
 @mixin font-pangolin ($size, $weight:400, $line-height: 1.2){
   @extend %pangolin-base;
   font-size: #{$size}px;
@@ -38,6 +50,13 @@
 
 @mixin font-able ($size, $weight:400, $line-height: 1.2){
   @extend %able-base;
+  font-size: #{$size}px;
+  font-weight: $weight;
+  line-height: $line-height;
+}
+
+@mixin font-acme($size, $weight:400, $line-height: 1.2){
+  @extend %acme-base;
   font-size: #{$size}px;
   font-weight: $weight;
   line-height: $line-height;
