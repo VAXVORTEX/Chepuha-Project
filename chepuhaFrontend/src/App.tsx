@@ -5,6 +5,7 @@ import { RoundCard } from "./components/RoundCard/RoundCard";
 import GameCode from "./components/GameCode/GameCode";
 import "./App.scss";
 import { Phases } from "./types/phaseVariant";
+import Round from "./components/Round/Round";
 
 function App() {
   const [phase, setPhase] = useState<Phases>(Phases.Main);
@@ -44,6 +45,12 @@ function App() {
 
       {didGameStarted &&
         (phase === Phases.Main || phase === Phases.Waiting) && (
+          <>
+          <Round
+            currentRound={1}
+            totalRounds={8}
+            className="roundPos"
+          />
           <RoundCard
             playerName="PLAYER 1"
             phase={phase}
@@ -52,6 +59,7 @@ function App() {
             playerTotal={4}
             onSubmitAnswer={doAnswerSubmit}
           />
+          </>
         )}
 
       {phase === Phases.End && (
