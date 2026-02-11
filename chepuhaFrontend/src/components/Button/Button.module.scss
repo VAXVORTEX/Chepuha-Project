@@ -11,12 +11,15 @@
     transition: all 0.2s ease;
     cursor: pointer;
     background: none;
+    margin: 0;
+    padding: 0;
 }
 
 .primary {
   @include font-100;
   color: $gray-dark;
   text-transform: uppercase;
+  line-height: 1;
 
   &:hover {
     opacity: 0.8;
