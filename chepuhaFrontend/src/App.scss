@@ -1,3 +1,5 @@
+@import "./styles/colors.scss";
+@import "./styles/typography.scss";
 
 .app-view {
   width: 100%;
@@ -30,6 +32,50 @@
   width: 100%;
 }
 
+.create-game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 50px;
+  width: 100%;
+  max-width: 1000px;
+  margin-top: -10vh;
+}
+
+.input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.nickname-input {
+  @include font-able-32; 
+  width: 100%;
+  height: 90px;
+  border-radius: 45px;
+  padding: 0 40px;
+  outline: none;
+  color: $black;
+  background-color: $white;
+  text-align: left; 
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  border: 2px solid $black; 
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: $gray-medium;
+    opacity: 0.6;
+    text-align: left
+  }
+}
+
+.error-message {
+  @include font-able(24);
+  color: $red;
+  align-self: flex-start;
+  margin-left: 40px;
+  margin-top: -30px;
+}
+
 .gameCodePos {
   position: absolute;
   top: 40px;
@@ -40,5 +86,30 @@
   position: absolute;
   top: 40px;
   right: 60px;
+}
+
+.homeIconPos {
+  position: absolute;
+  bottom: 40px;
+  right: 40px;
+  width: 130px;
+  height: 130px;
+  background-color: transparent;
+  border: 6px solid $black;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+
+  &:hover {
+    transform: scale(1.1);
+  }
+
+  img {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+  }
 }
 
