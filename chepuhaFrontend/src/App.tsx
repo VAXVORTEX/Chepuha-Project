@@ -9,6 +9,7 @@ import Round from "./components/Round/Round";
 
 import logoImage from "./assets/images/Logo.png";
 import homeImage from "./assets/images/house.png";
+import crownImage from "./assets/images/crown.png";
 
 const HomeIcon = ({ onClick, className }: { onClick: () => void, className?: string }) => (
   <div className={className} onClick={onClick}>
@@ -22,7 +23,9 @@ const HomeIcon = ({ onClick, className }: { onClick: () => void, className?: str
 function App() {
   const [phase, setPhase] = useState<Phases>(Phases.Main);
   const [didGameStart, setDidGameStart] = useState(false);
+  
   const [isCreatingLobby, setIsCreatingLobby] = useState(false);
+  const [isLobby, setIsLobby] = useState(false);
 
   const [nickname, setNickname] = useState("");
   const [error, setError] = useState("");
@@ -31,12 +34,14 @@ function App() {
     setPhase(Phases.Main);
     setDidGameStart(false);
     setIsCreatingLobby(false);
+    setIsLobby(false);
     setNickname("");
     setError("");
   };
 
   const doShowCreateScreen = () => {
     setIsCreatingLobby(true);
+    setIsLobby(false);
   };
 
   const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,11 +52,15 @@ function App() {
     }
   };
 
-  const doGameStart = () => {
+  const goToLobby = () => {
     if (!nickname.trim()) {
       setError("Введіть нікнейм");
       return;
     }
+    setIsLobby(true);
+  };
+
+  const doGameStart = () => {
     setDidGameStart(true);
     setPhase(Phases.Main);
   };
@@ -99,7 +108,7 @@ return (
         </>
       )}
 
-      {!didGameStart && isCreatingLobby && (
+      {!didGameStart && isCreatingLobby && !isLobby && (
         <>
           <GameCode code="A7B9G6TR" className="gameCodePos" />
 
@@ -120,13 +129,40 @@ return (
               label="СТВОРИТИ ГРУ"
               variant="primary"
               phase={phase}
-              onClick={doGameStart}
+              onClick={goToLobby}
             />
           </div>
 
           <HomeIcon className="homeIconPos" onClick={goHome} />
         </>
       )}
+
+      {!didGameStart && isLobby && (
+        <>
+          <GameCode code="A7B9G6TR" className="gameCodePos" />
+
+          <div className="lobby-container">
+            <div className="lobby-info">
+              <h2 className="lobby-text">ВАШ НІК: {nickname}</h2>
+              <h3 className="lobby-subtitle">СПИСОК ГРАВЦІВ:</h3>
+
+              <div className="players-list">
+                <div className="player-item">
+                  <img src={crownImage} alt="Host" className="crown-icon" />
+                  <span className="player-name">{nickname}</span>
+                </div>
+                
+              </div>
+            </div>
+            
+            <div className="lobby-actions">
+              <Button label="ПОЧАТИ ГРУ" variant="primary" phase={phase} onClick={doGameStart} />
+            </div>
+          </div>
+            
+          <HomeIcon className="homeIconPos" onClick={goHome} />
+        </>
+            )}
 
       {didGameStart && (phase === Phases.Main || phase === Phases.Waiting) && (
         <>
