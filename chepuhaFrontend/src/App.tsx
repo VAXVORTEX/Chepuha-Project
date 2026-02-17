@@ -6,7 +6,7 @@ import GameCode from "./components/GameCode/GameCode";
 import "./App.scss";
 import { Phases } from "./types/phaseVariant";
 import Round from "./components/Round/Round";
-
+import Timer from "./components/Timer/Timer";
 import logoImage from "./assets/images/Logo.png";
 import homeImage from "./assets/images/house.png";
 import crownImage from "./assets/images/crown.png";
@@ -166,6 +166,13 @@ return (
 
       {didGameStart && (phase === Phases.Main || phase === Phases.Waiting) && (
         <>
+        {phase === Phases.Main && (
+            <Timer 
+              initialSeconds={120} 
+              onTimeUp={() => doAnswerSubmit("Час вийшов")} 
+              className="timerPos" 
+            />
+          )}
           <Round currentRound={1} totalRounds={8} className="roundPos" />
           <RoundCard
             playerName={nickname}
