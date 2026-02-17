@@ -1,22 +1,24 @@
 import React from "react";
 import classNames from "classnames";
-import styles from "./Story.module.scss";
+import styles from "./GameResult.module.scss";
 import { Phases } from "../../types/phasevariant";
 
-interface Story {
+interface ResultProps {
   title: string;
   content: string;
   phase: Phases;
   onHome: () => void;
   onGoBack: () => void;
+  onSave: () => void;
 }
 
-const Story: React.FC<Story> = ({
+const GameResult: React.FC<ResultProps> = ({
   title,
   content,
   phase,
   onHome,
   onGoBack,
+  onSave,
 }) => {
   return (
     <div className={classNames(styles.wrapper, styles[phase])}>
@@ -26,19 +28,21 @@ const Story: React.FC<Story> = ({
           <div className={styles.part}>
             <p className={styles.text}> {content}</p>
           </div>
-          {(phase === Phases.Waiting || phase === Phases.End) &&(
-            <button className={styles.GoBackButton} onClick={onGoBack}>
-              Назад
-            </button>
+          {(phase === Phases.Waiting || phase === Phases.End) && (
+            <div className={styles.actions}>
+              <button className={styles.GoBackButton} onClick={onGoBack}>
+                На головну
+              </button>
+              <button className={styles.GoBackButton} onClick={onSave}>
+                Зберегти
+              </button>
+            </div>
           )}
         </div>
         <div className={classNames(styles.shadow, styles[phase])}></div>
-      </div>
-      <div className={styles.home} onClick={onHome}>
-        <div className={styles.homeSign}></div>
       </div>
     </div>
   );
 };
 
-export default Story;
+export default GameResult;
