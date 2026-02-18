@@ -1,14 +1,13 @@
 import React from "react";
 import classNames from "classnames";
 import styles from "./GameResult.module.scss";
-import { Phases } from "../../types/phasevariant";
+import { Phases } from "../../types/phaseVariant";
 
 interface ResultProps {
   title: string;
   content: string;
   phase: Phases;
   onHome: () => void;
-  onGoBack: () => void;
   onSave: () => void;
 }
 
@@ -17,7 +16,6 @@ const GameResult: React.FC<ResultProps> = ({
   content,
   phase,
   onHome,
-  onGoBack,
   onSave,
 }) => {
   return (
@@ -30,7 +28,7 @@ const GameResult: React.FC<ResultProps> = ({
           </div>
           {(phase === Phases.Waiting || phase === Phases.End) && (
             <div className={styles.actions}>
-              <button className={styles.GoBackButton} onClick={onGoBack}>
+              <button className={styles.GoBackButton} onClick={onHome}>
                 На головну
               </button>
               <button className={styles.GoBackButton} onClick={onSave}>

@@ -1,14 +1,13 @@
 import React from "react";
 import classNames from "classnames";
 import styles from "./Story.module.scss";
-import { Phases } from "../../types/phasevariant";
+import { Phases } from "../../types/phaseVariant";
 
 interface Story {
   title: string;
   content: string;
   phase: Phases;
   onHome: () => void;
-  onGoBack: () => void;
 }
 
 const Story: React.FC<Story> = ({
@@ -16,7 +15,6 @@ const Story: React.FC<Story> = ({
   content,
   phase,
   onHome,
-  onGoBack,
 }) => {
   return (
     <div className={classNames(styles.wrapper, styles[phase])}>
@@ -27,7 +25,7 @@ const Story: React.FC<Story> = ({
             <p className={styles.text}> {content}</p>
           </div>
           {(phase === Phases.Waiting || phase === Phases.End) &&(
-            <button className={styles.GoBackButton} onClick={onGoBack}>
+            <button className={styles.GoBackButton} onClick={onHome}>
               Назад
             </button>
           )}

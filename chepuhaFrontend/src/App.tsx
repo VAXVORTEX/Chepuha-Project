@@ -4,23 +4,27 @@ import Story from "./components/Story/Story";
 import { RoundCard } from "./components/RoundCard/RoundCard";
 import GameCode from "./components/GameCode/GameCode";
 import "./App.scss";
-import { Phases } from "./types/phasevariant";
+import { Phases } from "./types/phaseVariant";
 import Round from "./components/Round/Round";
 import WaitCard from "./components/WaitCard/WaitCard";
 import JoinCard from "./components/JoinCard/JoinCard";
 import GameResult from "./components/GameResult/GameResult";
 
+const TIME_DELAY=3500;
+
+
 function App() {
   const [phase, setPhase] = useState<Phases>(Phases.Main);
   const [didGameStarted, setDidGameStarted] = useState(false);
-  const [userNick, setUserNick] = useState("");
+  const [userNick, setUserNick] = useState("PLAYER 1");
+   const [roomCode, setRoomCode] = useState("");
   const [currAnswer, setCurrAnswer] = useState("");
 
   useEffect(() => {
     if (phase === Phases.Lobby) {
       const timer = setTimeout(() => {
         doGameStart();
-      }, 3500);
+      }, TIME_DELAY);
 
       return () => clearTimeout(timer);
     }
@@ -29,6 +33,8 @@ function App() {
   const goHome = () => {
     setPhase(Phases.Main);
     setDidGameStarted(false);
+    setUserNick("");
+    setRoomCode("");
   };
 
   const gotoLobby = () => {
@@ -39,9 +45,7 @@ function App() {
     setPhase(Phases.Join);
   };
 
-  const doJoinRound = (nick: string, roomCode: string) => {
-    console.log(`Приєднання: ${nick}, Кімната: ${roomCode}`);
-    setUserNick(nick);
+  const doJoinRound = () => {
     setPhase(Phases.Lobby);
   };
 
@@ -70,12 +74,12 @@ function App() {
       )}
 
       {!didGameStarted && phase === Phases.Join && (
-        <JoinCard onJoin={doJoinRound} onHome={goHome} errors={{}} />
+        <JoinCard nick={userNick} setNick= {setUserNick} roomCode={roomCode} setRoomCode={setRoomCode} onJoin={doJoinRound} onHome={goHome} errors={{}} />
       )}
 
       {!didGameStarted && phase === Phases.Lobby && (
         <WaitCard
-          nick={userNick || "PLAYER 1"}
+          nick={userNick}
           joinedCount={3}
           totalCount={4}
           onHome={goHome}
@@ -88,7 +92,7 @@ function App() {
           <Round currentRound={1} totalRounds={8} className="roundPos" />
 
           <RoundCard
-            playerName={userNick || "PLAYER 1"}
+            playerName={userNick}
             phase={phase}
             question="Хто запросив на паті?"
             playerReady={1}
@@ -104,7 +108,6 @@ function App() {
           content={currAnswer}
           phase={phase}
           onHome={goHome}
-          onGoBack={goHome}
           onSave={() => setPhase(Phases.End)}
         />
       )}
@@ -115,7 +118,6 @@ function App() {
           content={currAnswer}
           phase={phase}
           onHome={goHome}
-          onGoBack={goHome}
         />
       )}
     </div>

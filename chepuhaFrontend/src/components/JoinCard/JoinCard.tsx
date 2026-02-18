@@ -1,11 +1,15 @@
 import React, { useState } from "react";
 import classNames from "classnames";
 import styles from "./JoinCard.module.scss";
-import { Phases } from "../../types/phasevariant";
+import { Phases } from "../../types/phaseVariant";
 import Input from "../Input/Input";
 
-interface JoinCard {
-  onJoin: (nick: string, roomCode: string) => void;
+interface JoinCardProps {
+  nick: string;
+  setNick: (val: string) => void;
+  roomCode: string;
+  setRoomCode: (val: string) => void;
+  onJoin: () => void;
   onHome: () => void;
   errors?: {
     nick?: string;
@@ -14,16 +18,21 @@ interface JoinCard {
   };
 }
 
-const JoinCard: React.FC<JoinCard> = ({ onJoin, onHome, errors }) => {
-  const [nick, setNick] = useState("");
-  const [roomCode, setRoomCode] = useState("");
-
+const JoinCard: React.FC<JoinCardProps> = ({
+  nick,
+  setNick,
+  roomCode,
+  setRoomCode,
+  onJoin,
+  onHome,
+  errors,
+}) => {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const doJoinClick = () => {
     setIsSubmitted(true);
 
     if (nick.trim() && roomCode.trim()) {
-      onJoin(nick, roomCode);
+      onJoin();
     }
   };
 
@@ -43,7 +52,7 @@ const JoinCard: React.FC<JoinCard> = ({ onJoin, onHome, errors }) => {
             />
             {(errors?.nick || (isSubmitted && !nick.trim())) && (
               <span className={styles.errorText}>
-                {errors?.nick || "Цей нік вже існує"}
+                {errors?.nick || "Введіть нікнейм..."}
               </span>
             )}
           </div>

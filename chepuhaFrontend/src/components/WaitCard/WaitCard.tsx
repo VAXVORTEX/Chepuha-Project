@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import classNames from "classnames";
 import styles from "./WaitCard.module.scss";
-import { Phases } from "../../types/phasevariant";
+import { Phases } from "../../types/phaseVariant";
 import Input from "../Input/Input";
 
 interface WaitCardProps {
