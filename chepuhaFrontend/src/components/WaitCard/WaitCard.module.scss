@@ -36,18 +36,20 @@
   align-items: center;
   text-align: center;
   gap: 30px;
-  max-width: 600px;
+  max-width: 1000px;
+  margin-top: -100px;
 }
 
 .nickText {
-  @include font-40;
+  @include font-pangolin(64);
   color: $black;
   text-transform: uppercase;
   margin: 0;
+  margin-bottom: 20px;
 }
 
 .countText {
-  @include font-32;
+  @include font-pangolin(48);
   color: $red;
   font-weight: bold;
   text-transform: uppercase;
@@ -59,7 +61,7 @@
 }
 
 .waitingText {
-  @include font-50;
+  @include font-pangolin(72);
   color: $black;
   text-transform: uppercase;
 }
@@ -75,31 +77,32 @@
 }
 
 .yellowGuy {
-  top: 10px;
+  top: 100px;
   right: -70px;
   background-image: url("../../assets/images/yellowGuy.png");
   display: block;
-  width: 538px;
-  height: 504px;
+  width: 1000px;
+  height: 1000px;
+  z-index: 1;
 }
 
 .redGuy {
   left: -85px;
-  top: 245px;
+  top: 350px;
   background-image: url("../../assets/images/RedGuyRemoved.png");
-  width: 603px;
-  height: 603px;
+  width: 1000px;
+  height: 1000px;
   transform: rotate(-3deg);
 }
 
 .home {
   position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 60px;
-  height: 60px;
+  bottom: 40px;
+  right: 40px;
+  width: 130px;
+  height: 130px;
   background-color: transparent;
-  border: 2px solid $black;
+  border: 6px solid $black;
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -107,12 +110,12 @@
   cursor: pointer;
 
   &:hover {
-    transform: scale(1.2);
+    transform: scale(1.1);
   }
 
-  .homeSign {
-    width: 45px;
-    height: 45px;
+    .homeSign {
+    width: 90px;
+    height: 90px;
     background-image: url("../../assets/images/house.png");
     background-repeat: no-repeat;
     background-position: center;
