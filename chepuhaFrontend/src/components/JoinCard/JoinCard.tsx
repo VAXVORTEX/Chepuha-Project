@@ -24,7 +24,10 @@ const JoinCard: React.FC<JoinCardProps> = ({
 
   const doJoinClick = () => {
     setIsSubmitted(true);
-      onJoin(nickInputValue,roomInputValue);
+    if (!nickInputValue.trim() || !roomInputValue.trim()) {
+      return; 
+    }
+    onJoin(nickInputValue,roomInputValue);
   };
 
   return (
@@ -37,7 +40,10 @@ const JoinCard: React.FC<JoinCardProps> = ({
           <div className={styles.inputWrapper}>
             <Input
               value={nickInputValue}
-              onChange={setNickInputValue}
+              onChange={(value) => {
+                setNickInputValue(value);
+                setIsSubmitted(false);
+              }}
               placeholder="Введіть ваш нік..."
               className={styles.input}
             />
