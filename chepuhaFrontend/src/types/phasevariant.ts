@@ -1,5 +1,7 @@
 export enum Phases {
-    Main = 'main',
-    Waiting = 'waiting',
-    End = 'end',
+  Main = "main",
+  Lobby = "lobby",
+  Waiting = "waiting",
+  Join = "join",
+  End = "end",
 }
