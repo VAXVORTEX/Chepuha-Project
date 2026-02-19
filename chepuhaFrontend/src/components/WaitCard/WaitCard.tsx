@@ -1,8 +1,6 @@
 import React, { useState } from "react";
-import classNames from "classnames";
 import styles from "./WaitCard.module.scss";
-import { Phases } from "../../types/phaseVariant";
-import Input from "../Input/Input";
+import Button from "../Button/Button";
 
 interface WaitCardProps {
   nick: string;
@@ -31,9 +29,9 @@ const WaitCard: React.FC<WaitCardProps> = ({
         <h1 className={styles.waitingText}>ЧЕКАЄМО НА ПОЧАТОК ГРИ...</h1>
       </div>
 
-      <div className={styles.home} onClick={onHome}>
+      <button className={styles.home} onClick={onHome} type="button" aria-label="На головну">
         <div className={styles.homeSign}></div>
-      </div>
+      </button>
     </div>
   );
 };

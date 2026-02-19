@@ -20,6 +20,9 @@ function App() {
    const [roomCode, setRoomCode] = useState("");
   const [currAnswer, setCurrAnswer] = useState("");
 
+const[errors, setErrors] =  useState({});
+
+
   useEffect(() => {
     if (phase === Phases.Lobby) {
       const timer = setTimeout(() => {
@@ -35,6 +38,7 @@ function App() {
     setDidGameStarted(false);
     setUserNick("");
     setRoomCode("");
+    setErrors({});
   };
 
   const gotoLobby = () => {
@@ -45,9 +49,23 @@ function App() {
     setPhase(Phases.Join);
   };
 
-  const doJoinRound = () => {
-    setPhase(Phases.Lobby);
-  };
+   const doJoinRound = (nick:string, gameId:string) => {
+  const trimmedNick = nick.trim();
+  const trimmedRoom = gameId.trim();
+  if (!trimmedNick || !trimmedRoom ) {
+      setErrors({
+          nick: !trimmedNick && "Введіть свій нік...",
+          room:  !trimmedRoom && "Введіть номер кімнати..."
+      }); 
+        return;
+    }
+setErrors({});
+setUserNick(trimmedNick);
+setRoomCode(trimmedRoom);
+setPhase(Phases.Lobby)
+    };
+
+
 
   const doGameStart = () => {
     setDidGameStarted(true);
@@ -74,7 +92,7 @@ function App() {
       )}
 
       {!didGameStarted && phase === Phases.Join && (
-        <JoinCard nick={userNick} setNick= {setUserNick} roomCode={roomCode} setRoomCode={setRoomCode} onJoin={doJoinRound} onHome={goHome} errors={{}} />
+        <JoinCard onJoin={doJoinRound} onHome={goHome} errors={errors} />
       )}
 
       {!didGameStarted && phase === Phases.Lobby && (

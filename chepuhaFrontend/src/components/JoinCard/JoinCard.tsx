@@ -5,35 +5,26 @@ import { Phases } from "../../types/phaseVariant";
 import Input from "../Input/Input";
 
 interface JoinCardProps {
-  nick: string;
-  setNick: (val: string) => void;
-  roomCode: string;
-  setRoomCode: (val: string) => void;
-  onJoin: () => void;
+  onJoin: (nick: string, room: string) => void;
   onHome: () => void;
   errors?: {
     nick?: string;
     room?: string;
-    all?: string;
   };
 }
 
 const JoinCard: React.FC<JoinCardProps> = ({
-  nick,
-  setNick,
-  roomCode,
-  setRoomCode,
   onJoin,
   onHome,
   errors,
 }) => {
-  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [nickInputValue, setNickInputValue] = useState("");
+   const [roomInputValue, setRoomInputValue] = useState("");
+   const [isSubmitted, setIsSubmitted] = useState(false);
+
   const doJoinClick = () => {
     setIsSubmitted(true);
-
-    if (nick.trim() && roomCode.trim()) {
-      onJoin();
-    }
+      onJoin(nickInputValue,roomInputValue);
   };
 
   return (
@@ -45,12 +36,12 @@ const JoinCard: React.FC<JoinCardProps> = ({
         <div className={styles.form}>
           <div className={styles.inputWrapper}>
             <Input
-              value={nick}
-              onChange={setNick}
+              value={nickInputValue}
+              onChange={setNickInputValue}
               placeholder="Введіть ваш нік..."
               className={styles.input}
             />
-            {(errors?.nick || (isSubmitted && !nick.trim())) && (
+            {(errors?.nick || (isSubmitted && !nickInputValue.trim())) && (
               <span className={styles.errorText}>
                 {errors?.nick || "Введіть нікнейм..."}
               </span>
@@ -59,12 +50,12 @@ const JoinCard: React.FC<JoinCardProps> = ({
 
           <div className={styles.inputWrapper}>
             <Input
-              value={roomCode}
-              onChange={setRoomCode}
+              value={roomInputValue}
+              onChange={setRoomInputValue}
               placeholder="Введіть номер кімнати..."
               className={styles.input}
             />
-            {(errors?.room || (isSubmitted && !roomCode.trim())) && (
+            {(errors?.room || (isSubmitted && !roomInputValue.trim())) && (
               <span className={styles.errorText}>
                 {errors?.room || "Гра з таким кодом не існує"}
               </span>
@@ -75,7 +66,6 @@ const JoinCard: React.FC<JoinCardProps> = ({
             <button className={styles.joinButton} onClick={doJoinClick}>
               ПРИЄДНАТИСЯ
             </button>
-            {errors?.all && <p className={styles.errorText}>{errors?.all}</p>}
           </div>
         </div>
       </div>
