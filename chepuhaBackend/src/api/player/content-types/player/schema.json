@@ -16,9 +16,6 @@
       "private": true,
       "required": true
     },
-    "session_id": {
-      "type": "uid"
-    },
     "nickname": {
       "type": "string"
     },
@@ -34,11 +31,26 @@
         "finished"
       ]
     },
-    "current_sheet_id": {
-      "type": "uid"
-    },
     "joined_at": {
       "type": "datetime"
+    },
+    "session_id": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::game-session.game-session",
+      "inversedBy": "players"
+    },
+    "story_sheets": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::story-sheet.story-sheet",
+      "mappedBy": "player"
+    },
+    "answers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::answer.answer",
+      "mappedBy": "player"
     }
   }
 }
