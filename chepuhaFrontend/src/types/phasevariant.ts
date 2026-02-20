@@ -4,5 +4,4 @@ export enum Phases {
   Waiting = "waiting",
   Join = "join",
   End = "end",
-  History = "history",
 }

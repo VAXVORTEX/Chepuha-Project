@@ -23,16 +23,16 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  min-height: 600px;
+  min-height: 400px;
   padding: 20px 30px;
   background-color: $red;
-  border-radius: 50px;
+  border-radius: 40px;
   color: $white;
   display: flex;
   flex-direction: column;
   align-items: center;
   box-sizing: border-box;
-  border: 8px solid $gray-medium;
+  border: 5px solid $gray-medium;
 
   &.waiting {
     opacity: 0.8;
@@ -45,7 +45,7 @@
 .container {
   position: relative;
   width: 100%;
-  max-width: 1100px;
+  max-width: 850px;
   display: flex;
   flex-direction: column;
 }
@@ -69,9 +69,8 @@
 }
 
 .title {
-  @include font-pangolin(55);
-  margin-top: 5px;
-  margin-bottom: 15px;
+  @include font-48;
+  margin-bottom: 20px;
   text-align: center;
 }
 
@@ -79,7 +78,7 @@
   flex-grow: 1;
   width: 100%;
   .text {
-    @include font-pangolin(45);
+    @include font-32;
     text-align: left;
   }
 }
@@ -105,12 +104,12 @@
 
 .home {
   position: fixed;
-  bottom: 40px;
-  right: 40px;
-  width: 130px;
-  height: 130px;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
   background-color: transparent;
-  border: 6px solid $black;
+  border: 2px solid $black;
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -118,12 +117,12 @@
   cursor: pointer;
 
   &:hover {
-    transform: scale(1.1);
+    transform: scale(1.2);
   }
 
-    .homeSign {
-    width: 90px;
-    height: 90px;
+  .homeSign {
+    width: 45px;
+    height: 45px;
     background-image: url("../../assets/images/house.png");
     background-repeat: no-repeat;
     background-position: center;
