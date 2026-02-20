@@ -6,15 +6,12 @@ interface WaitCardProps {
   nick: string;
   joinedCount: number;
   totalCount: number;
-  onHome: () => void;
-  onStartGame?: () => void;
 }
 
 const WaitCard: React.FC<WaitCardProps> = ({
   nick,
   joinedCount,
   totalCount,
-  onHome,
 }) => {
   return (
     <div className={styles.wrapper}>
@@ -28,10 +25,6 @@ const WaitCard: React.FC<WaitCardProps> = ({
         </p>
         <h1 className={styles.waitingText}>ЧЕКАЄМО НА ПОЧАТОК ГРИ...</h1>
       </div>
-
-      <button className={styles.home} onClick={onHome} type="button" aria-label="На головну">
-        <div className={styles.homeSign}></div>
-      </button>
     </div>
   );
 };

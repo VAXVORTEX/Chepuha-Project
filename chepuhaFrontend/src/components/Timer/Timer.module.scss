@@ -1,0 +1,11 @@
+@import "../../styles/colors.scss";
+@import "../../styles/typography.scss";
+
+.timer-container {
+ @include font-acme(64);
+  color: $red;
+  text-align: center;
+  line-height: 1;
+  letter-spacing: 2px;
+  user-select: none;
+}
