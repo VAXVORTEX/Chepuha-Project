@@ -11,10 +11,42 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "session_id": {
+      "type": "uid",
+      "private": true,
+      "required": true
+    },
     "session_name": {
-      "type": "string",
-      "required": true,
-      "unique": true
+      "type": "string"
+    },
+    "session_status": {
+      "type": "enumeration",
+      "enum": [
+        "waiting",
+        "active",
+        "completed"
+      ]
+    },
+    "max_players": {
+      "type": "integer"
+    },
+    "current_players_count": {
+      "type": "integer"
+    },
+    "session_created_at": {
+      "type": "datetime"
+    },
+    "session_started_at": {
+      "type": "datetime"
+    },
+    "session_ended_at": {
+      "type": "datetime"
+    },
+    "rounds": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::round.round",
+      "mappedBy": "session_id"
     }
   }
 }

@@ -1,0 +1,38 @@
+{
+  "kind": "collectionType",
+  "collectionName": "answers",
+  "info": {
+    "singularName": "answer",
+    "pluralName": "answers",
+    "displayName": "Answers"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "answer_id": {
+      "type": "uid",
+      "private": true,
+      "required": true
+    },
+    "round_id": {
+      "type": "uid"
+    },
+    "player_id": {
+      "type": "uid"
+    },
+    "sheet_id": {
+      "type": "uid"
+    },
+    "answer_text": {
+      "type": "string"
+    },
+    "position_in_sheet": {
+      "type": "integer"
+    },
+    "answers_created_at": {
+      "type": "datetime"
+    }
+  }
+}
