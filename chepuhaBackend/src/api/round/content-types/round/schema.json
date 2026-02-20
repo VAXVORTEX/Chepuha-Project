@@ -50,6 +50,12 @@
     },
     "completed_at": {
       "type": "datetime"
+    },
+    "answers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::answer.answer",
+      "mappedBy": "round"
     }
   }
 }

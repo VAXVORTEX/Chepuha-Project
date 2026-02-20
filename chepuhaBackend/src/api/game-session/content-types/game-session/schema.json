@@ -47,6 +47,18 @@
       "relation": "oneToMany",
       "target": "api::round.round",
       "mappedBy": "session_id"
+    },
+    "players": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::player.player",
+      "mappedBy": "session_id"
+    },
+    "story_sheets": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::story-sheet.story-sheet",
+      "mappedBy": "game_session"
     }
   }
 }
