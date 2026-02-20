@@ -16,15 +16,6 @@
       "private": true,
       "required": true
     },
-    "round_id": {
-      "type": "uid"
-    },
-    "player_id": {
-      "type": "uid"
-    },
-    "sheet_id": {
-      "type": "uid"
-    },
     "answer_text": {
       "type": "string"
     },
@@ -33,6 +24,24 @@
     },
     "answers_created_at": {
       "type": "datetime"
+    },
+    "player": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::player.player",
+      "inversedBy": "answers"
+    },
+    "round": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::round.round",
+      "inversedBy": "answers"
+    },
+    "story_sheet": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::story-sheet.story-sheet",
+      "inversedBy": "answers"
     }
   }
 }

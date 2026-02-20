@@ -16,15 +16,6 @@
       "private": true,
       "required": true
     },
-    "session_id": {
-      "type": "uid"
-    },
-    "original_owner_id": {
-      "type": "uid"
-    },
-    "current_owner_id": {
-      "type": "uid"
-    },
     "sheet_number": {
       "type": "integer"
     },
@@ -43,6 +34,24 @@
     },
     "storysheets_completed_at": {
       "type": "datetime"
+    },
+    "game_session": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::game-session.game-session",
+      "inversedBy": "story_sheets"
+    },
+    "player": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::player.player",
+      "inversedBy": "story_sheets"
+    },
+    "answers": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::answer.answer",
+      "mappedBy": "story_sheet"
     }
   }
 }
