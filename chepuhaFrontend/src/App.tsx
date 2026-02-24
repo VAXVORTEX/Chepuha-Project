@@ -14,6 +14,20 @@ import logoImage from "./assets/images/Logo.png";
 import homeImage from "./assets/images/house.png";
 import crownImage from "./assets/images/crown.png";
 
+const QUESTION = [
+  "Хто?",
+  "З ким?",
+  "Де?",
+  "Що вони там робили?",
+];
+
+const DEFAULT_ANSWER = [
+  "Кузя",
+  "з пінгвіном",
+  "у темному підвалі",
+  "вирішували інтеграли",
+];
+
 const HomeIcon = ({ onClick, className }: { onClick: () => void, className?: string }) => (
   <div className={className} onClick={onClick}>
   <img
@@ -26,6 +40,8 @@ const HomeIcon = ({ onClick, className }: { onClick: () => void, className?: str
 function App() {
   const [phase, setPhase] = useState<Phases>(Phases.Main);
   const [didGameStart, setDidGameStart] = useState(false);
+  const [currentRound, setCurrentRound] = useState(1);
+  const [userAnswers, setUserAnswers] = useState<string[]>([]);
   
   const [isCreatingLobby, setIsCreatingLobby] = useState(false);
   const [isLobby, setIsLobby] = useState(false);
@@ -39,6 +55,15 @@ function App() {
   const [joinedCount, setJoinedCount] = useState(1);
   const [totalCount, setTotalCount] = useState(4);
 
+  const generateRoomCode = () => {
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    for (let i = 0; i < 8; i++) {
+      code += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return code;
+  };
+
   const goHome = () => {
     setPhase(Phases.Main);
     setDidGameStart(false);
@@ -47,9 +72,12 @@ function App() {
     setNickname("");
     setRoomCode("");
     setError("");
+    setCurrentRound(1);
+    setUserAnswers([]);
   };
 
   const doShowCreateScreen = () => {
+    setRoomCode(generateRoomCode());
     setIsCreatingLobby(true);
     setIsLobby(false);
   };
@@ -73,6 +101,8 @@ function App() {
   const doGameStart = () => {
     setDidGameStart(true);
     setPhase(Phases.Main);
+    setCurrentRound(1);
+    setUserAnswers([]);
   };
 
   const doShowJoinScreen = () => {
@@ -97,17 +127,25 @@ function App() {
   };
 
   const doAnswerSubmit = (answer: string) => {
-    if (answer === "Час вийшов" || answer.trim() === "") {
-      setCurrentResult(
-        "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-      );
+    const isMissing = answer.trim() === "" || answer.trim() === "Час вийшов";
+    const cleanAnswer = isMissing ? DEFAULT_ANSWER[currentRound - 1] : answer;
+    const updatedAnswers = [...userAnswers, cleanAnswer];
+    setUserAnswers(updatedAnswers);
+
+    if (currentRound < 4) {
+      setPhase(Phases.Waiting);
+      setTimeout(() => {
+        setCurrentRound(prev => prev + 1);
+        setPhase(Phases.Main);
+      }, 2000);
     } else {
-      setCurrentResult(answer);
+      const finalResult = `${updatedAnswers[0]} разом з ${updatedAnswers[1]} зустрілися ${updatedAnswers[2]} і там вони ${updatedAnswers[3]}.`;
+      setCurrentResult(finalResult);
+      setPhase(Phases.Waiting);
+      setTimeout(() => {
+        setPhase(Phases.End);
+      }, 3000);
     }
-    setPhase(Phases.Waiting);
-    setTimeout(() => {
-      setPhase(Phases.End);
-    }, 3500);
   };
 
 return (
@@ -140,7 +178,7 @@ return (
 
       {!didGameStart && isCreatingLobby && !isLobby && phase !== Phases.Join && (
         <>
-          <GameCode code="A7B9G6TR" className="gameCodePos" />
+          <GameCode code={roomCode} className="gameCodePos" />
           <div className="create-game-container">
             <div className="input-wrapper">
               <input
@@ -168,7 +206,7 @@ return (
 
       {!didGameStart && isLobby && phase !== Phases.Join && (
         <>
-          <GameCode code="A7B9G6TR" className="gameCodePos" />
+          <GameCode code={roomCode} className="gameCodePos" />
 
           <div className="lobby-container">
             <div className="lobby-info">
@@ -208,17 +246,18 @@ return (
         <>
           {phase === Phases.Main && ( 
             <Timer 
+              key ={currentRound}
               initialSeconds={120} 
               onTimeUp={() => doAnswerSubmit("Час вийшов")} 
               className="timerPos" 
             />
           )}
-          <Round currentRound={1} totalRounds={8} className="roundPos" />
+          <Round currentRound={currentRound} totalRounds={4} className="roundPos" />
           <RoundCard
             playerName={nickname}
             phase={phase}
-            question="Хто запросив на паті?"
-            playerReady={1}
+            question={QUESTION[currentRound - 1]}
+            playerReady={phase === Phases.Waiting ? 4 : 1}
             playerTotal={4}
             onSubmitAnswer={doAnswerSubmit}
           />
@@ -242,7 +281,7 @@ return (
       {phase === Phases.History && (
         <Story
           title="Історія ігор"
-          content={savedStories.length > 0 ? savedStories.join("\n\n---\n\n") : "У вас поки немає збережених історій."}
+          content={savedStories.length > 0 ? savedStories[0] : "У вас поки немає збережених історій."}
           phase={phase}
           onHome={goHome}
         />
