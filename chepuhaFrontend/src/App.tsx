@@ -4,7 +4,7 @@ import Story from "./components/Story/Story";
 import { RoundCard } from "./components/RoundCard/RoundCard";
 import GameCode from "./components/GameCode/GameCode";
 import "./App.scss";
-import { Phases } from "./types/testVariant";
+import { Phases } from "./types/phaseVariant";
 import Round from "./components/Round/Round";
 import Timer from "./components/Timer/Timer";
 import JoinCard from "./components/JoinCard/JoinCard";
