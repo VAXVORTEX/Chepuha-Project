@@ -30,8 +30,7 @@ const DEFAULT_ANSWERS = [
 
 
 const ROUND_DELAY_MS = 2000; 
-const RESULT_DELAY_MS  = 3000; 
-const START_GAME_DELAY_MS = 3000;
+const COMMON_DELAY_MS  = 3000; 
 
 const HomeIcon = ({ onClick, className }: { onClick: () => void, className?: string }) => (
   <div className={className} onClick={onClick}>
@@ -124,7 +123,7 @@ function App() {
     setTimeout(() => {
       setDidGameStart(true);
       setPhase(Phases.Main);
-    }, START_GAME_DELAY_MS);
+    }, COMMON_DELAY_MS);
   };
 
   const doShowHistory = () => {
@@ -149,7 +148,7 @@ function App() {
       setPhase(Phases.Waiting);
       setTimeout(() => {
         setPhase(Phases.End);
-      }, RESULT_DELAY_MS);
+      }, COMMON_DELAY_MS );
     }
   };
 
