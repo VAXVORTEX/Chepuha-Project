@@ -14,19 +14,24 @@ import logoImage from "./assets/images/Logo.png";
 import homeImage from "./assets/images/house.png";
 import crownImage from "./assets/images/crown.png";
 
-const QUESTION = [
+const QUESTIONS = [
   "Хто?",
   "З ким?",
   "Де?",
   "Що вони там робили?",
 ];
 
-const DEFAULT_ANSWER = [
+const DEFAULT_ANSWERS = [
   "Кузя",
   "з пінгвіном",
   "у темному підвалі",
   "вирішували інтеграли",
 ];
+
+
+const ROUND_DELAY_MS = 2000; 
+const RESULT_DELAY_MS  = 3000; 
+const START_GAME_DELAY_MS = 3000;
 
 const HomeIcon = ({ onClick, className }: { onClick: () => void, className?: string }) => (
   <div className={className} onClick={onClick}>
@@ -50,7 +55,7 @@ function App() {
   const [roomCode, setRoomCode] = useState("");
   const [error, setError] = useState("");
   const [savedStories, setSavedStories] = useState<string[]>([]);
-  const [currentResult, setCurrentResult] = useState("Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.");
+  const [currentResult, setCurrentResult] = useState("");
 
   const [joinedCount, setJoinedCount] = useState(1);
   const [totalCount, setTotalCount] = useState(4);
@@ -119,7 +124,7 @@ function App() {
     setTimeout(() => {
       setDidGameStart(true);
       setPhase(Phases.Main);
-    }, 3000);
+    }, START_GAME_DELAY_MS);
   };
 
   const doShowHistory = () => {
@@ -128,23 +133,23 @@ function App() {
 
   const doAnswerSubmit = (answer: string) => {
     const isMissing = answer.trim() === "" || answer.trim() === "Час вийшов";
-    const cleanAnswer = isMissing ? DEFAULT_ANSWER[currentRound - 1] : answer;
+    const cleanAnswer = isMissing ? DEFAULT_ANSWERS[currentRound - 1] : answer;
     const updatedAnswers = [...userAnswers, cleanAnswer];
     setUserAnswers(updatedAnswers);
 
-    if (currentRound < 4) {
+    if (currentRound < QUESTIONS.length) {
       setPhase(Phases.Waiting);
       setTimeout(() => {
         setCurrentRound(prev => prev + 1);
         setPhase(Phases.Main);
-      }, 2000);
+      }, ROUND_DELAY_MS);
     } else {
       const finalResult = `${updatedAnswers[0]} разом з ${updatedAnswers[1]} зустрілися ${updatedAnswers[2]} і там вони ${updatedAnswers[3]}.`;
       setCurrentResult(finalResult);
       setPhase(Phases.Waiting);
       setTimeout(() => {
         setPhase(Phases.End);
-      }, 3000);
+      }, RESULT_DELAY_MS);
     }
   };
 
@@ -245,18 +250,17 @@ return (
       {didGameStart && (phase === Phases.Main || phase === Phases.Waiting) && (
         <>
           {phase === Phases.Main && ( 
-            <Timer 
-              key ={currentRound}
+            <Timer
               initialSeconds={120} 
               onTimeUp={() => doAnswerSubmit("Час вийшов")} 
               className="timerPos" 
             />
           )}
-          <Round currentRound={currentRound} totalRounds={4} className="roundPos" />
+          <Round currentRound={currentRound} totalRounds={QUESTIONS.length} className="roundPos" />
           <RoundCard
             playerName={nickname}
             phase={phase}
-            question={QUESTION[currentRound - 1]}
+            question={QUESTIONS[currentRound - 1]}
             playerReady={phase === Phases.Waiting ? 4 : 1}
             playerTotal={4}
             onSubmitAnswer={doAnswerSubmit}
