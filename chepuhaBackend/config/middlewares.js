@@ -5,7 +5,7 @@ module.exports = [
   {
     name: 'strapi::cors',
     config: {
-      origin: ['http://localhost:5174', 'http://localhost:3001'],
+      origin: ['https://chepuha-project-pi.vercel.app/', 'http://localhost:3000'],
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
       headers: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
       keepHeaderOnError: true,
@@ -16,12 +16,5 @@ module.exports = [
   'strapi::body',
   'strapi::session',
   'strapi::favicon',
-  'strapi::public',
-  {
-    name: 'strapi::cors',
-    config: {
-      origin: ['https://chepuha-project-pi.vercel.app/', 'http://localhost:3000'],
-    },
-  },
-
+  'strapi::public'
 ];
