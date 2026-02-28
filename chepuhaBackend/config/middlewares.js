@@ -7,7 +7,7 @@ module.exports = [
     config: {
       origin: ['https://chepuha-project-pi.vercel.app/', 'http://localhost:3000'],
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
-      headers: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
+      headers: "*",
       keepHeaderOnError: true,
     },
   },
