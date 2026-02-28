@@ -12,7 +12,7 @@ import WaitCard from "./components/WaitCard/WaitCard";
 import GameResult from "./components/GameResult/GameResult";
 import logoImage from "./assets/images/Logo.png";
 import homeImage from "./assets/images/house.png";
-import crownImage from "./assets/images/crown.png";
+import crownImage from "./assets/images/Crown.png";
 
 const QUESTIONS = [
   "Хто?",
