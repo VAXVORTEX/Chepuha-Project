@@ -1,7 +1,5 @@
-@import "../../styles/typography.scss";
-@import "../../styles/_colors.scss";
-
-
+@use "../../styles/typography.scss" as *;
+@use "../../styles/_colors.scss" as *;
 .button {
     display: inline-flex;
     border: none;
@@ -14,18 +12,15 @@
     margin: 0;
     padding: 0;
 }
-
 .primary {
   @include font-100;
   color: $gray-dark;
   text-transform: uppercase;
   line-height: 1;
-
   &:hover {
     opacity: 0.8;
     transform: scale(1.06);
   }
-
   &.main {
     color: $gray-dark;
   }
@@ -36,7 +31,6 @@
     color: $gray-dark;
   }
 }
-
 .secondary{
     background-color: $gray-medium;
     border-radius: 50px;
@@ -44,7 +38,6 @@
     @include font-able-32;
     padding: 12px 60px;
     border: none;
-
   &.main {
     background-color: $gray-medium;
   }

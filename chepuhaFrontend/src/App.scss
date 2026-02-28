@@ -1,9 +1,11 @@
-@import "./styles/colors.scss";
-@import "./styles/typography.scss";
+@use "./styles/colors.scss" as *;
+@use "./styles/typography.scss" as *;
 
 .app-view {
-  width: 100%;
-  height: 100vh;
+  width: 149.25vw;
+  height: 149.25vh;
+  transform: scale(0.67);
+  transform-origin: top left;
   background-image: url(./assets/images/gameBackground.jpg);
   background-size: cover;
   background-position: center;
@@ -16,12 +18,51 @@
   overflow: hidden;
 }
 
-.logo {
-  max-width: 85%;
-  width: 1200px;
-  height: auto;
+.logo-wrapper {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
   margin-top: -10vh;
   margin-bottom: 20px;
+  width: 100%;
+  max-width: 85%;
+  z-index: 15;
+
+  .logo-boy-hitbox {
+    position: absolute;
+    cursor: default;
+    z-index: 10;
+  }
+
+  .hitbox-1 {
+    top: 5%;
+    left: 10%;
+    width: 25%;
+    height: 35%;
+  }
+
+  .hitbox-2 {
+    top: 0%;
+    left: 40%;
+    width: 20%;
+    height: 40%;
+  }
+
+  .hitbox-3 {
+    top: 5%;
+    left: 65%;
+    width: 25%;
+    height: 35%;
+  }
+
+  .logo {
+    width: 1200px;
+    height: auto;
+    pointer-events: none;
+    max-width: 100%;
+    margin: 0;
+  }
 }
 
 .menu-buttons {
@@ -33,12 +74,14 @@
 }
 
 .create-game-container {
+  position: relative;
+  z-index: 20;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 50px;
   width: 100%;
-  max-width: 1000px;
+  max-width: 1200px;
   margin-top: -10vh;
 }
 
@@ -48,7 +91,7 @@
 }
 
 .nickname-input {
-  @include font-able-32; 
+  @include font-able-32;
   width: 100%;
   height: 90px;
   border-radius: 45px;
@@ -56,21 +99,23 @@
   outline: none;
   color: $black;
   background-color: $white;
-  text-align: left; 
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  border: 2px solid $black; 
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  border: 2px solid $black;
   box-sizing: border-box;
 
   &::placeholder {
     color: $gray-medium;
     opacity: 0.6;
-    text-align: left
+    text-align: center;
   }
 }
 
 .error-message {
   @include font-able(24);
   color: $red;
+  -webkit-text-stroke: 1px $black;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
   align-self: flex-start;
   margin-left: 40px;
   margin-top: -30px;
@@ -103,7 +148,7 @@
 }
 
 .lobby-subtitle {
-   @include font-pangolin(70);
+  @include font-pangolin(70);
   color: $black;
   margin: 0;
   text-align: center;
@@ -151,12 +196,20 @@
   position: absolute;
   top: 40px;
   right: 60px;
+  z-index: 100;
+  pointer-events: auto;
 }
 
 .roundPos {
   position: absolute;
   top: 40px;
   right: 60px;
+}
+
+.timerPos {
+  position: absolute;
+  top: 40px;
+  left: 60px;
 }
 
 .timerPos {
@@ -178,6 +231,7 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  z-index: 20;
 
   &:hover {
     transform: scale(1.1);
@@ -190,3 +244,174 @@
   }
 }
 
+.yellow-guy-bg,
+.red-guy-bg {
+  position: absolute;
+  bottom: 0;
+  background-size: contain;
+  background-repeat: no-repeat;
+  z-index: 1;
+  opacity: 0.5;
+  cursor: default;
+}
+
+.yellow-guy-bg {
+  bottom: 50px;
+  right: -70px;
+  background-image: url("./assets/images/yellowGuy.png");
+  display: block;
+  width: 850px;
+  height: 850px;
+  z-index: 1;
+}
+
+.red-guy-bg {
+  left: -85px;
+  bottom: -20px;
+  background-image: url("./assets/images/RedGuyRemoved.png");
+  width: 850px;
+  height: 850px;
+  transform: rotate(-3deg);
+}
+
+.waiting-host-text {
+  @include font-pangolin(60);
+  color: $black;
+  text-align: center;
+  margin: 0;
+  margin-top: -30px;
+  transform: translateX(12px);
+}
+
+.template-selector {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.template-title {
+  @include font-pangolin(48);
+  color: $red;
+  -webkit-text-stroke: 1px $black;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.template-cards-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.template-card {
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.4);
+  border: 4px solid transparent;
+  border-radius: 20px;
+  padding: 15px 10px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+
+  &:hover {
+    transform: translateY(-5px) scale(1.02);
+    background-color: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+  }
+
+  &.active {
+    border-color: $red;
+    -webkit-text-stroke: 1px $black;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    background-color: $white;
+    transform: scale(1.05);
+    box-shadow: 0 10px 25px rgba(225, 41, 60, 0.3);
+  }
+}
+
+.language-selector {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  display: flex;
+  gap: 15px;
+  z-index: 100;
+}
+
+@keyframes wave-blob {
+  0% {
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+  }
+
+  50% {
+    border-radius: 225px 35px 255px 5px/25px 255px 5px 225px;
+  }
+
+  100% {
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+  }
+}
+
+.lang-btn {
+  font-size: 40px;
+  background-color: $black;
+  border: 4px solid $black;
+  border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
+  animation: wave-blob 12s infinite ease-in-out;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scale(1.05);
+    transition: transform 0.3s ease;
+  }
+
+  &:focus,
+  &:active {
+    outline: none !important;
+  }
+
+  &:hover {
+    transform: scale(1.05);
+
+    img {
+      transform: scale(1.1) translateZ(0);
+    }
+  }
+
+  &.active {
+    border: 5px solid $green;
+    box-shadow: 0 0 20px $green, inset 0 0 10px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.template-name {
+  @include font-pangolin(36);
+  margin: 0;
+  color: $black;
+  text-transform: uppercase;
+}

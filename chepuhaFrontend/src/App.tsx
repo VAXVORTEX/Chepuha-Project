@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Button from "./components/Button/Button";
-import Story from "./components/Story/Story";
+import HistoryScreen from "./components/HistoryScreen/HistoryScreen";
 import { RoundCard } from "./components/RoundCard/RoundCard";
 import GameCode from "./components/GameCode/GameCode";
 import "./App.scss";
@@ -11,54 +11,257 @@ import JoinCard from "./components/JoinCard/JoinCard";
 import WaitCard from "./components/WaitCard/WaitCard";
 import GameResult from "./components/GameResult/GameResult";
 import logoImage from "./assets/images/Logo.png";
+import logoImageEng from "./assets/images/Chepuha_eng.png";
 import homeImage from "./assets/images/house.png";
-import crownImage from "./assets/images/crown.png";
-
-const QUESTIONS = [
-  "Хто?",
-  "З ким?",
-  "Де?",
-  "Що вони там робили?",
-];
-
-const DEFAULT_ANSWERS = [
-  "Кузя",
-  "з пінгвіном",
-  "у темному підвалі",
-  "вирішували інтеграли",
-];
-
-
-const ROUND_DELAY_MS = 2000; 
-const COMMON_DELAY_MS  = 3000; 
-
+import crownImage from "./assets/images/Crown.png";
+import flagUk from "./assets/images/flag_uk.png";
+import flagEn from "./assets/images/flag_en.png";
+import { useHistory, SavedGame } from "./hooks/useHistory";
+import { playSecretMusic } from "./utils/audio";
+const STATE_STORAGE_KEY = "chepuhaActiveGameState";
+import { useGameState } from "./hooks/useGameState";
+import {
+  createGameSession,
+  createPlayer,
+  updateGameSession,
+  createRound,
+  createStorySheet,
+  submitAnswer,
+  getAnswersByRound,
+  QuestionType,
+  getGameSessions,
+  getStorySheetsBySession,
+  getRoundsBySession,
+} from "./api";
+import { TEMPLATES } from "./config/templates";
+import { useLanguage } from "./contexts/LanguageContext";
 const HomeIcon = ({ onClick, className }: { onClick: () => void, className?: string }) => (
   <div className={className} onClick={onClick}>
-  <img
-    src={homeImage}
-    alt="Home"
-  />
+    <img
+      src={homeImage}
+      alt="Home"
+    />
   </div>
 );
-
+export interface AppState {
+  phase: Phases;
+  didGameStart: boolean;
+  currentRound: number;
+  userAnswers: string[];
+  isCreatingLobby: boolean;
+  isLobby: boolean;
+  nickname: string;
+  roomCode: string;
+  selectedTemplate: string;
+  error: string;
+  allStories: { playerName: string; story: string; answers?: string[]; templateId?: string }[];
+  storyIndex: number;
+  selectedHistoryGame: SavedGame | null;
+  joinedCount: number;
+  totalCount: number;
+  sessionId: string | null;
+  playerId: string | null;
+  isHost: boolean;
+  currentRoundDocId: string | null;
+  myStorySheetId: string | null;
+  playerCount: number;
+  roundStartedAt: string | null;
+  allStorySheets: { playerId: string, sheetId: string }[];
+}
 function App() {
-  const [phase, setPhase] = useState<Phases>(Phases.Main);
-  const [didGameStart, setDidGameStart] = useState(false);
-  const [currentRound, setCurrentRound] = useState(1);
-  const [userAnswers, setUserAnswers] = useState<string[]>([]);
-  
-  const [isCreatingLobby, setIsCreatingLobby] = useState(false);
-  const [isLobby, setIsLobby] = useState(false);
-
-  const [nickname, setNickname] = useState("");
-  const [roomCode, setRoomCode] = useState("");
-  const [error, setError] = useState("");
-  const [savedStories, setSavedStories] = useState<string[]>([]);
-  const [currentResult, setCurrentResult] = useState("");
-
-  const [joinedCount, setJoinedCount] = useState(1);
-  const [totalCount, setTotalCount] = useState(4);
-
+  const [appState, setAppState] = useState<AppState>({
+    phase: Phases.Main,
+    didGameStart: false,
+    currentRound: 1,
+    userAnswers: [],
+    isCreatingLobby: false,
+    isLobby: false,
+    nickname: "",
+    roomCode: "",
+    selectedTemplate: "classic",
+    error: "",
+    allStories: [],
+    storyIndex: 0,
+    selectedHistoryGame: null,
+    joinedCount: 1,
+    totalCount: 4,
+    sessionId: null,
+    playerId: null,
+    isHost: false,
+    currentRoundDocId: null,
+    myStorySheetId: null,
+    playerCount: 0,
+    roundStartedAt: null,
+    allStorySheets: []
+  });
+  const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundDocId, myStorySheetId, playerCount, roundStartedAt, allStorySheets } = appState;
+  const { session, players, error: pollError, refreshState } = useGameState(sessionId);
+  const activeTemplate = TEMPLATES[session?.template || selectedTemplate] || TEMPLATES.classic;
+  const { t, language, setLanguage } = useLanguage();
+  const transitionLockRef = useRef(false);
+  const { savedGames, saveGameToHistory } = useHistory();
+  useEffect(() => {
+    if (sessionId && playerId && nickname) {
+      localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify({
+        sessionId,
+        playerId,
+        nickname,
+        roomCode,
+        isHost,
+        selectedTemplate,
+        timestamp: Date.now()
+      }));
+    } else {
+      localStorage.removeItem(STATE_STORAGE_KEY);
+    }
+  }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate]);
+  useEffect(() => {
+    const saved = localStorage.getItem(STATE_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
+          setAppState(prev => ({ ...prev, sessionId: parsed.sessionId }));
+          setAppState(prev => ({ ...prev, playerId: parsed.playerId }));
+          setAppState(prev => ({ ...prev, nickname: parsed.nickname }));
+          setAppState(prev => ({ ...prev, roomCode: parsed.roomCode }));
+          setAppState(prev => ({ ...prev, isHost: parsed.isHost }));
+          setAppState(prev => ({ ...prev, selectedTemplate: parsed.selectedTemplate || "classic" }));
+          setAppState(prev => ({ ...prev, isLobby: true }));
+        } else {
+          localStorage.removeItem(STATE_STORAGE_KEY);
+        }
+      } catch (err) { }
+    }
+  }, []);
+  const fetchFinalStoryResult = useCallback(async () => {
+    if (!sessionId) return;
+    try {
+      const sheets = await getStorySheetsBySession(sessionId);
+      const built = sheets
+        .filter(s => s.answers && s.answers.length > 0)
+        .map(s => {
+          const sorted = [...s.answers!].sort((a, b) => a.position_in_sheet - b.position_in_sheet);
+          return {
+            playerName: s.player?.nickname || 'Гравець',
+            story: activeTemplate.buildStory(sorted.map(a => a.answer_text), language, String(session?.id || sessionId || '0'), String(s.documentId || Math.random())),
+            answers: sorted.map(a => a.answer_text),
+            templateId: activeTemplate.id
+          };
+        });
+      if (built.length > 0) {
+        setAppState(prev => ({ ...prev, allStories: built }));
+        const hostPlayer = players.find(p => p.player_order === 1) || players[0];
+        const hostName = hostPlayer ? hostPlayer.nickname : 'Невідомо';
+        const date = new Date().toLocaleString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const gameRoomCode = session?.session_name || roomCode || 'Невідомо';
+        saveGameToHistory({
+          sessionId: sessionId,
+          date,
+          roomCode: gameRoomCode,
+          hostName,
+          stories: built
+        });
+      }
+    } catch (err) { }
+  }, [sessionId, players, session, roomCode, language, activeTemplate]);
+  useEffect(() => {
+    if (!session || !sessionId) return;
+    if (session.session_status === 'active' && isLobby && !didGameStart) {
+      setAppState(prev => ({ ...prev, didGameStart: true }));
+      setAppState(prev => ({ ...prev, isLobby: false }));
+      setAppState(prev => ({ ...prev, phase: Phases.Main }));
+    }
+    if (session.session_status === 'completed' && phase !== Phases.End && phase !== Phases.Main && phase !== Phases.History) {
+      fetchFinalStoryResult();
+      setAppState(prev => ({ ...prev, phase: Phases.End }));
+    }
+  }, [session?.session_status, isLobby, didGameStart, isHost, phase, fetchFinalStoryResult, sessionId]);
+  useEffect(() => {
+    if (!session || session.session_status !== 'active' || isHost || !sessionId || !playerId) return;
+    if (myStorySheetId && currentRoundDocId) return;
+    (async () => {
+      try {
+        const [rounds, sheets] = await Promise.all([
+          getRoundsBySession(sessionId),
+          getStorySheetsBySession(sessionId),
+        ]);
+        const activeRound = [...rounds].sort((a: any, b: any) => b.round_number - a.round_number)[0];
+        if (activeRound && !currentRoundDocId) {
+          setAppState(prev => ({ ...prev, currentRoundDocId: activeRound.documentId }));
+          setAppState(prev => ({ ...prev, currentRound: activeRound.round_number }));
+          if (activeRound.started_at) setAppState(prev => ({ ...prev, roundStartedAt: activeRound.started_at }));
+        }
+        if (sheets.length > 0) {
+          setAppState(prev => ({ ...prev, allStorySheets: sheets.map((s: any) => ({ playerId: s.player?.documentId, sheetId: s.documentId })) }));
+        }
+        const mySheet = sheets.find((s: any) => s.player?.documentId === playerId);
+        if (mySheet && !myStorySheetId) setAppState(prev => ({ ...prev, myStorySheetId: mySheet.documentId }));
+        if (players.length > 0) setAppState(prev => ({ ...prev, playerCount: players.length }));
+      } catch (err) {
+      }
+    })();
+  }, [session?.session_status, isHost, sessionId, playerId, myStorySheetId, currentRoundDocId]);
+  useEffect(() => {
+    if (phase !== Phases.Waiting || !session || !currentRoundDocId || !sessionId) return;
+    let localPhase: Phases = phase;
+    const interval = setInterval(async () => {
+      if (localPhase !== Phases.Waiting || transitionLockRef.current) return;
+      try {
+        const ans = await getAnswersByRound(currentRoundDocId);
+        setAppState(prev => ({ ...prev, joinedCount: ans.length }));
+        const total = playerCount > 0 ? playerCount : players.length;
+        setAppState(prev => ({ ...prev, totalCount: total }));
+        if (ans.length >= total && total > 0) {
+          transitionLockRef.current = true;
+          if (currentRound < activeTemplate.questions.length) {
+            localPhase = Phases.Main;
+            if (isHost) {
+              const ts = new Date().toISOString();
+              const nextRound = await createRound({
+                round_id: `round_${crypto.randomUUID()}`,
+                session_id: sessionId,
+                round_number: currentRound + 1,
+                question_type: activeTemplate.questionTypes[currentRound],
+                rounds_status: 'active',
+                started_at: ts,
+              });
+              setAppState(prev => ({ ...prev, currentRoundDocId: nextRound.documentId }));
+              setAppState(prev => ({ ...prev, roundStartedAt: ts }));
+              setAppState(prev => ({ ...prev, currentRound: prev.currentRound + 1 }));
+              transitionLockRef.current = false;
+              setAppState(prev => ({ ...prev, phase: Phases.Main }));
+            } else {
+              const rList = await getRoundsBySession(session.documentId!);
+              const nextRound = rList.find((r: any) => r.round_number === currentRound + 1);
+              if (nextRound) {
+                setAppState(prev => ({ ...prev, currentRoundDocId: nextRound.documentId }));
+                if (nextRound.started_at) setAppState(prev => ({ ...prev, roundStartedAt: nextRound.started_at }));
+                setAppState(prev => ({ ...prev, currentRound: prev.currentRound + 1 }));
+                transitionLockRef.current = false;
+                setAppState(prev => ({ ...prev, phase: Phases.Main }));
+              } else {
+                localPhase = Phases.Waiting;
+                transitionLockRef.current = false;
+              }
+            }
+          } else {
+            localPhase = Phases.End;
+            if (isHost) {
+              await updateGameSession(sessionId, { session_status: 'completed' });
+            }
+            fetchFinalStoryResult();
+            setTimeout(() => {
+              transitionLockRef.current = false;
+              setAppState(prev => ({ ...prev, phase: Phases.End }));
+            }, 1000);
+          }
+        }
+      } catch (err) {
+      }
+    }, 400);
+    return () => clearInterval(interval);
+  }, [phase, session?.documentId, currentRoundDocId, playerCount, players.length, currentRound, isHost, sessionId, fetchFinalStoryResult]);
   const generateRoomCode = () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let code = "";
@@ -67,230 +270,407 @@ function App() {
     }
     return code;
   };
-
   const goHome = () => {
-    setPhase(Phases.Main);
-    setDidGameStart(false);
-    setIsCreatingLobby(false);
-    setIsLobby(false);
-    setNickname("");
-    setRoomCode("");
-    setError("");
-    setCurrentRound(1);
-    setUserAnswers([]);
+    setAppState(prev => ({ ...prev, phase: Phases.Main }));
+    setAppState(prev => ({ ...prev, didGameStart: false }));
+    setAppState(prev => ({ ...prev, isCreatingLobby: false }));
+    setAppState(prev => ({ ...prev, isLobby: false }));
+    setAppState(prev => ({ ...prev, nickname: "" }));
+    setAppState(prev => ({ ...prev, roomCode: "" }));
+    setAppState(prev => ({ ...prev, error: "" }));
+    setAppState(prev => ({ ...prev, currentRound: 1 }));
+    setAppState(prev => ({ ...prev, userAnswers: [] }));
+    setAppState(prev => ({ ...prev, sessionId: null }));
+    setAppState(prev => ({ ...prev, playerId: null }));
+    setAppState(prev => ({ ...prev, isHost: false }));
+    setAppState(prev => ({ ...prev, currentRoundDocId: null }));
+    setAppState(prev => ({ ...prev, myStorySheetId: null }));
+    setAppState(prev => ({ ...prev, selectedHistoryGame: null }));
+    localStorage.removeItem(STATE_STORAGE_KEY);
   };
-
   const doShowCreateScreen = () => {
-    setRoomCode(generateRoomCode());
-    setIsCreatingLobby(true);
-    setIsLobby(false);
+    setAppState(prev => ({ ...prev, roomCode: generateRoomCode() }));
+    setAppState(prev => ({ ...prev, isCreatingLobby: true }));
+    setAppState(prev => ({ ...prev, isLobby: false }));
   };
-
   const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (value.length <= 10) {
-      setNickname(value);
-      setError("");
+      setAppState(prev => ({ ...prev, nickname: value }));
+      setAppState(prev => ({ ...prev, error: "" }));
     }
   };
-
-  const goToLobby = () => {
+  const goToLobby = async () => {
     if (!nickname.trim()) {
-      setError("Введіть нікнейм");
+      setAppState(prev => ({ ...prev, error: String(t('ERR_NICKNAME' as any)) }));
       return;
     }
-    setIsLobby(true);
-  };
-
-  const doGameStart = () => {
-    setDidGameStart(true);
-    setPhase(Phases.Main);
-    setCurrentRound(1);
-    setUserAnswers([]);
-  };
-
-  const doShowJoinScreen = () => {
-    setPhase(Phases.Join); 
-    setDidGameStart(false);
-    setIsCreatingLobby(false);
-  };
-
-  const handleJoinGame = (nick: string, code: string) => {
-    setNickname(nick);
-    setRoomCode(code);
-    setPhase(Phases.Waiting); 
-    setDidGameStart(false); 
-    setTimeout(() => {
-      setDidGameStart(true);
-      setPhase(Phases.Main);
-    }, COMMON_DELAY_MS);
-  };
-
-  const doShowHistory = () => {
-    setPhase(Phases.History);
-  };
-
-  const doAnswerSubmit = (answer: string) => {
-    const isMissing = answer.trim() === "" || answer.trim() === "Час вийшов";
-    const cleanAnswer = isMissing ? DEFAULT_ANSWERS[currentRound - 1] : answer;
-    const updatedAnswers = [...userAnswers, cleanAnswer];
-    setUserAnswers(updatedAnswers);
-
-    if (currentRound < QUESTIONS.length) {
-      setPhase(Phases.Waiting);
-      setTimeout(() => {
-        setCurrentRound(prev => prev + 1);
-        setPhase(Phases.Main);
-      }, ROUND_DELAY_MS);
-    } else {
-      const finalResult = `${updatedAnswers[0]} разом з ${updatedAnswers[1]} зустрілися ${updatedAnswers[2]} і там вони ${updatedAnswers[3]}.`;
-      setCurrentResult(finalResult);
-      setPhase(Phases.Waiting);
-      setTimeout(() => {
-        setPhase(Phases.End);
-      }, COMMON_DELAY_MS );
+    try {
+      const uniqueSesId = `ses_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      const newSession = await createGameSession({
+        session_id: uniqueSesId,
+        session_name: roomCode,
+        max_players: 4,
+        session_status: 'waiting',
+        template: selectedTemplate,
+      });
+      setAppState(prev => ({ ...prev, sessionId: newSession.documentId }));
+      const uniqueHostId = `host_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      const hostPlayer = await createPlayer({
+        player_id: uniqueHostId,
+        nickname,
+        session_id: newSession.documentId,
+        players_status: 'joined',
+        player_order: 1,
+      });
+      setAppState(prev => ({ ...prev, playerId: hostPlayer.documentId }));
+      setAppState(prev => ({ ...prev, isHost: true }));
+      setAppState(prev => ({ ...prev, isLobby: true }));
+      await refreshState();
+    } catch (err: any) {
+      setAppState(prev => ({ ...prev, error: String(t('ERR_CREATE' as any)) + err.message }));
     }
   };
-
-return (
+  const doShowJoinScreen = () => {
+    setAppState(prev => ({ ...prev, phase: Phases.Join }));
+    setAppState(prev => ({ ...prev, didGameStart: false }));
+    setAppState(prev => ({ ...prev, isCreatingLobby: false }));
+  };
+  const handleJoinGame = async (nick: string, code: string) => {
+    try {
+      const allSessions = await getGameSessions();
+      const targetSession = allSessions.find(s => s.session_name === code && s.session_status === 'waiting');
+      if (!targetSession) {
+        return setAppState(prev => ({ ...prev, error: String(t('ERR_NOT_FOUND' as any)) }));
+      }
+      setAppState(prev => ({ ...prev, nickname: nick }));
+      setAppState(prev => ({ ...prev, roomCode: code }));
+      setAppState(prev => ({ ...prev, sessionId: targetSession.documentId }));
+      setAppState(prev => ({ ...prev, isHost: false }));
+      const uniqueGuestId = `guest_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      const guest = await createPlayer({
+        player_id: uniqueGuestId,
+        nickname: nick,
+        session_id: targetSession.documentId,
+        players_status: 'joined',
+      });
+      setAppState(prev => ({ ...prev, playerId: guest.documentId }));
+      setAppState(prev => ({ ...prev, isLobby: true }));
+      setAppState(prev => ({ ...prev, didGameStart: false }));
+      setAppState(prev => ({ ...prev, isCreatingLobby: false }));
+      setAppState(prev => ({ ...prev, phase: Phases.Main }));
+      await refreshState();
+    } catch (err: any) {
+      setAppState(prev => ({ ...prev, error: String(t('ERR_JOIN' as any)) + err.message }));
+    }
+  };
+  const doGameStart = async () => {
+    if (!sessionId) return;
+    try {
+      await updateGameSession(sessionId, { session_status: 'active' });
+      setAppState(prev => ({ ...prev, playerCount: players.length }));
+      const newSheets: { playerId: string, sheetId: string }[] = [];
+      for (const p of players) {
+        const sheet = await createStorySheet({
+          sheet_id: `sheet_${Math.random().toString(36).substring(2, 9)}`,
+          game_session: sessionId,
+          player: p.documentId,
+          storysheets_status: 'in_progress',
+        });
+        newSheets.push({ playerId: p.documentId, sheetId: sheet.documentId });
+        if (p.documentId === playerId) {
+          setAppState(prev => ({ ...prev, myStorySheetId: sheet.documentId }));
+        }
+      }
+      setAppState(prev => ({ ...prev, allStorySheets: newSheets }));
+      const ts = new Date().toISOString();
+      const firstRound = await createRound({
+        round_id: `round_${crypto.randomUUID()}`,
+        session_id: sessionId,
+        round_number: 1,
+        question_type: activeTemplate.questionTypes[0],
+        rounds_status: 'active',
+        started_at: ts,
+      });
+      setAppState(prev => ({ ...prev, currentRoundDocId: firstRound.documentId }));
+      setAppState(prev => ({ ...prev, roundStartedAt: ts }));
+      setAppState(prev => ({ ...prev, didGameStart: true }));
+      setAppState(prev => ({ ...prev, isLobby: false }));
+      setAppState(prev => ({ ...prev, phase: Phases.Main }));
+      setAppState(prev => ({ ...prev, currentRound: 1 }));
+      setAppState(prev => ({ ...prev, userAnswers: [] }));
+      setAppState(prev => ({ ...prev, totalCount: players.length }));
+    } catch (err: any) {
+      setAppState(prev => ({ ...prev, error: String(t('ERR_START' as any)) + err.message }));
+    }
+  };
+  const doShowHistory = () => {
+    setAppState(prev => ({ ...prev, phase: Phases.History }));
+  };
+  const doAnswerSubmit = async (answer: string) => {
+    const isMissing = answer.trim() === "" || answer.trim() === "Час вийшов";
+    const fallbackPool = activeTemplate.fallbacks[currentRound - 1] ?? [""];
+    const cleanAnswer = isMissing
+      ? fallbackPool[Math.floor(Math.random() * fallbackPool.length)]
+      : answer;
+    const updatedAnswers = [...userAnswers, cleanAnswer];
+    setAppState(prev => ({ ...prev, userAnswers: updatedAnswers }));
+    if (!currentRoundDocId || !playerId || !sessionId) {
+      transitionLockRef.current = false;
+      setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+      setTimeout(() => {
+        if (currentRound < activeTemplate.questions.length) {
+          setAppState(prev => ({ ...prev, currentRound: prev.currentRound + 1 }));
+          transitionLockRef.current = false;
+          setAppState(prev => ({ ...prev, phase: Phases.Main }));
+          setAppState(prev => ({
+            ...prev,
+            allStories: [{
+              playerName: nickname,
+              story: activeTemplate.buildStory(updatedAnswers, language, String(sessionId || 'local'), String(Math.random())),
+              answers: updatedAnswers,
+              templateId: activeTemplate.id
+            }],
+            phase: Phases.End
+          }));
+        }
+      }, 2000);
+      return;
+    }
+    try {
+      let safeSheets = allStorySheets;
+      if (safeSheets.length === 0) {
+        const fetched = await getStorySheetsBySession(sessionId);
+        safeSheets = fetched.map((s: any) => ({ playerId: s.player?.documentId, sheetId: s.documentId }));
+        if (safeSheets.length > 0) setAppState(prev => ({ ...prev, allStorySheets: safeSheets }));
+      }
+      let targetSheet = myStorySheetId || safeSheets.find(s => s.playerId === playerId)?.sheetId;
+      if (safeSheets.length > 0 && players.length > 0) {
+        const sortedPlayers = [...players].sort((a, b) => a.documentId.localeCompare(b.documentId));
+        const myIndex = sortedPlayers.findIndex(p => p.documentId === playerId);
+        let targetIndex = (myIndex - (currentRound - 1)) % sortedPlayers.length;
+        if (targetIndex < 0) targetIndex += sortedPlayers.length;
+        const targetPlayerId = sortedPlayers[targetIndex]?.documentId;
+        targetSheet = safeSheets.find(s => s.playerId === targetPlayerId)?.sheetId || targetSheet;
+      }
+      await submitAnswer({
+        answer_id: `ans_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+        answer_text: cleanAnswer,
+        position_in_sheet: currentRound,
+        player: playerId,
+        round: currentRoundDocId,
+        story_sheet: targetSheet,
+      });
+      const curAnswers = await getAnswersByRound(currentRoundDocId);
+      setAppState(prev => ({ ...prev, joinedCount: curAnswers.length }));
+      setAppState(prev => ({ ...prev, totalCount: playerCount > 0 ? playerCount : players.length }));
+      transitionLockRef.current = false;
+      setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+    } catch (err: any) { }
+  };
+  return (
     <div className="app-view">
-      {!didGameStart && !isCreatingLobby && phase === Phases.Main && (
+      {roomCode && !didGameStart && phase !== Phases.Join && phase !== Phases.History && phase !== Phases.End && (
+        <GameCode code={roomCode} className="gameCodePos" />
+      )}
+      {!didGameStart && !isCreatingLobby && phase === Phases.Main && !isLobby && (
         <>
-          <img src={logoImage} alt="Чепуха Лого" className="logo" />
+          <div className="logo-wrapper">
+            <img src={language === 'en' ? logoImageEng : logoImage} alt="Чепуха Лого" className="logo" />
+            <div className="logo-boy-hitbox hitbox-1" onClick={playSecretMusic} />
+            <div className="logo-boy-hitbox hitbox-2" onClick={playSecretMusic} />
+            <div className="logo-boy-hitbox hitbox-3" onClick={playSecretMusic} />
+          </div>
           <div className="menu-buttons">
             <Button
-              label="СТВОРИТИ ГРУ"
+              label={t('CREATE_GAME')}
               variant="primary"
               phase={phase}
               onClick={doShowCreateScreen}
             />
             <Button
-              label="ПРИЄДНАТИСЯ ДО ГРИ"
+              label={t('JOIN_GAME')}
               variant="primary"
               phase={phase}
               onClick={doShowJoinScreen}
             />
             <Button
-              label="ІСТОРІЯ ІГОР"
+              label={t('HISTORY')}
               variant="primary"
               phase={phase}
               onClick={doShowHistory}
             />
           </div>
+          <div className="language-selector">
+            <button
+              className={`lang-btn ${language === 'uk' ? 'active' : ''}`}
+              onClick={() => setLanguage('uk')}
+            >
+              <img src={flagUk} alt="UK" style={{ width: '126px', height: '84px', objectFit: 'cover' }} />
+            </button>
+            <button
+              className={`lang-btn ${language === 'en' ? 'active' : ''}`}
+              onClick={() => setLanguage('en')}
+            >
+              <img src={flagEn} alt="EN" style={{ width: '126px', height: '84px', objectFit: 'cover' }} />
+            </button>
+          </div>
         </>
       )}
-
       {!didGameStart && isCreatingLobby && !isLobby && phase !== Phases.Join && (
         <>
-          <GameCode code={roomCode} className="gameCodePos" />
+          <div className="yellow-guy-bg" onClick={playSecretMusic} />
+          <div className="red-guy-bg" onClick={playSecretMusic} />
           <div className="create-game-container">
             <div className="input-wrapper">
               <input
                 type="text"
                 className={`nickname-input ${error ? "error" : ""}`}
-                placeholder="Введіть ваш нік..."
+                placeholder={t('ENTER_NICK_PLACEHOLDER')}
                 value={nickname}
                 onChange={handleNicknameChange}
               />
             </div>
-
-            {error && <span className="error-message">{error}</span>}
-
+            <span className="error-message" style={{ minHeight: '24px', display: 'block' }}>{error || '\u00A0'}</span>
+            <div className="template-selector">
+              <h3 className="template-title">{t('CHOOSE_STORY')}</h3>
+              <div className="template-cards-container">
+                {Object.values(TEMPLATES).map((tpl) => (
+                  <div
+                    key={tpl.id}
+                    className={`template-card ${selectedTemplate === tpl.id ? 'active' : ''}`}
+                    onClick={() => setAppState(prev => ({ ...prev, selectedTemplate: tpl.id }))}
+                  >
+                    <div className="template-card-content">
+                      <h4 className="template-name">{t(tpl.id.toUpperCase() as any) || tpl.name}</h4>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
             <Button
-              label="СТВОРИТИ ГРУ"
+              label={t('CREATE_GAME')}
               variant="primary"
               phase={phase}
               onClick={goToLobby}
             />
           </div>
-
           <HomeIcon className="homeIconPos" onClick={goHome} />
         </>
       )}
-
       {!didGameStart && isLobby && phase !== Phases.Join && (
         <>
-          <GameCode code={roomCode} className="gameCodePos" />
-
           <div className="lobby-container">
             <div className="lobby-info">
-              <h2 className="lobby-text">ВАШ НІК: {nickname}</h2>
-              <h3 className="lobby-subtitle">СПИСОК ГРАВЦІВ:</h3>
+              <h2 className="lobby-text">{t('YOUR_NICK')} {nickname}</h2>
+              <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
               <div className="players-list">
-                <div className="player-item">
-                  <img src={crownImage} alt="Host" className="crown-icon" />
-                  <span className="player-name">{nickname}</span>
-                </div>
+                {players.length > 0 ? (
+                  players.map((p, i) => (
+                    <div key={p.documentId || String(i)} className="player-item">
+                      {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
+                      <span className="player-name">{p.nickname}</span>
+                    </div>
+                  ))
+                ) : (
+                  <div className="player-item">
+                    <img src={crownImage} alt="Host" className="crown-icon" />
+                    <span className="player-name">{nickname}</span>
+                  </div>
+                )}
               </div>
             </div>
+            <div className="error-message" style={{ color: "red", minHeight: '24px' }}>{pollError || '\u00A0'}</div>
             <div className="lobby-actions">
-              <Button label="ПОЧАТИ ГРУ" variant="primary" phase={phase} onClick={doGameStart} />
+              {isHost ? (
+                <Button label={t('START_GAME')} variant="primary" phase={phase} onClick={doGameStart} disabled={players.length < 1} />
+              ) : (
+                <h3 className="waiting-host-text">{t('WAITING_HOST')}</h3>
+              )}
             </div>
           </div>
           <HomeIcon className="homeIconPos" onClick={goHome} />
         </>
       )}
-
       {phase === Phases.Join && (
-        <JoinCard 
-          onJoin={handleJoinGame} 
-          onHome={goHome} 
+        <JoinCard
+          onJoin={handleJoinGame}
+          onHome={goHome}
         />
       )}
-
-      {!didGameStart && phase === Phases.Waiting && (
-        <WaitCard 
+      {didGameStart && phase === Phases.Waiting && (
+        <WaitCard
           nick={nickname}
           joinedCount={joinedCount}
           totalCount={totalCount}
+          message={t('WAITING_ANSWERS')}
         />
       )}
-
-      {didGameStart && (phase === Phases.Main || phase === Phases.Waiting) && (
+      {didGameStart && phase === Phases.Main && (
         <>
-          {phase === Phases.Main && ( 
-            <Timer
-              initialSeconds={120} 
-              onTimeUp={() => doAnswerSubmit("Час вийшов")} 
-              className="timerPos" 
-            />
-          )}
-          <Round currentRound={currentRound} totalRounds={QUESTIONS.length} className="roundPos" />
+          <Timer
+            key={`${currentRound}-${roundStartedAt}`}
+            initialSeconds={roundStartedAt
+              ? Math.max(0, 120 - Math.floor((Date.now() - Date.parse(roundStartedAt)) / 1000))
+              : 120
+            }
+            onTimeUp={() => doAnswerSubmit("Час вийшов")}
+            className="timerPos"
+          />
+          <Round currentRound={currentRound} totalRounds={activeTemplate.questions.length} className="roundPos" />
           <RoundCard
             playerName={nickname}
             phase={phase}
-            question={QUESTIONS[currentRound - 1]}
-            playerReady={phase === Phases.Waiting ? 4 : 1}
-            playerTotal={4}
+            question={
+              activeTemplate.id === 'chaos'
+                ? TEMPLATES[
+                  ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "chaos"][
+                  Math.abs([...(playerId || nickname), currentRound].reduce((a: number, c: any) => a + String(c).charCodeAt(0), 0)) % 8
+                  ]
+                ]?.questions[currentRound - 1] || activeTemplate.questions[currentRound - 1]
+                : activeTemplate.questions[currentRound - 1]
+            }
+            playerReady={1}
+            playerTotal={totalCount}
             onSubmitAnswer={doAnswerSubmit}
           />
         </>
       )}
-
       {phase === Phases.End && (
-        <GameResult 
-          title="Результат гри"
-          content={currentResult}
+        <GameResult
+          stories={allStories}
+          storyIndex={storyIndex}
+          onPrev={() => setAppState(prev => ({ ...prev, storyIndex: Math.max(0, prev.storyIndex - 1) }))}
+          onNext={() => setAppState(prev => ({ ...prev, storyIndex: Math.min(prev.allStories.length - 1, prev.storyIndex + 1) }))}
+          myNickname={nickname}
           phase={phase}
           onHome={goHome}
-          onSave={() => {
-            setSavedStories([currentResult]); 
-            goHome();
-          }}
-          
+          onSave={() => { }}
         />
       )}
-
-      {phase === Phases.History && (
-        <Story
-          title="Історія ігор"
-          content={savedStories.length > 0 ? savedStories[0] : "У вас поки немає збережених історій."}
-          phase={phase}
+      {phase === Phases.History && !selectedHistoryGame && (
+        <HistoryScreen
+          games={savedGames}
+          onSelectGame={(g) => {
+            setAppState(prev => ({ ...prev, allStories: g.stories }));
+            setAppState(prev => ({ ...prev, storyIndex: 0 }));
+            setAppState(prev => ({ ...prev, selectedHistoryGame: g }));
+          }}
           onHome={goHome}
+        />
+      )}
+      {phase === Phases.History && selectedHistoryGame && (
+        <GameResult
+          stories={allStories}
+          storyIndex={storyIndex}
+          onPrev={() => setAppState(prev => ({ ...prev, storyIndex: Math.max(0, prev.storyIndex - 1) }))}
+          onNext={() => setAppState(prev => ({ ...prev, storyIndex: Math.min(prev.allStories.length - 1, prev.storyIndex + 1) }))}
+          myNickname={nickname || "Гравець"}
+          phase={phase}
+          onHome={() => setAppState(prev => ({ ...prev, selectedHistoryGame: null }))}
         />
       )}
     </div>
   );
 }
-
 export default App;

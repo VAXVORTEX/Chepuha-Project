@@ -1,6 +1,5 @@
-@import "../../styles/colors";
-@import "../../styles/typography.scss";
-
+@use "../../styles/colors" as *;
+@use "../../styles/typography.scss" as *;
 .roundCard {
   width: 95%;
   max-width: 1193px;
@@ -11,21 +10,18 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
-
   &.waiting {
     .body {
       @include background-card-success;
     }
   }
 }
-
 .header {
   background-color: $gray-medium;
   padding: 30px 0;
   text-align: center;
   border-bottom: 1px solid rgba(0,0,0,0.1);
 }
-
 .playerName {
   @include font-60; 
   font-size: 70px;
@@ -34,7 +30,6 @@
   margin: 0;
   letter-spacing: 2px;
 }
-
 .body {
   @include background-card;
   flex: 1; 
@@ -45,14 +40,12 @@
   justify-content: flex-start; 
   transition: background-color 0.3s ease;
 }
-
 .activeContent {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-
 .question {
   @include font-pangolin(60);
   @include text-card;
@@ -61,18 +54,15 @@
   line-height: 1.2;
   max-width: 90%;
 }
-
 .cardInput {
   max-width: 850px; 
   margin-bottom: 60px; 
 }
-
 .buttonContainer {
   display: flex;
   justify-content: center;
   width: 100%;
 }
-
 .waitingContent {
   display: flex;
   flex-direction: column;
@@ -81,14 +71,12 @@
   text-align: center;
   margin-top: 0;
 }
-
 .successText {
   @include text-success;
   @include font-pangolin(80);
   margin: 0;
   line-height: 1.2;
 }
-
 .counter {
   @include text-success;
   @include font-pangolin(60);

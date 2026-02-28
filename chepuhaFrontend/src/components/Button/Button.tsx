@@ -1,7 +1,6 @@
 import React from "react";
 import styles from "./Button.module.scss";
 import { Phases } from "../../types/phaseVariant";
-
 interface ButtonSet {
   label: string;
   variant: "primary" | "secondary";
@@ -9,7 +8,6 @@ interface ButtonSet {
   onClick: () => void;
   disabled?: boolean;
 }
-
 const Button: React.FC<ButtonSet> = ({ label, variant, phase, onClick, disabled }) => {
   const combClasses = `${styles.button} ${styles[variant]} ${styles[phase]}`;
   return (
@@ -18,5 +16,4 @@ const Button: React.FC<ButtonSet> = ({ label, variant, phase, onClick, disabled 
     </button>
   );
 };
-
 export default Button;
