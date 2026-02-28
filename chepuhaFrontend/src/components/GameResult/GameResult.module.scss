@@ -146,25 +146,41 @@
 }
 
 @media (max-width: 768px) {
+  .box {
+    padding: 20px 5px;
+    border-radius: 20px;
+  }
+
+  .container {
+    padding: 0;
+    max-width: 100vw;
+  }
+
   .title {
-    font-size: 36px;
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+
+  .part {
+    padding: 5px 10px;
   }
 
   .part .text {
-    font-size: 26px;
-    line-height: 1.3;
+    font-size: 18px;
+    line-height: 1.2;
+    text-align: center;
   }
 
   .GoBackButton {
-    font-size: 24px;
-    padding: 10px 20px;
+    font-size: 18px;
+    padding: 8px 16px;
   }
 
   .arrowBtn {
-    font-size: 2.5rem;
+    font-size: 2rem;
   }
 
   .pageIndicator {
-    font-size: 20px;
+    font-size: 16px;
   }
 }

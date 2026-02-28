@@ -278,26 +278,48 @@
 
   .yellow-guy-bg,
   .red-guy-bg {
-    width: 300px;
-    height: 300px;
+    width: 200px;
+    height: 200px;
   }
 
   .yellow-guy-bg {
-    right: -80px;
+    right: -40px;
     bottom: -10px;
   }
 
   .red-guy-bg {
-    left: -80px;
-    bottom: -50px;
+    left: -40px;
+    bottom: -30px;
   }
 
   .waiting-host-text {
-    font-size: 32px;
+    font-size: 28px;
   }
 
   .template-title {
-    font-size: 32px;
+    font-size: 26px;
+  }
+
+  .template-cards-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .template-card {
+    padding: 10px 5px;
+  }
+
+  .template-name {
+    font-size: 18px;
+  }
+
+  .nickname-input {
+    height: 60px;
+    font-size: 20px;
+  }
+
+  .create-game-container {
+    gap: 20px;
   }
 }
 
