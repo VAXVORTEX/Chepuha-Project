@@ -12,7 +12,7 @@ import WaitCard from "./components/WaitCard/WaitCard";
 import GameResult from "./components/GameResult/GameResult";
 import logoImage from "./assets/images/Logo.png";
 import homeImage from "./assets/images/house.png";
-import crownImage from "./assets/images/crown.png";
+import crownImage from "./assets/images/Crown.png";
 
 const QUESTIONS = [
   "Хто?",
@@ -29,15 +29,15 @@ const DEFAULT_ANSWERS = [
 ];
 
 
-const ROUND_DELAY_MS = 2000; 
-const COMMON_DELAY_MS  = 3000; 
+const ROUND_DELAY_MS = 2000;
+const COMMON_DELAY_MS = 3000;
 
 const HomeIcon = ({ onClick, className }: { onClick: () => void, className?: string }) => (
   <div className={className} onClick={onClick}>
-  <img
-    src={homeImage}
-    alt="Home"
-  />
+    <img
+      src={homeImage}
+      alt="Home"
+    />
   </div>
 );
 
@@ -46,7 +46,7 @@ function App() {
   const [didGameStart, setDidGameStart] = useState(false);
   const [currentRound, setCurrentRound] = useState(1);
   const [userAnswers, setUserAnswers] = useState<string[]>([]);
-  
+
   const [isCreatingLobby, setIsCreatingLobby] = useState(false);
   const [isLobby, setIsLobby] = useState(false);
 
@@ -110,7 +110,7 @@ function App() {
   };
 
   const doShowJoinScreen = () => {
-    setPhase(Phases.Join); 
+    setPhase(Phases.Join);
     setDidGameStart(false);
     setIsCreatingLobby(false);
   };
@@ -118,8 +118,8 @@ function App() {
   const handleJoinGame = (nick: string, code: string) => {
     setNickname(nick);
     setRoomCode(code);
-    setPhase(Phases.Waiting); 
-    setDidGameStart(false); 
+    setPhase(Phases.Waiting);
+    setDidGameStart(false);
     setTimeout(() => {
       setDidGameStart(true);
       setPhase(Phases.Main);
@@ -148,11 +148,11 @@ function App() {
       setPhase(Phases.Waiting);
       setTimeout(() => {
         setPhase(Phases.End);
-      }, COMMON_DELAY_MS );
+      }, COMMON_DELAY_MS);
     }
   };
 
-return (
+  return (
     <div className="app-view">
       {!didGameStart && !isCreatingLobby && phase === Phases.Main && (
         <>
@@ -232,14 +232,14 @@ return (
       )}
 
       {phase === Phases.Join && (
-        <JoinCard 
-          onJoin={handleJoinGame} 
-          onHome={goHome} 
+        <JoinCard
+          onJoin={handleJoinGame}
+          onHome={goHome}
         />
       )}
 
       {!didGameStart && phase === Phases.Waiting && (
-        <WaitCard 
+        <WaitCard
           nick={nickname}
           joinedCount={joinedCount}
           totalCount={totalCount}
@@ -248,11 +248,11 @@ return (
 
       {didGameStart && (phase === Phases.Main || phase === Phases.Waiting) && (
         <>
-          {phase === Phases.Main && ( 
+          {phase === Phases.Main && (
             <Timer
-              initialSeconds={120} 
-              onTimeUp={() => doAnswerSubmit("Час вийшов")} 
-              className="timerPos" 
+              initialSeconds={120}
+              onTimeUp={() => doAnswerSubmit("Час вийшов")}
+              className="timerPos"
             />
           )}
           <Round currentRound={currentRound} totalRounds={QUESTIONS.length} className="roundPos" />
@@ -268,16 +268,16 @@ return (
       )}
 
       {phase === Phases.End && (
-        <GameResult 
+        <GameResult
           title="Результат гри"
           content={currentResult}
           phase={phase}
           onHome={goHome}
           onSave={() => {
-            setSavedStories([currentResult]); 
+            setSavedStories([currentResult]);
             goHome();
           }}
-          
+
         />
       )}
 
