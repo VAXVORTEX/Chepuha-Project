@@ -13,7 +13,8 @@ async function request<T>(
         },
     };
     if (body !== undefined) {
-        options.body = JSON.stringify(body);
+        const payload = (typeof body === 'object' && body !== null && 'data' in body) ? body : { data: body };
+        options.body = JSON.stringify(payload);
     }
     const response = await fetch(`${BASE_API}${path}`, options);
     if (!response.ok) {
