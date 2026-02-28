@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:3001';
+const BASE_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
 const BASE_API = `${BASE_URL}/api`;
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 async function request<T>(
@@ -13,7 +13,8 @@ async function request<T>(
         },
     };
     if (body !== undefined) {
-        options.body = JSON.stringify(body);
+        const payload = (typeof body === 'object' && body !== null && 'data' in body) ? body : { data: body };
+        options.body = JSON.stringify(payload);
     }
     const response = await fetch(`${BASE_API}${path}`, options);
     if (!response.ok) {
