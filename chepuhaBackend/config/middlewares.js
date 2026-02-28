@@ -6,7 +6,7 @@ module.exports = [
     name: 'strapi::cors',
     config: {
       credentials: true,
-      origin: ['https://chepuha-project-pi.vercel.app/', 'http://localhost:3000'],
+      origin: ['https://chepuha-project-pi.vercel.app', 'http://localhost:3000'],
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
       headers: "*",
       keepHeaderOnError: true,
