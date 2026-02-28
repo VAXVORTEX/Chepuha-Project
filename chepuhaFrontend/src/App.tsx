@@ -13,7 +13,7 @@ import GameResult from "./components/GameResult/GameResult";
 import logoImage from "./assets/images/Logo.png";
 import logoImageEng from "./assets/images/Chepuha_eng.png";
 import homeImage from "./assets/images/house.png";
-import crownImage from "./assets/images/Crown.png";
+import crownImage from "./assets/images/crown.png";
 import flagUk from "./assets/images/flag_uk.png";
 import flagEn from "./assets/images/flag_en.png";
 import { useHistory, SavedGame } from "./hooks/useHistory";

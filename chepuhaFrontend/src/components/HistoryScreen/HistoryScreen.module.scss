@@ -1,5 +1,6 @@
 @use "../../styles/typography" as *;
 @use "../../styles/colors" as *;
+
 .wrapper {
     position: relative;
     display: flex;
@@ -12,6 +13,7 @@
     overflow-x: hidden;
     padding: 150px 20px;
 }
+
 .container {
     position: relative;
     width: 100%;
@@ -19,6 +21,7 @@
     display: flex;
     flex-direction: column;
 }
+
 .box {
     position: relative;
     z-index: 2;
@@ -34,6 +37,7 @@
     box-sizing: border-box;
     border: 10px solid $gray-medium;
 }
+
 .shadow {
     position: absolute;
     z-index: 1;
@@ -44,11 +48,13 @@
     left: 0;
     top: 30px;
 }
+
 .title {
     @include font-pangolin(55);
     margin-bottom: 25px;
     text-align: center;
 }
+
 .list {
     flex-grow: 1;
     width: 100%;
@@ -62,16 +68,19 @@
     margin-top: -5px;
     scrollbar-width: none;
     -ms-overflow-style: none;
+
     &::-webkit-scrollbar {
         display: none;
     }
 }
+
 .emptyText {
     @include font-pangolin(35);
     text-align: center;
     margin-top: 50px;
     opacity: 0.8;
 }
+
 .gameItem {
     background-color: $white;
     color: $black;
@@ -84,29 +93,35 @@
     cursor: pointer;
     border: 4px solid $black;
     transition: transform 0.2s, background-color 0.2s;
+
     &:hover {
         transform: translateY(-3px);
         background-color: #f0f0f0;
         box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+
         .arrow {
             transform: translateX(5px);
         }
     }
 }
+
 .gameInfo {
     display: flex;
     flex-direction: column;
     gap: 8px;
+
     .date {
         @include font-32;
         font-size: 24px;
         color: $gray-medium;
     }
+
     .room,
     .host {
         @include font-pangolin(24);
     }
 }
+
 .arrow {
     @include font-32;
     color: $red;
@@ -114,12 +129,14 @@
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
     transition: transform 0.2s ease;
 }
+
 .actions {
     display: flex;
     justify-content: center;
     width: 100%;
     margin-top: 30px;
 }
+
 .GoBackButton {
     padding: 10px 40px;
     background-color: $gray-medium;
@@ -129,7 +146,36 @@
     @include font-32;
     transition: transform 0.2s, background-color 0.2s;
     border: none;
+
     &:hover {
         transform: scale(1.05);
+    }
+}
+
+@media (max-width: 768px) {
+    .title {
+        font-size: 36px;
+    }
+
+    .emptyText {
+        font-size: 24px;
+    }
+
+    .gameInfo .date {
+        font-size: 20px;
+    }
+
+    .gameInfo .room,
+    .gameInfo .host {
+        font-size: 18px;
+    }
+
+    .arrow {
+        font-size: 24px;
+    }
+
+    .GoBackButton {
+        font-size: 24px;
+        padding: 10px 20px;
     }
 }
