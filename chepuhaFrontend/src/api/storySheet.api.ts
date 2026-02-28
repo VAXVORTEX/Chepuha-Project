@@ -17,7 +17,7 @@ export async function getStorySheet(documentId: string): Promise<StorySheet> {
     return res.data as unknown as StorySheet;
 }
 export async function getStorySheetsBySession(sessionDocumentId: string): Promise<StorySheet[]> {
-    const res = await apiClient.get<StrapiListResponse<StorySheet>>(`/story-sheets?sessionId=${sessionDocumentId}`);
+    const res = await apiClient.get<StrapiListResponse<StorySheet>>(`/story-sheets?filters[game_session][$eq]=${sessionDocumentId}&populate=*`);
     return res.data as unknown as StorySheet[];
 }
 export async function updateStorySheet(documentId: string, payload: Partial<CreateStorySheetPayload>): Promise<StorySheet> {

@@ -17,10 +17,10 @@ export async function getAnswer(documentId: string): Promise<Answer> {
     return res.data as unknown as Answer;
 }
 export async function getAnswersByRound(roundDocumentId: string): Promise<Answer[]> {
-    const res = await apiClient.get<StrapiListResponse<Answer>>(`/answers?roundId=${roundDocumentId}`);
+    const res = await apiClient.get<StrapiListResponse<Answer>>(`/answers?filters[round][$eq]=${roundDocumentId}&populate=*`);
     return res.data as unknown as Answer[];
 }
 export async function getAnswersByStorySheet(storySheetDocumentId: string): Promise<Answer[]> {
-    const res = await apiClient.get<StrapiListResponse<Answer>>(`/answers?sheetId=${storySheetDocumentId}`);
+    const res = await apiClient.get<StrapiListResponse<Answer>>(`/answers?filters[story_sheet][$eq]=${storySheetDocumentId}&populate=*`);
     return res.data as unknown as Answer[];
 }

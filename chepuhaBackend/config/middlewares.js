@@ -7,7 +7,7 @@ module.exports = [
     config: {
       origin: ['http://localhost:5174', 'http://localhost:5173', 'http://localhost:3001', 'https://chepuha-project-pi.vercel.app'],
       methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'],
-      headers: ['Content-Type', 'Authorization', 'Origin', 'Accept'],
+      headers: "*",
       keepHeaderOnError: true,
     },
   },
@@ -16,5 +16,5 @@ module.exports = [
   'strapi::body',
   'strapi::session',
   'strapi::favicon',
-  'strapi::public',
+  'strapi::public'
 ];
