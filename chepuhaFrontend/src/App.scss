@@ -303,7 +303,11 @@
   .template-cards-container {
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
-    padding: 0 10px;
+    padding: 10px;
+    max-height: 42vh;
+    overflow-y: auto;
+    width: 100vw;
+    box-sizing: border-box;
   }
 
   .template-card {
