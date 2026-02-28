@@ -92,42 +92,6 @@
   }
 }
 
-@media (max-width: 768px) {
-  .container {
-    padding: 0 10px;
-    max-width: 95vw;
-  }
-
-  .YellowGuy,
-  .RedGuy {
-    width: 120px;
-    height: 120px;
-  }
-
-  .YellowGuy {
-    right: -25px;
-    bottom: -40px;
-  }
-
-  .RedGuy {
-    left: -25px;
-    bottom: -60px;
-  }
-
-  .input {
-    height: 60px;
-    font-size: 20px;
-  }
-
-  .joinButton {
-    font-size: 40px;
-  }
-
-  .errorText {
-    font-size: 16px;
-  }
-}
-
 .errorText {
   color: $red;
   -webkit-text-stroke: 1px $black;
@@ -197,5 +161,41 @@
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 10px;
+    max-width: 95vw;
+  }
+
+  .YellowGuy,
+  .RedGuy {
+    width: 120px;
+    height: 120px;
+  }
+
+  .YellowGuy {
+    right: -25px;
+    bottom: -40px;
+  }
+
+  .RedGuy {
+    left: -25px;
+    bottom: -60px;
+  }
+
+  .input {
+    height: 60px;
+    font-size: 20px;
+  }
+
+  .joinButton {
+    font-size: 40px;
+  }
+
+  .errorText {
+    font-size: 16px;
   }
 }
