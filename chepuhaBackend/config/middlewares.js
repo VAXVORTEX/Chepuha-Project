@@ -17,4 +17,11 @@ module.exports = [
   'strapi::session',
   'strapi::favicon',
   'strapi::public',
+  {
+    name: 'strapi::cors',
+    config: {
+      origin: ['https://chepuha-project-pi.vercel.app/', 'http://localhost:3000'],
+    },
+  },
+
 ];
