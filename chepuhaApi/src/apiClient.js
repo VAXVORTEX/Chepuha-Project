@@ -1,7 +1,7 @@
 
 const { default: fetch } = await import('node-fetch');
-const SUPABASE_URL = process.env.SUPABASE_URL || 'https://irohvtjrzhilbwtnsyxc.supabase.co/rest/v1';
-const SUPABASE_KEY = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imlyb2h2dGpyemhpbGJ3dG5zeXhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzODA0MDcsImV4cCI6MjA4Nzk1NjQwN30.33IjOnDDsXu2vyodt8d82oZJx_D_OhUi8rDxfqMOnc4'; // Встав сюди свій anon key
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://rrxtcekxpzlomiecmoqy.supabase.co/rest/v1';
+const SUPABASE_KEY = process.env.SUPABASE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJyeHRjZWt4cHpsb21pZWNtb3F5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIzOTI3MTAsImV4cCI6MjA4Nzk2ODcxMH0.1J0vt4kem6G7ygf73ZWO247dD8rwsc9P5yVvXmWp32k';
 
 async function apiRequest(method, path, body) {
     const options = {
