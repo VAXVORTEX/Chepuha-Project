@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '../api/supabaseClient';
 import {
     getGameSession,
     getPlayersBySession,
@@ -10,7 +11,7 @@ interface GameState {
     players: Player[];
     error: string | null;
 }
-export function useGameState(sessionId: number | null) {
+export function useGameState(sessionId: string | null) {
     const [gameState, setGameState] = useState<GameState>({
         session: null,
         players: [],
@@ -35,8 +36,31 @@ export function useGameState(sessionId: number | null) {
     useEffect(() => {
         fetchState();
         if (!sessionId) return;
-        const intervalId = setInterval(fetchState, 1000);
-        return () => clearInterval(intervalId);
+
+        const sessionChannel = supabase
+            .channel(`session-${sessionId}`)
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'game_sessions', filter: `id=eq.${sessionId}` },
+                (payload) => { if (payload) fetchState(); }
+            )
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'players', filter: `session_id=eq.${sessionId}` },
+                (payload) => { if (payload) fetchState(); }
+            )
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'rounds', filter: `session_id=eq.${sessionId}` },
+                (payload) => { if (payload) fetchState(); }
+            )
+            .subscribe((status) => {
+                console.log(`Realtime subscription status for session ${sessionId}:`, status);
+            });
+
+        return () => {
+            supabase.removeChannel(sessionChannel);
+        };
     }, [fetchState, sessionId]);
     return {
         ...gameState,

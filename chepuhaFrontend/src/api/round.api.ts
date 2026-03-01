@@ -2,7 +2,7 @@ import { supabase } from './supabaseClient';
 import type { Round, QuestionType, RoundStatus } from './types';
 
 export interface CreateRoundPayload {
-    session_id?: number;
+    session_id?: string;
     round_number: number;
     question_type: QuestionType;
     rounds_status?: RoundStatus;
@@ -19,7 +19,7 @@ export async function createRound(payload: CreateRoundPayload): Promise<Round> {
     return data;
 }
 
-export async function getRound(id: number): Promise<Round> {
+export async function getRound(id: string): Promise<Round> {
     const { data, error } = await supabase
         .from('rounds')
         .select('*, answers(*)')
@@ -29,7 +29,7 @@ export async function getRound(id: number): Promise<Round> {
     return data;
 }
 
-export async function getRoundsBySession(sessionId: number): Promise<Round[]> {
+export async function getRoundsBySession(sessionId: string): Promise<Round[]> {
     const { data, error } = await supabase
         .from('rounds')
         .select('*, answers(*)')
@@ -40,7 +40,7 @@ export async function getRoundsBySession(sessionId: number): Promise<Round[]> {
 }
 
 export async function updateRound(
-    id: number,
+    id: string,
     payload: Partial<CreateRoundPayload & { completed_at: string }>,
 ): Promise<Round> {
     const { data, error } = await supabase

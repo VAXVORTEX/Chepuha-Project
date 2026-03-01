@@ -2,8 +2,8 @@ import { supabase } from './supabaseClient';
 import type { StorySheet, StorySheetStatus } from './types';
 
 export interface CreateStorySheetPayload {
-    game_session_id?: number;
-    player_id?: number;
+    game_session_id?: string;
+    player_id?: string;
     sheet_number?: number;
     storysheets_status?: StorySheetStatus;
     final_story?: string;
@@ -19,7 +19,7 @@ export async function createStorySheet(payload: CreateStorySheetPayload): Promis
     return data;
 }
 
-export async function getStorySheet(id: number): Promise<StorySheet> {
+export async function getStorySheet(id: string): Promise<StorySheet> {
     const { data, error } = await supabase
         .from('story_sheets')
         .select('*, answers(*)')
@@ -29,7 +29,7 @@ export async function getStorySheet(id: number): Promise<StorySheet> {
     return data;
 }
 
-export async function getStorySheetsBySession(sessionId: number): Promise<StorySheet[]> {
+export async function getStorySheetsBySession(sessionId: string): Promise<StorySheet[]> {
     const { data, error } = await supabase
         .from('story_sheets')
         .select('*, answers(*)')
@@ -40,7 +40,7 @@ export async function getStorySheetsBySession(sessionId: number): Promise<StoryS
 }
 
 export async function updateStorySheet(
-    id: number,
+    id: string,
     payload: Partial<CreateStorySheetPayload & { storysheets_completed_at?: string }>,
 ): Promise<StorySheet> {
     const { data, error } = await supabase

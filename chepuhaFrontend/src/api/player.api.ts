@@ -3,7 +3,7 @@ import type { Player, PlayerStatus } from './types';
 
 export interface CreatePlayerPayload {
     nickname: string;
-    session_id?: number;
+    session_id?: string;
     players_status?: PlayerStatus;
     player_order?: number;
 }
@@ -19,7 +19,7 @@ export async function createPlayer(payload: CreatePlayerPayload): Promise<Player
     return data;
 }
 
-export async function getPlayer(id: number): Promise<Player> {
+export async function getPlayer(id: string): Promise<Player> {
     const { data, error } = await supabase
         .from('players')
         .select('*')
@@ -30,7 +30,7 @@ export async function getPlayer(id: number): Promise<Player> {
     return data;
 }
 
-export async function getPlayersBySession(sessionId: number): Promise<Player[]> {
+export async function getPlayersBySession(sessionId: string): Promise<Player[]> {
     const { data, error } = await supabase
         .from('players')
         .select('*')
@@ -41,7 +41,7 @@ export async function getPlayersBySession(sessionId: number): Promise<Player[]> 
     return data;
 }
 
-export async function updatePlayer(id: number, payload: Partial<CreatePlayerPayload>): Promise<Player> {
+export async function updatePlayer(id: string, payload: Partial<CreatePlayerPayload>): Promise<Player> {
     const { data, error } = await supabase
         .from('players')
         .update(payload)
@@ -53,7 +53,7 @@ export async function updatePlayer(id: number, payload: Partial<CreatePlayerPayl
     return data;
 }
 
-export async function deletePlayer(id: number): Promise<void> {
+export async function deletePlayer(id: string): Promise<void> {
     const { error } = await supabase
         .from('players')
         .delete()

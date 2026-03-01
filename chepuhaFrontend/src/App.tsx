@@ -17,7 +17,7 @@ import crownImage from "./assets/images/crown.png";
 import flagUk from "./assets/images/flag_uk.png";
 import flagEn from "./assets/images/flag_en.png";
 import { useHistory, SavedGame } from "./hooks/useHistory";
-import { playSecretMusic } from "./utils/audio";
+import { playSecretMusic, secretAudio } from "./utils/audio";
 const STATE_STORAGE_KEY = "chepuhaActiveGameState";
 import { useGameState } from "./hooks/useGameState";
 import {
@@ -32,10 +32,12 @@ import {
   getGameSessions,
   getStorySheetsBySession,
   getRoundsBySession,
+  getPlayersBySession,
 } from "./api";
 import { TEMPLATES } from "./config/templates";
 import { useLanguage } from "./contexts/LanguageContext";
 import HomeIcon from "./components/HomeIcon/HomeIcon";
+import { Player } from "./api/types";
 export interface AppState {
   phase: Phases;
   didGameStart: boolean;
@@ -52,14 +54,14 @@ export interface AppState {
   selectedHistoryGame: SavedGame | null;
   joinedCount: number;
   totalCount: number;
-  sessionId: number | null;
-  playerId: number | null;
+  sessionId: string | null;
+  playerId: string | null;
   isHost: boolean;
-  currentRoundId: number | null;
-  myStorySheetId: number | null;
+  currentRoundId: string | null;
+  myStorySheetId: string | null;
   playerCount: number;
   roundStartedAt: string | null;
-  allStorySheets: { playerId: number, sheetId: number }[];
+  allStorySheets: { playerId: string, sheetId: string }[];
 }
 function App() {
   const [appState, setAppState] = useState<AppState>({
@@ -114,18 +116,40 @@ function App() {
       try {
         const parsed = JSON.parse(saved);
         if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
-          setAppState(prev => ({ ...prev, sessionId: parsed.sessionId }));
-          setAppState(prev => ({ ...prev, playerId: parsed.playerId }));
-          setAppState(prev => ({ ...prev, nickname: parsed.nickname }));
-          setAppState(prev => ({ ...prev, roomCode: parsed.roomCode }));
-          setAppState(prev => ({ ...prev, isHost: parsed.isHost }));
-          setAppState(prev => ({ ...prev, selectedTemplate: parsed.selectedTemplate || "classic" }));
-          setAppState(prev => ({ ...prev, isLobby: true }));
+          setAppState(prev => ({
+            ...prev,
+            sessionId: parsed.sessionId ? String(parsed.sessionId) : null,
+            playerId: parsed.playerId ? String(parsed.playerId) : null,
+            nickname: parsed.nickname,
+            roomCode: parsed.roomCode,
+            isHost: parsed.isHost,
+            selectedTemplate: parsed.selectedTemplate || "classic",
+            isLobby: true
+          }));
         } else {
           localStorage.removeItem(STATE_STORAGE_KEY);
         }
       } catch (err) { }
     }
+  }, []);
+
+  // Asset Preloading
+  useEffect(() => {
+    const imagesToPreload = [
+      logoImage, logoImageEng, homeImage, crownImage, flagUk, flagEn,
+      "/assets/images/yellowGuy.png",
+      "/assets/images/RedGuyRemoved.png",
+      "/assets/images/gameBackground.jpg"
+    ];
+    imagesToPreload.forEach(src => {
+      const img = new Image();
+      img.src = src;
+    });
+    // Warm up audio
+    playSecretMusic();
+    setTimeout(() => {
+      if (secretAudio && !secretAudio.paused) secretAudio.pause();
+    }, 50);
   }, []);
   const fetchFinalStoryResult = useCallback(async () => {
     if (!sessionId) return;
@@ -135,8 +159,9 @@ function App() {
         .filter(s => s.answers && s.answers.length > 0)
         .map(s => {
           const sorted = [...s.answers!].sort((a, b) => a.position_in_sheet - b.position_in_sheet);
+          const p = s.player_id as Player | undefined;
           return {
-            playerName: s.player?.nickname || 'Гравець',
+            playerName: p?.nickname || 'Гравець',
             story: activeTemplate.buildStory(sorted.map(a => a.answer_text), language, String(session?.id || sessionId || '0'), String(s.id || Math.random())),
             answers: sorted.map(a => a.answer_text),
             templateId: activeTemplate.id
@@ -171,70 +196,118 @@ function App() {
     }
   }, [session?.session_status, isLobby, didGameStart, isHost, phase, fetchFinalStoryResult, sessionId]);
   useEffect(() => {
-    if (!session || session.session_status !== 'active' || isHost || !sessionId || !playerId) return;
-    if (myStorySheetId && currentRoundId) return;
+    if (!session || session.session_status !== 'active' || !sessionId || !playerId) return;
+
     (async () => {
       try {
         const [rounds, sheets] = await Promise.all([
           getRoundsBySession(sessionId),
           getStorySheetsBySession(sessionId),
         ]);
-        const activeRound = [...rounds].sort((a: any, b: any) => b.round_number - a.round_number)[0];
-        if (activeRound && !currentRoundId) {
-          setAppState(prev => ({ ...prev, currentRoundId: activeRound.id }));
-          setAppState(prev => ({ ...prev, currentRound: activeRound.round_number }));
-          if (activeRound.started_at) setAppState(prev => ({ ...prev, roundStartedAt: activeRound.started_at }));
+
+        const sortedRounds = [...rounds].sort((a: any, b: any) => b.round_number - a.round_number);
+        const activeRound = sortedRounds[0];
+
+        if (activeRound) {
+          setAppState(prev => ({
+            ...prev,
+            currentRoundId: activeRound.id,
+            currentRound: activeRound.round_number,
+            roundStartedAt: activeRound.started_at || prev.roundStartedAt
+          }));
         }
+
         if (sheets.length > 0) {
-          setAppState(prev => ({ ...prev, allStorySheets: sheets.map((s: any) => ({ playerId: s.player?.id, sheetId: s.id })) }));
+          setAppState(prev => ({ ...prev, allStorySheets: sheets.map((s: any) => ({ playerId: s.player_id?.id || s.player_id, sheetId: s.id })) }));
         }
-        const mySheet = sheets.find((s: any) => s.player?.id === playerId);
-        if (mySheet && !myStorySheetId) setAppState(prev => ({ ...prev, myStorySheetId: mySheet.id }));
+
+        const mySheet = sheets.find((s: any) => (s.player_id?.id || s.player_id) === playerId);
+        if (mySheet) setAppState(prev => ({ ...prev, myStorySheetId: mySheet.id }));
         if (players.length > 0) setAppState(prev => ({ ...prev, playerCount: players.length }));
       } catch (err) {
+        console.error("Error syncing state on start/re-join:", err);
       }
     })();
-  }, [session?.session_status, isHost, sessionId, playerId, myStorySheetId, currentRoundId]);
+  }, [session?.session_status, sessionId, playerId, players.length]);
   useEffect(() => {
     if (phase !== Phases.Waiting || !session || !currentRoundId || !sessionId) return;
     let localPhase: Phases = phase;
     const interval = setInterval(async () => {
       if (localPhase !== Phases.Waiting || transitionLockRef.current) return;
       try {
-        const ans = await getAnswersByRound(currentRoundId);
-        setAppState(prev => ({ ...prev, joinedCount: ans.length }));
+        const curAnswers = await getAnswersByRound(currentRoundId);
+        setAppState(prev => ({ ...prev, joinedCount: curAnswers.length }));
         const total = playerCount > 0 ? playerCount : players.length;
         setAppState(prev => ({ ...prev, totalCount: total }));
-        if (ans.length >= total && total > 0) {
+
+        const now = Date.now();
+        const startedAt = roundStartedAt ? Date.parse(roundStartedAt) : now;
+        const timePassed = (now - startedAt) / 1000;
+
+        // Force progress if time is up (120s + 10s grace)
+        if (curAnswers.length >= total || (isHost && timePassed > 130)) {
           transitionLockRef.current = true;
+
+          if (isHost && curAnswers.length < total) {
+            // Host fills missing answers before proceeding
+            const playerIdsWhoAnswered = new Set(curAnswers.map(a =>
+              typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)
+            ));
+            const missingPlayers = players.filter(p => !playerIdsWhoAnswered.has(p.id));
+            const sheets = await getStorySheetsBySession(sessionId);
+
+            for (const p of missingPlayers) {
+              const pSheet = sheets.find(s => {
+                const sid = typeof s.player_id === 'object' && s.player_id !== null ? (s.player_id as any).id : String(s.player_id);
+                return sid === p.id;
+              });
+              if (pSheet) {
+                const fallbackPool = activeTemplate.fallbacks[currentRound - 1] ?? ["..."];
+                await submitAnswer({
+                  answer_text: fallbackPool[Math.floor(Math.random() * fallbackPool.length)],
+                  position_in_sheet: currentRound,
+                  player_id: p.id,
+                  round_id: currentRoundId,
+                  story_sheet_id: pSheet.id,
+                });
+              }
+            }
+          }
+
           if (currentRound < activeTemplate.questions.length) {
             localPhase = Phases.Main;
             if (isHost) {
               const ts = new Date().toISOString();
+              const nextRoundNum = currentRound + 1;
               const nextRound = await createRound({
-                
                 session_id: sessionId,
-                round_number: currentRound + 1,
-                question_type: activeTemplate.questionTypes[currentRound],
+                round_number: nextRoundNum,
+                question_type: activeTemplate.questionTypes[nextRoundNum - 1],
                 rounds_status: 'active',
                 started_at: ts,
               });
-              setAppState(prev => ({ ...prev, currentRoundId: nextRound.id }));
-              setAppState(prev => ({ ...prev, roundStartedAt: ts }));
-              setAppState(prev => ({ ...prev, currentRound: prev.currentRound + 1 }));
+              setAppState(prev => ({
+                ...prev,
+                currentRoundId: nextRound.id,
+                currentRound: nextRoundNum,
+                roundStartedAt: ts,
+                phase: Phases.Main
+              }));
               transitionLockRef.current = false;
-              setAppState(prev => ({ ...prev, phase: Phases.Main }));
             } else {
-              const rList = await getRoundsBySession(session.id!);
+              // Non-host waits for Realtime or triggers fetch
+              const rList = await getRoundsBySession(sessionId);
               const nextRound = rList.find((r: any) => r.round_number === currentRound + 1);
               if (nextRound) {
-                setAppState(prev => ({ ...prev, currentRoundId: nextRound.id }));
-                if (nextRound.started_at) setAppState(prev => ({ ...prev, roundStartedAt: nextRound.started_at }));
-                setAppState(prev => ({ ...prev, currentRound: prev.currentRound + 1 }));
+                setAppState(prev => ({
+                  ...prev,
+                  currentRoundId: nextRound.id,
+                  currentRound: currentRound + 1,
+                  roundStartedAt: nextRound.started_at || prev.roundStartedAt,
+                  phase: Phases.Main
+                }));
                 transitionLockRef.current = false;
-                setAppState(prev => ({ ...prev, phase: Phases.Main }));
               } else {
-                localPhase = Phases.Waiting;
                 transitionLockRef.current = false;
               }
             }
@@ -252,9 +325,9 @@ function App() {
         }
       } catch (err) {
       }
-    }, 400);
+    }, 1000);
     return () => clearInterval(interval);
-  }, [phase, session?.id, currentRoundId, playerCount, players.length, currentRound, isHost, sessionId, fetchFinalStoryResult]);
+  }, [phase, session?.id, currentRoundId, playerCount, players.length, currentRound, isHost, sessionId, fetchFinalStoryResult, roundStartedAt, activeTemplate]);
   const generateRoomCode = () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let code = "";
@@ -299,18 +372,18 @@ function App() {
       return;
     }
     try {
-      
+
       const newSession = await createGameSession({
-        
+
         session_name: roomCode,
         max_players: 4,
         session_status: 'waiting',
         template: selectedTemplate,
       });
       setAppState(prev => ({ ...prev, sessionId: newSession.id }));
-      
+
       const hostPlayer = await createPlayer({
-        
+
         nickname,
         session_id: newSession.id,
         players_status: 'joined',
@@ -332,26 +405,47 @@ function App() {
   const handleJoinGame = async (nick: string, code: string) => {
     try {
       const allSessions = await getGameSessions();
-      const targetSession = allSessions.find(s => s.session_name === code && s.session_status === 'waiting');
+      const targetSession = allSessions.find(s => s.session_name === code && s.session_status !== 'completed');
       if (!targetSession) {
         return setAppState(prev => ({ ...prev, error: String(t('ERR_NOT_FOUND' as any)) }));
       }
+
       setAppState(prev => ({ ...prev, nickname: nick }));
       setAppState(prev => ({ ...prev, roomCode: code }));
       setAppState(prev => ({ ...prev, sessionId: targetSession.id }));
-      setAppState(prev => ({ ...prev, isHost: false }));
-      
-      const guest = await createPlayer({
-        
-        nickname: nick,
-        session_id: targetSession.id,
-        players_status: 'joined',
-      });
-      setAppState(prev => ({ ...prev, playerId: guest.id }));
-      setAppState(prev => ({ ...prev, isLobby: true }));
-      setAppState(prev => ({ ...prev, didGameStart: false }));
+
+      const existingPlayers = await getPlayersBySession(targetSession.id);
+      const existingPlayer = existingPlayers.find((p: Player) => p.nickname.toLowerCase() === nick.toLowerCase());
+
+      if (existingPlayer) {
+        // Re-join existing session
+        setAppState(prev => ({
+          ...prev,
+          playerId: existingPlayer.id,
+          isHost: existingPlayer.player_order === 1,
+          isLobby: targetSession.session_status === 'waiting',
+          didGameStart: targetSession.session_status === 'active',
+          phase: targetSession.session_status === 'active' ? Phases.Main : Phases.Main
+        }));
+      } else {
+        // Create new player
+        const guest = await createPlayer({
+          nickname: nick,
+          session_id: targetSession.id,
+          players_status: 'joined',
+        });
+        setAppState(prev => ({ ...prev, playerId: guest.id }));
+        setAppState(prev => ({ ...prev, isHost: false }));
+        setAppState(prev => ({ ...prev, isLobby: true }));
+        setAppState(prev => ({ ...prev, didGameStart: false }));
+      }
+
       setAppState(prev => ({ ...prev, isCreatingLobby: false }));
-      setAppState(prev => ({ ...prev, phase: Phases.Main }));
+      if (targetSession.session_status === 'active') {
+        setAppState(prev => ({ ...prev, phase: Phases.Main, isLobby: false, didGameStart: true }));
+      } else {
+        setAppState(prev => ({ ...prev, phase: Phases.Main }));
+      }
       await refreshState();
     } catch (err: any) {
       setAppState(prev => ({ ...prev, error: String(t('ERR_JOIN' as any)) + err.message }));
@@ -365,7 +459,7 @@ function App() {
       const newSheets: { playerId: string, sheetId: string }[] = [];
       for (const p of players) {
         const sheet = await createStorySheet({
-          
+
           game_session_id: sessionId,
           player_id: p.id,
           storysheets_status: 'in_progress',
@@ -378,7 +472,7 @@ function App() {
       setAppState(prev => ({ ...prev, allStorySheets: newSheets }));
       const ts = new Date().toISOString();
       const firstRound = await createRound({
-        
+
         session_id: sessionId,
         round_number: 1,
         question_type: activeTemplate.questionTypes[0],
@@ -434,12 +528,12 @@ function App() {
       let safeSheets = allStorySheets;
       if (safeSheets.length === 0) {
         const fetched = await getStorySheetsBySession(sessionId);
-        safeSheets = fetched.map((s: any) => ({ playerId: s.player?.id, sheetId: s.id }));
+        safeSheets = fetched.map((s: any) => ({ playerId: s.player_id?.id || s.player_id, sheetId: s.id }));
         if (safeSheets.length > 0) setAppState(prev => ({ ...prev, allStorySheets: safeSheets }));
       }
       let targetSheet = myStorySheetId || safeSheets.find(s => s.playerId === playerId)?.sheetId;
       if (safeSheets.length > 0 && players.length > 0) {
-        const sortedPlayers = [...players].sort((a, b) => a.id - b.id);
+        const sortedPlayers = [...players].sort((a, b) => String(a.id).localeCompare(String(b.id)));
         const myIndex = sortedPlayers.findIndex(p => p.id === playerId);
         let targetIndex = (myIndex - (currentRound - 1)) % sortedPlayers.length;
         if (targetIndex < 0) targetIndex += sortedPlayers.length;
@@ -447,7 +541,6 @@ function App() {
         targetSheet = safeSheets.find(s => s.playerId === targetPlayerId)?.sheetId || targetSheet;
       }
       await submitAnswer({
-        
         answer_text: cleanAnswer,
         position_in_sheet: currentRound,
         player_id: playerId,
@@ -459,7 +552,11 @@ function App() {
       setAppState(prev => ({ ...prev, totalCount: playerCount > 0 ? playerCount : players.length }));
       transitionLockRef.current = false;
       setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
-    } catch (err: any) { }
+    } catch (err: any) {
+      console.error("Answer submission failed", err);
+      transitionLockRef.current = false;
+      setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+    }
   };
   return (
     <div className="app-view">
