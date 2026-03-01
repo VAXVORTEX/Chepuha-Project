@@ -52,14 +52,14 @@ export interface AppState {
   selectedHistoryGame: SavedGame | null;
   joinedCount: number;
   totalCount: number;
-  sessionId: string | null;
-  playerId: string | null;
+  sessionId: number | null;
+  playerId: number | null;
   isHost: boolean;
-  currentRoundDocId: string | null;
-  myStorySheetId: string | null;
+  currentRoundId: number | null;
+  myStorySheetId: number | null;
   playerCount: number;
   roundStartedAt: string | null;
-  allStorySheets: { playerId: string, sheetId: string }[];
+  allStorySheets: { playerId: number, sheetId: number }[];
 }
 function App() {
   const [appState, setAppState] = useState<AppState>({
@@ -81,13 +81,13 @@ function App() {
     sessionId: null,
     playerId: null,
     isHost: false,
-    currentRoundDocId: null,
+    currentRoundId: null,
     myStorySheetId: null,
     playerCount: 0,
     roundStartedAt: null,
     allStorySheets: []
   });
-  const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundDocId, myStorySheetId, playerCount, roundStartedAt, allStorySheets } = appState;
+  const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets } = appState;
   const { session, players, error: pollError, refreshState } = useGameState(sessionId);
   const activeTemplate = TEMPLATES[session?.template || selectedTemplate] || TEMPLATES.classic;
   const { t, language, setLanguage } = useLanguage();
@@ -137,7 +137,7 @@ function App() {
           const sorted = [...s.answers!].sort((a, b) => a.position_in_sheet - b.position_in_sheet);
           return {
             playerName: s.player?.nickname || 'Гравець',
-            story: activeTemplate.buildStory(sorted.map(a => a.answer_text), language, String(session?.id || sessionId || '0'), String(s.documentId || Math.random())),
+            story: activeTemplate.buildStory(sorted.map(a => a.answer_text), language, String(session?.id || sessionId || '0'), String(s.id || Math.random())),
             answers: sorted.map(a => a.answer_text),
             templateId: activeTemplate.id
           };
@@ -172,7 +172,7 @@ function App() {
   }, [session?.session_status, isLobby, didGameStart, isHost, phase, fetchFinalStoryResult, sessionId]);
   useEffect(() => {
     if (!session || session.session_status !== 'active' || isHost || !sessionId || !playerId) return;
-    if (myStorySheetId && currentRoundDocId) return;
+    if (myStorySheetId && currentRoundId) return;
     (async () => {
       try {
         const [rounds, sheets] = await Promise.all([
@@ -180,28 +180,28 @@ function App() {
           getStorySheetsBySession(sessionId),
         ]);
         const activeRound = [...rounds].sort((a: any, b: any) => b.round_number - a.round_number)[0];
-        if (activeRound && !currentRoundDocId) {
-          setAppState(prev => ({ ...prev, currentRoundDocId: activeRound.documentId }));
+        if (activeRound && !currentRoundId) {
+          setAppState(prev => ({ ...prev, currentRoundId: activeRound.id }));
           setAppState(prev => ({ ...prev, currentRound: activeRound.round_number }));
           if (activeRound.started_at) setAppState(prev => ({ ...prev, roundStartedAt: activeRound.started_at }));
         }
         if (sheets.length > 0) {
-          setAppState(prev => ({ ...prev, allStorySheets: sheets.map((s: any) => ({ playerId: s.player?.documentId, sheetId: s.documentId })) }));
+          setAppState(prev => ({ ...prev, allStorySheets: sheets.map((s: any) => ({ playerId: s.player?.id, sheetId: s.id })) }));
         }
-        const mySheet = sheets.find((s: any) => s.player?.documentId === playerId);
-        if (mySheet && !myStorySheetId) setAppState(prev => ({ ...prev, myStorySheetId: mySheet.documentId }));
+        const mySheet = sheets.find((s: any) => s.player?.id === playerId);
+        if (mySheet && !myStorySheetId) setAppState(prev => ({ ...prev, myStorySheetId: mySheet.id }));
         if (players.length > 0) setAppState(prev => ({ ...prev, playerCount: players.length }));
       } catch (err) {
       }
     })();
-  }, [session?.session_status, isHost, sessionId, playerId, myStorySheetId, currentRoundDocId]);
+  }, [session?.session_status, isHost, sessionId, playerId, myStorySheetId, currentRoundId]);
   useEffect(() => {
-    if (phase !== Phases.Waiting || !session || !currentRoundDocId || !sessionId) return;
+    if (phase !== Phases.Waiting || !session || !currentRoundId || !sessionId) return;
     let localPhase: Phases = phase;
     const interval = setInterval(async () => {
       if (localPhase !== Phases.Waiting || transitionLockRef.current) return;
       try {
-        const ans = await getAnswersByRound(currentRoundDocId);
+        const ans = await getAnswersByRound(currentRoundId);
         setAppState(prev => ({ ...prev, joinedCount: ans.length }));
         const total = playerCount > 0 ? playerCount : players.length;
         setAppState(prev => ({ ...prev, totalCount: total }));
@@ -212,23 +212,23 @@ function App() {
             if (isHost) {
               const ts = new Date().toISOString();
               const nextRound = await createRound({
-                round_id: `round_${crypto.randomUUID()}`,
+                
                 session_id: sessionId,
                 round_number: currentRound + 1,
                 question_type: activeTemplate.questionTypes[currentRound],
                 rounds_status: 'active',
                 started_at: ts,
               });
-              setAppState(prev => ({ ...prev, currentRoundDocId: nextRound.documentId }));
+              setAppState(prev => ({ ...prev, currentRoundId: nextRound.id }));
               setAppState(prev => ({ ...prev, roundStartedAt: ts }));
               setAppState(prev => ({ ...prev, currentRound: prev.currentRound + 1 }));
               transitionLockRef.current = false;
               setAppState(prev => ({ ...prev, phase: Phases.Main }));
             } else {
-              const rList = await getRoundsBySession(session.documentId!);
+              const rList = await getRoundsBySession(session.id!);
               const nextRound = rList.find((r: any) => r.round_number === currentRound + 1);
               if (nextRound) {
-                setAppState(prev => ({ ...prev, currentRoundDocId: nextRound.documentId }));
+                setAppState(prev => ({ ...prev, currentRoundId: nextRound.id }));
                 if (nextRound.started_at) setAppState(prev => ({ ...prev, roundStartedAt: nextRound.started_at }));
                 setAppState(prev => ({ ...prev, currentRound: prev.currentRound + 1 }));
                 transitionLockRef.current = false;
@@ -254,7 +254,7 @@ function App() {
       }
     }, 400);
     return () => clearInterval(interval);
-  }, [phase, session?.documentId, currentRoundDocId, playerCount, players.length, currentRound, isHost, sessionId, fetchFinalStoryResult]);
+  }, [phase, session?.id, currentRoundId, playerCount, players.length, currentRound, isHost, sessionId, fetchFinalStoryResult]);
   const generateRoomCode = () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let code = "";
@@ -276,7 +276,7 @@ function App() {
     setAppState(prev => ({ ...prev, sessionId: null }));
     setAppState(prev => ({ ...prev, playerId: null }));
     setAppState(prev => ({ ...prev, isHost: false }));
-    setAppState(prev => ({ ...prev, currentRoundDocId: null }));
+    setAppState(prev => ({ ...prev, currentRoundId: null }));
     setAppState(prev => ({ ...prev, myStorySheetId: null }));
     setAppState(prev => ({ ...prev, selectedHistoryGame: null }));
     localStorage.removeItem(STATE_STORAGE_KEY);
@@ -299,24 +299,24 @@ function App() {
       return;
     }
     try {
-      const uniqueSesId = `ses_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      
       const newSession = await createGameSession({
-        session_id: uniqueSesId,
+        
         session_name: roomCode,
         max_players: 4,
         session_status: 'waiting',
         template: selectedTemplate,
       });
-      setAppState(prev => ({ ...prev, sessionId: newSession.documentId }));
-      const uniqueHostId = `host_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      setAppState(prev => ({ ...prev, sessionId: newSession.id }));
+      
       const hostPlayer = await createPlayer({
-        player_id: uniqueHostId,
+        
         nickname,
-        session_id: newSession.documentId,
+        session_id: newSession.id,
         players_status: 'joined',
         player_order: 1,
       });
-      setAppState(prev => ({ ...prev, playerId: hostPlayer.documentId }));
+      setAppState(prev => ({ ...prev, playerId: hostPlayer.id }));
       setAppState(prev => ({ ...prev, isHost: true }));
       setAppState(prev => ({ ...prev, isLobby: true }));
       await refreshState();
@@ -338,16 +338,16 @@ function App() {
       }
       setAppState(prev => ({ ...prev, nickname: nick }));
       setAppState(prev => ({ ...prev, roomCode: code }));
-      setAppState(prev => ({ ...prev, sessionId: targetSession.documentId }));
+      setAppState(prev => ({ ...prev, sessionId: targetSession.id }));
       setAppState(prev => ({ ...prev, isHost: false }));
-      const uniqueGuestId = `guest_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+      
       const guest = await createPlayer({
-        player_id: uniqueGuestId,
+        
         nickname: nick,
-        session_id: targetSession.documentId,
+        session_id: targetSession.id,
         players_status: 'joined',
       });
-      setAppState(prev => ({ ...prev, playerId: guest.documentId }));
+      setAppState(prev => ({ ...prev, playerId: guest.id }));
       setAppState(prev => ({ ...prev, isLobby: true }));
       setAppState(prev => ({ ...prev, didGameStart: false }));
       setAppState(prev => ({ ...prev, isCreatingLobby: false }));
@@ -365,27 +365,27 @@ function App() {
       const newSheets: { playerId: string, sheetId: string }[] = [];
       for (const p of players) {
         const sheet = await createStorySheet({
-          sheet_id: `sheet_${Math.random().toString(36).substring(2, 9)}`,
-          game_session: sessionId,
-          player: p.documentId,
+          
+          game_session_id: sessionId,
+          player_id: p.id,
           storysheets_status: 'in_progress',
         });
-        newSheets.push({ playerId: p.documentId, sheetId: sheet.documentId });
-        if (p.documentId === playerId) {
-          setAppState(prev => ({ ...prev, myStorySheetId: sheet.documentId }));
+        newSheets.push({ playerId: p.id, sheetId: sheet.id });
+        if (p.id === playerId) {
+          setAppState(prev => ({ ...prev, myStorySheetId: sheet.id }));
         }
       }
       setAppState(prev => ({ ...prev, allStorySheets: newSheets }));
       const ts = new Date().toISOString();
       const firstRound = await createRound({
-        round_id: `round_${crypto.randomUUID()}`,
+        
         session_id: sessionId,
         round_number: 1,
         question_type: activeTemplate.questionTypes[0],
         rounds_status: 'active',
         started_at: ts,
       });
-      setAppState(prev => ({ ...prev, currentRoundDocId: firstRound.documentId }));
+      setAppState(prev => ({ ...prev, currentRoundId: firstRound.id }));
       setAppState(prev => ({ ...prev, roundStartedAt: ts }));
       setAppState(prev => ({ ...prev, didGameStart: true }));
       setAppState(prev => ({ ...prev, isLobby: false }));
@@ -408,7 +408,7 @@ function App() {
       : answer;
     const updatedAnswers = [...userAnswers, cleanAnswer];
     setAppState(prev => ({ ...prev, userAnswers: updatedAnswers }));
-    if (!currentRoundDocId || !playerId || !sessionId) {
+    if (!currentRoundId || !playerId || !sessionId) {
       transitionLockRef.current = false;
       setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
       setTimeout(() => {
@@ -434,27 +434,27 @@ function App() {
       let safeSheets = allStorySheets;
       if (safeSheets.length === 0) {
         const fetched = await getStorySheetsBySession(sessionId);
-        safeSheets = fetched.map((s: any) => ({ playerId: s.player?.documentId, sheetId: s.documentId }));
+        safeSheets = fetched.map((s: any) => ({ playerId: s.player?.id, sheetId: s.id }));
         if (safeSheets.length > 0) setAppState(prev => ({ ...prev, allStorySheets: safeSheets }));
       }
       let targetSheet = myStorySheetId || safeSheets.find(s => s.playerId === playerId)?.sheetId;
       if (safeSheets.length > 0 && players.length > 0) {
-        const sortedPlayers = [...players].sort((a, b) => a.documentId.localeCompare(b.documentId));
-        const myIndex = sortedPlayers.findIndex(p => p.documentId === playerId);
+        const sortedPlayers = [...players].sort((a, b) => a.id - b.id);
+        const myIndex = sortedPlayers.findIndex(p => p.id === playerId);
         let targetIndex = (myIndex - (currentRound - 1)) % sortedPlayers.length;
         if (targetIndex < 0) targetIndex += sortedPlayers.length;
-        const targetPlayerId = sortedPlayers[targetIndex]?.documentId;
+        const targetPlayerId = sortedPlayers[targetIndex]?.id;
         targetSheet = safeSheets.find(s => s.playerId === targetPlayerId)?.sheetId || targetSheet;
       }
       await submitAnswer({
-        answer_id: `ans_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+        
         answer_text: cleanAnswer,
         position_in_sheet: currentRound,
-        player: playerId,
-        round: currentRoundDocId,
-        story_sheet: targetSheet,
+        player_id: playerId,
+        round_id: currentRoundId,
+        story_sheet_id: targetSheet,
       });
-      const curAnswers = await getAnswersByRound(currentRoundDocId);
+      const curAnswers = await getAnswersByRound(currentRoundId);
       setAppState(prev => ({ ...prev, joinedCount: curAnswers.length }));
       setAppState(prev => ({ ...prev, totalCount: playerCount > 0 ? playerCount : players.length }));
       transitionLockRef.current = false;
@@ -565,7 +565,7 @@ function App() {
               <div className="players-list">
                 {players.length > 0 ? (
                   players.map((p, i) => (
-                    <div key={p.documentId || String(i)} className="player-item">
+                    <div key={p.id || String(i)} className="player-item">
                       {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
                       <span className="player-name">{p.nickname}</span>
                     </div>

@@ -1,8 +1,4 @@
-export { apiClient } from './apiClient';
 export type {
-    StrapiResponse,
-    StrapiListResponse,
-    StrapiItem,
     GameSession,
     Player,
     Round,

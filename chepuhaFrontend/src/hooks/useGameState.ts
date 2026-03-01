@@ -10,7 +10,7 @@ interface GameState {
     players: Player[];
     error: string | null;
 }
-export function useGameState(sessionId: string | null) {
+export function useGameState(sessionId: number | null) {
     const [gameState, setGameState] = useState<GameState>({
         session: null,
         players: [],

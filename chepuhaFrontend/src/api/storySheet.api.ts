@@ -1,26 +1,54 @@
-import { apiClient } from './apiClient';
-import type { StrapiResponse, StrapiListResponse, StorySheet, StorySheetStatus } from './types';
+import { supabase } from './supabaseClient';
+import type { StorySheet, StorySheetStatus } from './types';
+
 export interface CreateStorySheetPayload {
-    sheet_id?: string;
-    game_session?: string;
-    player?: string;
+    game_session_id?: number;
+    player_id?: number;
     sheet_number?: number;
     storysheets_status?: StorySheetStatus;
     final_story?: string;
 }
+
 export async function createStorySheet(payload: CreateStorySheetPayload): Promise<StorySheet> {
-    const res = await apiClient.post<StrapiResponse<StorySheet>>('/story-sheets', payload);
-    return res.data as unknown as StorySheet;
+    const { data, error } = await supabase
+        .from('story_sheets')
+        .insert(payload)
+        .select()
+        .single();
+    if (error) throw error;
+    return data;
 }
-export async function getStorySheet(documentId: string): Promise<StorySheet> {
-    const res = await apiClient.get<StrapiResponse<StorySheet>>(`/story-sheets/${documentId}?populate=*`);
-    return res.data as unknown as StorySheet;
+
+export async function getStorySheet(id: number): Promise<StorySheet> {
+    const { data, error } = await supabase
+        .from('story_sheets')
+        .select('*, answers(*)')
+        .eq('id', id)
+        .single();
+    if (error) throw error;
+    return data;
 }
-export async function getStorySheetsBySession(sessionDocumentId: string): Promise<StorySheet[]> {
-    const res = await apiClient.get<StrapiListResponse<StorySheet>>(`/story-sheets?filters[game_session][$eq]=${sessionDocumentId}&populate=*`);
-    return res.data as unknown as StorySheet[];
+
+export async function getStorySheetsBySession(sessionId: number): Promise<StorySheet[]> {
+    const { data, error } = await supabase
+        .from('story_sheets')
+        .select('*, answers(*)')
+        .eq('game_session_id', sessionId)
+        .order('sheet_number', { ascending: true });
+    if (error) throw error;
+    return data;
 }
-export async function updateStorySheet(documentId: string, payload: Partial<CreateStorySheetPayload>): Promise<StorySheet> {
-    const res = await apiClient.put<StrapiResponse<StorySheet>>(`/story-sheets/${documentId}`, payload);
-    return res.data as unknown as StorySheet;
+
+export async function updateStorySheet(
+    id: number,
+    payload: Partial<CreateStorySheetPayload & { storysheets_completed_at?: string }>,
+): Promise<StorySheet> {
+    const { data, error } = await supabase
+        .from('story_sheets')
+        .update(payload)
+        .eq('id', id)
+        .select()
+        .single();
+    if (error) throw error;
+    return data;
 }
