@@ -1,6 +1,5 @@
 import React from 'react';
 import styles from './Input.module.scss';
-
 interface InputProps {
     value: string;
     onChange: (value: string) => void;
@@ -10,7 +9,6 @@ interface InputProps {
     autoFocus?: boolean;
     className?: string;
 }
-
 const Input: React.FC<InputProps> = ({
     value,
     onChange,
@@ -23,7 +21,6 @@ const Input: React.FC<InputProps> = ({
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         onChange(e.target.value);
     };
-
     return (
         <input
             className={`${styles.input} ${className}`}
@@ -36,5 +33,4 @@ const Input: React.FC<InputProps> = ({
         />
     );
 };
-
 export default Input;

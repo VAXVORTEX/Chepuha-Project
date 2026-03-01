@@ -1,29 +1,31 @@
 import React, { useState } from "react";
 import styles from "./WaitCard.module.scss";
 import Button from "../Button/Button";
-
+import { playSecretMusic } from "../../utils/audio";
+import { useLanguage } from "../../contexts/LanguageContext";
 interface WaitCardProps {
   nick: string;
   joinedCount: number;
   totalCount: number;
+  message?: string;
 }
-
 const WaitCard: React.FC<WaitCardProps> = ({
   nick,
   joinedCount,
   totalCount,
+  message,
 }) => {
+  const { t } = useLanguage();
   return (
     <div className={styles.wrapper}>
-      <div className={styles.yellowGuy} />
-      <div className={styles.redGuy} />
-
+      <div className={styles.yellowGuy} onClick={playSecretMusic} />
+      <div className={styles.redGuy} onClick={playSecretMusic} />
       <div className={styles.container}>
-        <h2 className={styles.nickText}>ВАШ НІК: {nick}</h2>
+        <h2 className={styles.nickText}>{t('YOUR_NICK')} {nick}</h2>
         <p className={styles.countText}>
-          {joinedCount} з {totalCount} ГРАВЦІВ ПРИЄДНАЛОСЬ
+          {joinedCount} {t('OUT_OF')} {totalCount} {t('PLAYERS_READY')}
         </p>
-        <h1 className={styles.waitingText}>ЧЕКАЄМО НА ПОЧАТОК ГРИ...</h1>
+        <h1 className={styles.waitingText}>{message || t('WAITING_PLAYERS')}</h1>
       </div>
     </div>
   );

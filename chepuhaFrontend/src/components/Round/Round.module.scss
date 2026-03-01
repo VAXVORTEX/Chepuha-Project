@@ -1,6 +1,5 @@
-@import "../../styles/colors.scss";
-@import "../../styles/typography.scss";
-
+@use "../../styles/colors.scss" as *;
+@use "../../styles/typography.scss" as *;
 .container {
   display: flex;
   flex-direction: column;
@@ -8,17 +7,17 @@
   justify-content: center;
   gap: 1px;
 }
-
 .label {
   @include font-pangolin(48);
   color: $gray-dark;
   margin: 0;
   line-height: 1;
 }
-
 .value {
   @include font-acme(64);
   color: $red;
+  -webkit-text-stroke: 1px $black;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
   margin: 0;
   line-height: 1.1;
   letter-spacing: 2px;

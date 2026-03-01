@@ -59,6 +59,10 @@
       "relation": "oneToMany",
       "target": "api::story-sheet.story-sheet",
       "mappedBy": "game_session"
+    },
+    "template": {
+      "type": "string",
+      "default": "classic"
     }
   }
 }
