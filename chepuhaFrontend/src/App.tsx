@@ -35,14 +35,7 @@ import {
 } from "./api";
 import { TEMPLATES } from "./config/templates";
 import { useLanguage } from "./contexts/LanguageContext";
-const HomeIcon = ({ onClick, className }: { onClick: () => void, className?: string }) => (
-  <div className={className} onClick={onClick}>
-    <img
-      src={homeImage}
-      alt="Home"
-    />
-  </div>
-);
+import HomeIcon from "./components/HomeIcon/HomeIcon";
 export interface AppState {
   phase: Phases;
   didGameStart: boolean;
@@ -506,21 +499,26 @@ function App() {
               className={`lang-btn ${language === 'uk' ? 'active' : ''}`}
               onClick={() => setLanguage('uk')}
             >
-              <img src={flagUk} alt="UK" style={{ width: '126px', height: '84px', objectFit: 'cover' }} />
+              <img src={flagUk} alt="UK" />
             </button>
             <button
               className={`lang-btn ${language === 'en' ? 'active' : ''}`}
               onClick={() => setLanguage('en')}
             >
-              <img src={flagEn} alt="EN" style={{ width: '126px', height: '84px', objectFit: 'cover' }} />
+              <img src={flagEn} alt="EN" />
             </button>
           </div>
         </>
       )}
-      {!didGameStart && isCreatingLobby && !isLobby && phase !== Phases.Join && (
+      {(phase === Phases.Join || (isCreatingLobby && !isLobby)) && (
         <>
           <div className="yellow-guy-bg" onClick={playSecretMusic} />
           <div className="red-guy-bg" onClick={playSecretMusic} />
+        </>
+      )}
+
+      {!didGameStart && isCreatingLobby && !isLobby && phase !== Phases.Join && (
+        <>
           <div className="create-game-container">
             <div className="input-wrapper">
               <input
@@ -593,10 +591,12 @@ function App() {
         </>
       )}
       {phase === Phases.Join && (
-        <JoinCard
-          onJoin={handleJoinGame}
-          onHome={goHome}
-        />
+        <>
+          <JoinCard
+            onJoin={handleJoinGame}
+          />
+          <HomeIcon className="homeIconPos" onClick={goHome} />
+        </>
       )}
       {didGameStart && phase === Phases.Waiting && (
         <WaitCard

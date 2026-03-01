@@ -1,13 +1,14 @@
 import React, { useState } from "react";
 import classNames from "classnames";
 import styles from "./JoinCard.module.scss";
+import Button from "../Button/Button";
+import HomeIcon from "../HomeIcon/HomeIcon";
 import { playSecretMusic } from "../../utils/audio";
 import { Phases } from "../../types/phaseVariant";
 import Input from "../Input/Input";
 import { useLanguage } from "../../contexts/LanguageContext";
 interface JoinCardProps {
   onJoin: (nick: string, room: string) => void;
-  onHome: () => void;
   errors?: {
     nick?: string;
     room?: string;
@@ -15,7 +16,6 @@ interface JoinCardProps {
 }
 const JoinCard: React.FC<JoinCardProps> = ({
   onJoin,
-  onHome,
   errors,
 }) => {
   const { t } = useLanguage();
@@ -31,8 +31,6 @@ const JoinCard: React.FC<JoinCardProps> = ({
   };
   return (
     <div className={styles.wrapper}>
-      <div className={styles.YellowGuy} onClick={playSecretMusic} />
-      <div className={styles.RedGuy} onClick={playSecretMusic} />
       <div className={styles.container}>
         <div className={styles.form}>
           <div className={styles.inputWrapper}>
@@ -65,14 +63,14 @@ const JoinCard: React.FC<JoinCardProps> = ({
             )}
           </div>
           <div className={styles.submitBlock}>
-            <button className={styles.joinButton} onClick={doJoinClick}>
-              {t('JOIN_GAME')}
-            </button>
+            <Button
+              label={t('JOIN_GAME')}
+              variant="primary"
+              onClick={doJoinClick}
+              phase={Phases.Join}
+            />
           </div>
         </div>
-      </div>
-      <div className={styles.home} onClick={onHome}>
-        <div className={styles.homeSign}></div>
       </div>
     </div>
   );

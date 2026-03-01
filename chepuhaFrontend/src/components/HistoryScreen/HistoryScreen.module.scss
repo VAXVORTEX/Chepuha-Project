@@ -153,6 +153,15 @@
 }
 
 @media (max-width: 768px) {
+    .wrapper {
+        padding: 50px 5px;
+    }
+
+    .box {
+        padding: 20px 10px;
+        border-width: 5px;
+    }
+
     .title {
         font-size: 36px;
     }

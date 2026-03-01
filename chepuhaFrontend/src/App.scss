@@ -212,20 +212,14 @@
   left: 60px;
 }
 
-.timerPos {
-  position: absolute;
-  top: 40px;
-  left: 60px;
-}
-
 .homeIconPos {
   position: absolute;
   bottom: 40px;
   right: 40px;
-  width: 130px;
-  height: 130px;
+  width: 120px;
+  height: 120px;
   background-color: transparent;
-  border: 6px solid $black;
+  border: 4px solid $black;
   border-radius: 50%;
   display: flex;
   justify-content: center;
@@ -238,8 +232,8 @@
   }
 
   img {
-    width: 90px;
-    height: 90px;
+    width: 80px;
+    height: 80px;
     object-fit: contain;
   }
 }
@@ -274,54 +268,6 @@
   transform: rotate(-3deg);
 }
 
-@media (max-width: 768px) {
-
-  .yellow-guy-bg,
-  .red-guy-bg {
-    width: 200px;
-    height: 200px;
-  }
-
-  .yellow-guy-bg {
-    right: -40px;
-    bottom: -10px;
-  }
-
-  .red-guy-bg {
-    left: -40px;
-    bottom: -30px;
-  }
-
-  .waiting-host-text {
-    font-size: 28px;
-  }
-
-  .template-title {
-    font-size: 26px;
-  }
-
-  .template-cards-container {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-  }
-
-  .template-card {
-    padding: 10px 5px;
-  }
-
-  .template-name {
-    font-size: 18px;
-  }
-
-  .nickname-input {
-    height: 60px;
-    font-size: 20px;
-  }
-
-  .create-game-container {
-    gap: 20px;
-  }
-}
 
 .waiting-host-text {
   @include font-pangolin(60);
@@ -416,7 +362,8 @@
 }
 
 .lang-btn {
-  font-size: 40px;
+  width: 126px;
+  height: 84px;
   background-color: $black;
   border: 4px solid $black;
   border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
@@ -463,4 +410,128 @@
   margin: 0;
   color: $black;
   text-transform: uppercase;
+}
+
+@media (max-width: 768px) {
+  .app-view {
+    width: 100vw;
+    height: 100vh;
+    transform: none;
+    transform-origin: unset;
+  }
+
+  .yellow-guy-bg,
+  .red-guy-bg {
+    width: 200px;
+    height: 200px;
+  }
+
+  .yellow-guy-bg {
+    right: -40px;
+    bottom: -10px;
+  }
+
+  .red-guy-bg {
+    left: -40px;
+    bottom: -30px;
+  }
+
+  .waiting-host-text {
+    font-size: 28px;
+  }
+
+  .template-title {
+    font-size: 26px;
+  }
+
+  .template-cards-container {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 5px;
+    padding: 2px 5px;
+    width: 100vw;
+    box-sizing: border-box;
+  }
+
+  .template-card {
+    padding: 6px 2px;
+  }
+
+  .template-name {
+    font-size: 13px;
+  }
+
+  .nickname-input {
+    height: 60px;
+    font-size: 20px;
+  }
+
+  .create-game-container {
+    gap: 30px;
+    margin-top: 5vh; // Moved down as requested
+    height: auto;
+    min-height: 75vh;
+    justify-content: center; // Balanced layout
+    padding-bottom: 30px;
+  }
+
+  .menu-buttons {
+    gap: 20px;
+    transform: none; // Removed scale to keep text sharp and large
+
+    .button {
+      font-size: 50px !important; // Enlarge main menu texts
+    }
+  }
+
+  .lobby-container {
+    gap: 30px;
+    margin-top: -5vh;
+  }
+
+  .lobby-info {
+    gap: 20px;
+  }
+
+  .logo-wrapper {
+    margin-top: 10px;
+    margin-bottom: 15px;
+  }
+
+  .logo-wrapper .logo {
+    max-width: 80vw;
+  }
+
+  .gameCodePos {
+    top: 15px;
+    right: 15px;
+  }
+
+  .homeIconPos {
+    width: 60px;
+    height: 60px;
+    bottom: 15px;
+    right: 15px;
+
+    img {
+      width: 40px;
+      height: 40px;
+    }
+  }
+
+  .lang-btn {
+    width: 60px;
+    height: 40px;
+
+    img {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  .language-selector {
+    bottom: 85px;
+    right: 15px;
+    left: auto;
+    gap: 10px;
+  }
 }

@@ -14,6 +14,10 @@
     color: $gray-dark;
     margin: 0;
     line-height: 1;
+
+    @media (max-width: 768px) {
+        font-size: 20px;
+    }
 }
 
 .code {
@@ -30,4 +34,8 @@
     pointer-events: auto;
     position: relative;
     z-index: 100;
+
+    @media (max-width: 768px) {
+        font-size: 28px;
+    }
 }

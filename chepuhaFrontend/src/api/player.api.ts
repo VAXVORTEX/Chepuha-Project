@@ -16,7 +16,7 @@ export async function getPlayer(documentId: string): Promise<Player> {
     return res.data as unknown as Player;
 }
 export async function getPlayersBySession(sessionDocumentId: string): Promise<Player[]> {
-    const res = await apiClient.get<StrapiListResponse<Player>>(`/players?sessionId=${sessionDocumentId}`);
+    const res = await apiClient.get<StrapiListResponse<Player>>(`/players?filters[session_id][$eq]=${sessionDocumentId}&populate=*`);
     return res.data as unknown as Player[];
 }
 export async function updatePlayer(documentId: string, payload: Partial<CreatePlayerPayload>): Promise<Player> {

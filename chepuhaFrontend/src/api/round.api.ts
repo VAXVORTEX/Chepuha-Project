@@ -17,7 +17,7 @@ export async function getRound(documentId: string): Promise<Round> {
     return res.data as unknown as Round;
 }
 export async function getRoundsBySession(sessionDocumentId: string): Promise<Round[]> {
-    const res = await apiClient.get<StrapiListResponse<Round>>(`/rounds?sessionId=${sessionDocumentId}`);
+    const res = await apiClient.get<StrapiListResponse<Round>>(`/rounds?filters[session_id][$eq]=${sessionDocumentId}&populate=*`);
     return res.data as unknown as Round[];
 }
 export async function updateRound(
