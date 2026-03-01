@@ -1,4 +1,6 @@
-const BASE_URL = (import.meta.env.VITE_STRAPI_URL || 'http://localhost:3001') + '/api';
+const BASE_URL = import.meta.env.VITE_STRAPI_URL || 'http://localhost:1337';
+const BASE_API = `${BASE_URL}/api`;
+
 
 type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
