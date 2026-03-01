@@ -58,8 +58,13 @@ export function useGameState(sessionId: string | null) {
                 console.log(`Realtime subscription status for session ${sessionId}:`, status);
             });
 
+        const pollInterval = setInterval(() => {
+            fetchState();
+        }, 3000);
+
         return () => {
             supabase.removeChannel(sessionChannel);
+            clearInterval(pollInterval);
         };
     }, [fetchState, sessionId]);
     return {

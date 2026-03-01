@@ -361,9 +361,10 @@ function App() {
   };
   const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (value.length <= 10) {
-      setAppState(prev => ({ ...prev, nickname: value }));
-      setAppState(prev => ({ ...prev, error: "" }));
+    if (value.length <= 25) {
+      setAppState(prev => ({ ...prev, nickname: value, error: "" }));
+    } else {
+      setAppState(prev => ({ ...prev, error: String(t('ERR_NICK_LONG' as any)) }));
     }
   };
   const goToLobby = async () => {
@@ -376,7 +377,7 @@ function App() {
       const newSession = await createGameSession({
 
         session_name: roomCode,
-        max_players: 4,
+        max_players: 12,
         session_status: 'waiting',
         template: selectedTemplate,
       });
@@ -416,6 +417,10 @@ function App() {
 
       const existingPlayers = await getPlayersBySession(targetSession.id);
       const existingPlayer = existingPlayers.find((p: Player) => p.nickname.toLowerCase() === nick.toLowerCase());
+
+      if (targetSession.session_status === 'active' && !existingPlayer) {
+        return setAppState(prev => ({ ...prev, error: String(t('ERR_NOT_FOUND' as any)) }));
+      }
 
       if (existingPlayer) {
         // Re-join existing session

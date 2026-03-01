@@ -37,12 +37,19 @@ const JoinCard: React.FC<JoinCardProps> = ({
             <Input
               value={nickInputValue}
               onChange={(value) => {
-                setNickInputValue(value);
-                setIsSubmitted(false);
+                if (value.length <= 25) {
+                  setNickInputValue(value);
+                  setIsSubmitted(false);
+                }
               }}
               placeholder={t('ENTER_NICK_PLACEHOLDER')}
               className={styles.input}
             />
+            {nickInputValue.length >= 25 && (
+              <span className={styles.errorText}>
+                {t('ERR_NICK_LONG')}
+              </span>
+            )}
             {(errors?.nick || (isSubmitted && !nickInputValue.trim())) && (
               <span className={styles.errorText}>
                 {errors?.nick || t('NICKNAME_REQUIRED')}

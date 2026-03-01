@@ -7,8 +7,8 @@
 }
 
 @font-face {
-  font-family: 'Able';
-  src: url('/fonts/Able-Regular.ttf') format('truetype');
+  font-family: 'Abel';
+  src: url('/fonts/Abel-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -28,8 +28,8 @@
   font-style: normal;
 }
 
-%able-base {
-  font-family: "Able", sans-serif;
+%abel-base {
+  font-family: "Abel", sans-serif;
   font-weight: 400;
   font-style: normal;
 }
@@ -47,8 +47,8 @@
   line-height: $line-height;
 }
 
-@mixin font-able ($size, $weight: 400, $line-height: 1.2) {
-  @extend %able-base;
+@mixin font-abel ($size, $weight: 400, $line-height: 1.2) {
+  @extend %abel-base;
   font-size: #{$size}px;
   font-weight: $weight;
   line-height: $line-height;
@@ -105,6 +105,6 @@
   @include font-pangolin (55);
 }
 
-@mixin font-able-32 {
-  @include font-able(32);
+@mixin font-abel-32 {
+  @include font-abel(32);
 }

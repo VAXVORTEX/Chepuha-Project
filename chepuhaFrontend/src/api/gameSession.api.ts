@@ -38,7 +38,7 @@ export async function getGameSessions(): Promise<GameSession[]> {
     const { data, error } = await supabase
         .from('game_sessions')
         .select('*')
-        .order('id', { ascending: false });
+        .order('session_created_at', { ascending: false });
     if (error) throw error;
     return data;
 }
