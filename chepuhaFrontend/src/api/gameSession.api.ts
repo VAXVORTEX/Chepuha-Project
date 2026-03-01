@@ -1,32 +1,66 @@
-import { apiClient } from './apiClient';
-import type { StrapiResponse, StrapiListResponse, GameSession, SessionStatus } from './types';
+import { supabase } from './supabaseClient';
+import type { GameSession, SessionStatus } from './types';
+
 export interface CreateGameSessionPayload {
-    session_id?: string;
     session_name?: string;
     max_players?: number;
     session_status?: SessionStatus;
     current_players_count?: number;
     template?: string;
 }
+
 export async function createGameSession(payload: CreateGameSessionPayload): Promise<GameSession> {
-    const res = await apiClient.post<StrapiResponse<GameSession>>('/game-sessions', payload);
-    return res.data as unknown as GameSession;
+    const { data, error } = await supabase
+        .from('game_sessions')
+        .insert(payload)
+        .select()
+        .single();
+    if (error) throw error;
+    return data;
 }
-export async function getGameSession(documentId: string): Promise<GameSession> {
-    const res = await apiClient.get<StrapiResponse<GameSession>>(`/game-sessions/${documentId}?populate=*`);
-    return res.data as unknown as GameSession;
+
+export async function getGameSession(id: number): Promise<GameSession> {
+    const { data, error } = await supabase
+        .from('game_sessions')
+        .select(`
+            *,
+            players (*),
+            rounds (*),
+            story_sheets (*)
+        `)
+        .eq('id', id)
+        .single();
+    if (error) throw error;
+    return data;
 }
+
 export async function getGameSessions(): Promise<GameSession[]> {
-    const res = await apiClient.get<StrapiListResponse<GameSession>>('/game-sessions?populate=*');
-    return res.data as unknown as GameSession[];
+    const { data, error } = await supabase
+        .from('game_sessions')
+        .select('*')
+        .order('id', { ascending: false });
+    if (error) throw error;
+    return data;
 }
+
 export async function updateGameSession(
-    documentId: string,
+    id: number,
     payload: Partial<CreateGameSessionPayload>,
 ): Promise<GameSession> {
-    const res = await apiClient.put<StrapiResponse<GameSession>>(`/game-sessions/${documentId}`, payload);
-    return res.data as unknown as GameSession;
+    const { data, error } = await supabase
+        .from('game_sessions')
+        .update(payload)
+        .eq('id', id)
+        .select()
+        .single();
+    if (error) throw error;
+    return data;
 }
-export async function deleteGameSession(documentId: string): Promise<void> {
-    await apiClient.delete(`/game-sessions/${documentId}`);
+
+export async function deleteGameSession(id: number): Promise<void> {
+    const { error } = await supabase
+        .from('game_sessions')
+        .delete()
+        .eq('id', id);
+    if (error) throw error;
 }

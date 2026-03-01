@@ -37,3 +37,5 @@ app.listen(PORT, () => {
     console.log(`   → Proxying to Strapi: ${process.env.STRAPI_URL}`);
     console.log(`   → CORS allowed for:   ${ALLOWED_ORIGINS.join(', ')}`);
 });
+
+export default app;
