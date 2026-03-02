@@ -90,7 +90,9 @@ function App() {
     allStorySheets: []
   });
   const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets } = appState;
-  const { session, players, error: pollError, refreshState } = useGameState(sessionId);
+  const { session, players, rounds, currentAnswers, error: pollError, refreshState } = useGameState(sessionId);
+  const derivedJoinedCount = currentAnswers?.length || 0;
+  const derivedTotalCount = players?.length || 0;
   const activeTemplate = TEMPLATES[session?.template || selectedTemplate] || TEMPLATES.classic;
   const { t, language, setLanguage } = useLanguage();
   const transitionLockRef = useRef(false);
@@ -110,6 +112,21 @@ function App() {
       localStorage.removeItem(STATE_STORAGE_KEY);
     }
   }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate]);
+
+  // Effect to prevent "already answered" question on re-join
+  useEffect(() => {
+    if (didGameStart && phase === Phases.Main && currentAnswers && playerId && currentRoundId) {
+      const alreadyAnswered = currentAnswers.some(a => {
+        const sid = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id);
+        const rid = typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id);
+        return sid === playerId && rid === currentRoundId;
+      });
+      if (alreadyAnswered) {
+        setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+      }
+    }
+  }, [didGameStart, phase, currentAnswers, playerId, currentRoundId]);
+
   useEffect(() => {
     const saved = localStorage.getItem(STATE_STORAGE_KEY);
     if (saved) {
@@ -205,7 +222,7 @@ function App() {
           getStorySheetsBySession(sessionId),
         ]);
 
-        const sortedRounds = [...rounds].sort((a: any, b: any) => b.round_number - a.round_number);
+        const sortedRounds = Array.isArray(rounds) ? [...rounds].sort((a: any, b: any) => b.round_number - a.round_number) : [];
         const activeRound = sortedRounds[0];
 
         if (activeRound) {
@@ -213,7 +230,10 @@ function App() {
             ...prev,
             currentRoundId: activeRound.id,
             currentRound: activeRound.round_number,
-            roundStartedAt: activeRound.started_at || prev.roundStartedAt
+            roundStartedAt: activeRound.started_at || prev.roundStartedAt,
+            didGameStart: true,
+            isLobby: false,
+            phase: (prev.phase === Phases.Waiting) ? Phases.Waiting : Phases.Main
           }));
         }
 
@@ -612,12 +632,6 @@ function App() {
           </div>
         </>
       )}
-      {(phase === Phases.Join || (isCreatingLobby && !isLobby)) && (
-        <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} />
-          <div className="red-guy-bg" onClick={playSecretMusic} />
-        </>
-      )}
 
       {!didGameStart && isCreatingLobby && !isLobby && phase !== Phases.Join && (
         <>
@@ -668,20 +682,18 @@ function App() {
                 {players.length > 0 ? (
                   players.map((p, i) => (
                     <div key={p.id || String(i)} className="player-item">
-                      <div className="crown-side-spacer">
+                      <div className="player-name-wrapper">
                         {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
+                        <span className="player-name">{p.nickname}</span>
                       </div>
-                      <span className="player-name">{p.nickname}</span>
-                      <div className="crown-side-spacer" />
                     </div>
                   ))
                 ) : (
                   <div className="player-item">
-                    <div className="crown-side-spacer">
+                    <div className="player-name-wrapper">
                       <img src={crownImage} alt="Host" className="crown-icon" />
+                      <span className="player-name">{nickname}</span>
                     </div>
-                    <span className="player-name">{nickname}</span>
-                    <div className="crown-side-spacer" />
                   </div>
                 )}
               </div>
@@ -709,8 +721,8 @@ function App() {
       {didGameStart && phase === Phases.Waiting && (
         <WaitCard
           nick={nickname}
-          joinedCount={joinedCount}
-          totalCount={totalCount}
+          joinedCount={derivedJoinedCount}
+          totalCount={derivedTotalCount}
           message={t('WAITING_ANSWERS')}
         />
       )}
@@ -738,8 +750,8 @@ function App() {
                 ]?.questions[currentRound - 1] || activeTemplate.questions[currentRound - 1]
                 : activeTemplate.questions[currentRound - 1]
             }
-            playerReady={1}
-            playerTotal={totalCount}
+            playerReady={derivedJoinedCount}
+            playerTotal={derivedTotalCount}
             onSubmitAnswer={doAnswerSubmit}
           />
         </>

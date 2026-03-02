@@ -164,35 +164,31 @@
 
 .player-item {
   display: flex;
-  flex-direction: row;
-  align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 450px;
-  position: relative;
   margin-bottom: 20px;
 }
 
-.crown-side-spacer {
-  width: 75px;
-  display: flex;
-  justify-content: flex-end;
+.player-name-wrapper {
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  flex-shrink: 0;
 }
 
 .crown-icon {
-  width: 65px;
+  position: absolute;
+  right: 100%;
+  margin-right: 2px; // 2px adaptive gap as requested
+  width: 60px;
   height: auto;
   object-fit: contain;
-  margin-right: 12px; // This is the "almost correct" desktop offset
 }
 
 .player-name {
   @include font-pangolin(50);
   color: $black;
   text-align: center;
-  flex-grow: 1;
+  white-space: nowrap;
 }
 
 .lobby-actions {
@@ -249,35 +245,6 @@
   }
 }
 
-.yellow-guy-bg,
-.red-guy-bg {
-  position: absolute;
-  bottom: 0;
-  background-size: contain;
-  background-repeat: no-repeat;
-  z-index: 1;
-  opacity: 0.5;
-  cursor: default;
-}
-
-.yellow-guy-bg {
-  bottom: 50px;
-  right: -70px;
-  background-image: url("./assets/images/yellowGuy.png");
-  display: block;
-  width: 850px;
-  height: 850px;
-  z-index: 1;
-}
-
-.red-guy-bg {
-  left: -85px;
-  bottom: -20px;
-  background-image: url("./assets/images/RedGuyRemoved.png");
-  width: 850px;
-  height: 850px;
-  transform: rotate(-3deg);
-}
 
 
 .waiting-host-text {
@@ -440,21 +407,6 @@
     overflow: hidden;
   }
 
-  .yellow-guy-bg,
-  .red-guy-bg {
-    width: 200px;
-    height: 200px;
-  }
-
-  .yellow-guy-bg {
-    right: -40px;
-    bottom: -10px;
-  }
-
-  .red-guy-bg {
-    left: -40px;
-    bottom: -30px;
-  }
 
   .waiting-host-text {
     font-size: 20px;
@@ -529,32 +481,20 @@
     background: rgba(255, 255, 255, 0.2);
   }
 
-  .player-item {
+  .player-name-wrapper {
     display: flex;
-    flex-direction: row;
     align-items: center;
-    justify-content: center;
-    margin-bottom: 25px;
-    width: 100%;
-  }
-
-  .crown-side-spacer {
-    width: 60px;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    flex-shrink: 0;
-  }
-
-  .crown-icon {
-    width: 45px !important;
-    margin-right: 10px;
+    position: relative;
   }
 
   .player-name {
     font-size: 28px !important;
-    text-align: center;
-    flex-grow: 1;
+  }
+
+  .crown-icon {
+    width: 35px !important;
+    right: 100%;
+    margin-right: 2px;
   }
 
   .logo-wrapper {
