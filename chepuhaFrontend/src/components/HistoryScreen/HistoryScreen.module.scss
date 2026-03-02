@@ -26,9 +26,9 @@
     position: relative;
     z-index: 2;
     width: 100%;
-    height: calc(100vh - 10px);
-    max-height: calc(100vh - 10px);
-    padding: 30px 40px;
+    height: calc(100vh - 4px);
+    max-height: 100vh;
+    padding: 15px 40px;
     background-color: $red;
     border-radius: 50px;
     color: $white;
@@ -52,7 +52,7 @@
 
 .title {
     @include font-pangolin(55);
-    margin-bottom: 25px;
+    margin-bottom: 10px;
     text-align: center;
 }
 
@@ -63,7 +63,7 @@
     flex-direction: column;
     gap: 15px;
     overflow-y: auto;
-    max-height: calc(100% - 150px);
+    max-height: calc(100% - 100px);
     padding-right: 15px;
     padding-top: 5px;
     margin-top: -5px;

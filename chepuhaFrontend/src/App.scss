@@ -1,6 +1,15 @@
 @use "./styles/colors.scss" as *;
 @use "./styles/typography.scss" as *;
 
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+
+  &::-webkit-scrollbar {
+    display: none !important;
+  }
+}
+
 .app-view {
   width: 149.25vw;
   height: 149.25vh;
@@ -254,6 +263,26 @@
   margin: 0;
   margin-top: -30px;
   transform: translateX(12px);
+}
+
+.yellow-guy-bg {
+  position: fixed;
+  left: 0;
+  top: 40%;
+  width: 250px;
+  z-index: 5;
+  pointer-events: none;
+  transform: translateX(-30px);
+}
+
+.red-guy-bg {
+  position: fixed;
+  right: 0;
+  top: 45%;
+  width: 220px;
+  z-index: 5;
+  pointer-events: none;
+  transform: translateX(30px);
 }
 
 .template-selector {
@@ -574,5 +603,29 @@
     right: 15px;
     left: auto;
     gap: 10px;
+  }
+
+  .yellow-guy-bg {
+    width: 15vh !important;
+    left: -2vh !important;
+    top: 60% !important;
+    transform: none !important;
+    position: fixed !important;
+    z-index: 5 !important;
+  }
+
+  .red-guy-bg {
+    width: 12vh !important;
+    right: -2vh !important;
+    top: 65% !important;
+    transform: none !important;
+    position: fixed !important;
+    z-index: 5 !important;
+  }
+
+  .lobby-info,
+  .lobby-container,
+  .players-list {
+    background: transparent !important;
   }
 }
