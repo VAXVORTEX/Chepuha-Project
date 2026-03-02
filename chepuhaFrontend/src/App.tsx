@@ -73,8 +73,8 @@ function App() {
     userAnswers: [],
     isCreatingLobby: false,
     isLobby: false,
-    nickname: "",
-    roomCode: "",
+    nickname: localStorage.getItem('chepuhaUserPrefs') ? JSON.parse(localStorage.getItem('chepuhaUserPrefs')!).nickname || '' : '',
+    roomCode: localStorage.getItem('chepuhaUserPrefs') ? JSON.parse(localStorage.getItem('chepuhaUserPrefs')!).roomCode || '' : '',
     selectedTemplate: "classic",
     error: "",
     allStories: [],
@@ -115,6 +115,13 @@ function App() {
       localStorage.removeItem(STATE_STORAGE_KEY);
     }
   }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate]);
+
+  // Persist user preferences (survives game end)
+  useEffect(() => {
+    if (nickname || roomCode) {
+      localStorage.setItem('chepuhaUserPrefs', JSON.stringify({ nickname, roomCode }));
+    }
+  }, [nickname, roomCode]);
 
   useEffect(() => {
     const saved = localStorage.getItem(STATE_STORAGE_KEY);
@@ -714,8 +721,8 @@ function App() {
 
       {!didGameStart && isCreatingLobby && !isLobby && phase !== Phases.Join && (
         <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} />
-          <div className="red-guy-bg" onClick={playSecretMusic} />
+          <div className="yellow-guy-bg" />
+          <div className="red-guy-bg" />
           <div className="create-game-container">
             <div className="input-wrapper">
               <input
@@ -793,8 +800,8 @@ function App() {
       )}
       {phase === Phases.Join && (
         <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} />
-          <div className="red-guy-bg" onClick={playSecretMusic} />
+          <div className="yellow-guy-bg" />
+          <div className="red-guy-bg" />
           <JoinCard
             onJoin={handleJoinGame}
           />

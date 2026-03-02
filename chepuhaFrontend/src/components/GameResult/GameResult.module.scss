@@ -5,8 +5,8 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  height: calc(100vh - 4px);
-  max-height: 100vh;
+  height: calc(100vh + 40px);
+  max-height: calc(100vh + 40px);
   overflow: hidden;
   padding: 15px 15px;
   background-color: $red;
