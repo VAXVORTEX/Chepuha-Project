@@ -197,7 +197,26 @@ function App() {
     const myPlayer = players.find(p => p.id === playerId);
     if (!myPlayer) return;
 
-    if (myPlayer.players_status === 'playing' && phase === Phases.Waiting) {
+    if (myPlayer.players_status === 'playing' && !currentRoundId) {
+      // Game started but we don't have a round yet (timing: session became active before round was created)
+      (async () => {
+        try {
+          const roundsList = await getRoundsBySession(sessionId);
+          const sorted = [...roundsList].sort((a: any, b: any) => b.round_number - a.round_number);
+          const latestRound = sorted[0];
+          if (latestRound) {
+            setAppState(prev => ({
+              ...prev,
+              currentRoundId: latestRound.id,
+              currentRound: latestRound.round_number,
+              roundStartedAt: latestRound.started_at || prev.roundStartedAt,
+              joinedCount: 0,
+              phase: Phases.Main,
+            }));
+          }
+        } catch (e) { }
+      })();
+    } else if (myPlayer.players_status === 'playing' && phase === Phases.Waiting && currentRoundId) {
       // Status changed from waiting → playing = new round started!
       // GUARD: Only transition if the DB actually has a NEWER round than what we're on
       (async () => {
@@ -225,7 +244,7 @@ function App() {
       fetchFinalStoryResult();
       setAppState(prev => ({ ...prev, phase: Phases.End }));
     }
-  }, [didGameStart, playerId, players, phase, sessionId, currentRound, fetchFinalStoryResult]);
+  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, fetchFinalStoryResult]);
   useEffect(() => {
     if (!session || !sessionId) return;
     if (session.session_status === 'active' && isLobby && !didGameStart) {
@@ -265,7 +284,6 @@ function App() {
             roundStartedAt: activeRound.started_at || prev.roundStartedAt,
             didGameStart: true,
             isLobby: false,
-            joinedCount: 0,
             phase: initialPhase
           }));
         }
@@ -281,7 +299,7 @@ function App() {
         console.error("Error syncing state on start/re-join:", err);
       }
     })();
-  }, [session?.session_status, sessionId, playerId, players.length]);
+  }, [session?.session_status, sessionId, playerId, players.length, rounds.length]);
   useEffect(() => {
     if (!session || !currentRoundId || !sessionId || !didGameStart) return;
     if (phase !== Phases.Waiting && phase !== Phases.Main) return;
