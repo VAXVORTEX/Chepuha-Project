@@ -53,6 +53,17 @@ export async function updatePlayer(id: string, payload: Partial<CreatePlayerPayl
     return data;
 }
 
+export async function updatePlayersBySession(
+    sessionId: string,
+    payload: Partial<CreatePlayerPayload>,
+): Promise<void> {
+    const { error } = await supabase
+        .from('players')
+        .update(payload)
+        .eq('session_id', sessionId);
+    if (error) throw error;
+}
+
 export async function deletePlayer(id: string): Promise<void> {
     const { error } = await supabase
         .from('players')
