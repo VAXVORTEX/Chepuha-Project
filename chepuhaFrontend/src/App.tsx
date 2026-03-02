@@ -115,16 +115,33 @@ function App() {
 
   // Effect to prevent "already answered" question on re-join
   useEffect(() => {
-    if (didGameStart && phase === Phases.Main && currentAnswers && playerId && currentRoundId) {
+    if (!didGameStart || phase !== Phases.Main || !playerId || !currentRoundId) return;
+
+    // Check from useGameState's currentAnswers first (fast path)
+    if (currentAnswers && currentAnswers.length > 0) {
       const alreadyAnswered = currentAnswers.some(a => {
         const sid = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id);
-        const rid = typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id);
-        return sid === playerId && rid === currentRoundId;
+        return sid === playerId;
       });
       if (alreadyAnswered) {
         setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+        return;
       }
     }
+
+    // Also fetch directly from DB in case useGameState hasn't updated yet (slow path)
+    (async () => {
+      try {
+        const answers = await getAnswersByRound(currentRoundId);
+        const alreadyAnswered = answers.some(a => {
+          const sid = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id);
+          return sid === playerId;
+        });
+        if (alreadyAnswered) {
+          setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+        }
+      } catch (e) { }
+    })();
   }, [didGameStart, phase, currentAnswers, playerId, currentRoundId]);
 
   useEffect(() => {
