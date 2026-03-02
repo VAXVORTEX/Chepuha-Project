@@ -256,9 +256,20 @@ function App() {
       if (localPhase !== Phases.Waiting || transitionLockRef.current) return;
       try {
         const curAnswers = await getAnswersByRound(currentRoundId);
-        setAppState(prev => ({ ...prev, joinedCount: curAnswers.length }));
-        const total = playerCount > 0 ? playerCount : players.length;
-        setAppState(prev => ({ ...prev, totalCount: total }));
+        const total = players.length;
+        setAppState(prev => ({ ...prev, joinedCount: curAnswers.length, totalCount: total }));
+
+        // Safeguard: if user rejoined and answered, they should be in Waiting
+        if (playerId) {
+          const answered = curAnswers.some(a => {
+            const sid = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id);
+            return sid === playerId;
+          });
+          if (answered && localPhase !== Phases.Waiting) {
+            setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+            localPhase = Phases.Waiting;
+          }
+        }
 
         const now = Date.now();
         const startedAt = roundStartedAt ? Date.parse(roundStartedAt) : now;
