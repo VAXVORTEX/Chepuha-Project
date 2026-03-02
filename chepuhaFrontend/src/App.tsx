@@ -256,7 +256,8 @@ function App() {
       if (localPhase !== Phases.Waiting || transitionLockRef.current) return;
       try {
         const curAnswers = await getAnswersByRound(currentRoundId);
-        const total = players.length;
+        const freshPlayers = await getPlayersBySession(sessionId);
+        const total = freshPlayers.length;
         setAppState(prev => ({ ...prev, joinedCount: curAnswers.length, totalCount: total }));
 
         // Safeguard: if user rejoined and answered, they should be in Waiting
@@ -270,6 +271,9 @@ function App() {
             localPhase = Phases.Waiting;
           }
         }
+
+        // CRITICAL: Do NOT proceed if players haven't loaded yet
+        if (total < 2) return;
 
         const now = Date.now();
         const startedAt = roundStartedAt ? Date.parse(roundStartedAt) : now;

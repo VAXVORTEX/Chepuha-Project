@@ -38,8 +38,8 @@ export function useGameState(sessionId: string | null) {
             ]);
 
             let activeRoundAnswers: Answer[] = [];
-            const sortedRounds = Array.isArray(roundsData) ? [...roundsData].sort((a: any, b: any) => b.round_number - a.round_number) : [];
-            const activeRound = sortedRounds.length > 0 ? sortedRounds[0] : null;
+            const sortedByNum = Array.isArray(roundsData) ? [...roundsData].sort((a: any, b: any) => (b.round_number || 0) - (a.round_number || 0)) : [];
+            const activeRound = (Array.isArray(roundsData) ? roundsData.find(r => r.rounds_status === 'active') : null) || (sortedByNum.length > 0 ? sortedByNum[0] : null);
 
             if (activeRound) {
                 activeRoundAnswers = await getAnswersByRound(activeRound.id);
