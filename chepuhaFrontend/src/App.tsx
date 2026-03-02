@@ -90,9 +90,10 @@ function App() {
     allStorySheets: []
   });
   const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets } = appState;
-  const { session, players, rounds, currentAnswers: hookAnswers, error: pollError, refreshState } = useGameState(sessionId);
-  const derivedJoinedCount = Math.max(joinedCount, (hookAnswers && hookAnswers.length) || 0); // Use state joinedCount, fallback to hook
-  const derivedTotalCount = Math.max(totalCount, players?.length || 0);
+  const { session, players, rounds, currentAnswers, error: pollError, refreshState } = useGameState(sessionId);
+  // Strictly use state counts to avoid flickering or stale hook data
+  const derivedJoinedCount = joinedCount;
+  const derivedTotalCount = totalCount > 0 ? totalCount : (players?.length || 0);
   const activeTemplate = TEMPLATES[session?.template || selectedTemplate] || TEMPLATES.classic;
   const { t, language, setLanguage } = useLanguage();
   const transitionLockRef = useRef(false);
@@ -117,14 +118,14 @@ function App() {
   useEffect(() => {
     if (!didGameStart || phase !== Phases.Main || !playerId || !currentRoundId) return;
 
-    // Check from useGameState's hookAnswers first (fast path)
-    if (hookAnswers && hookAnswers.length > 0) {
-      const alreadyAnswered = hookAnswers.some(a => {
+    // Check from useGameState's currentAnswers first (fast path)
+    if (currentAnswers && currentAnswers.length > 0) {
+      const alreadyAnswered = currentAnswers.some(a => {
         const sid = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id);
         return sid === playerId;
       });
       if (alreadyAnswered) {
-        setAppState(prev => ({ ...prev, phase: Phases.Waiting, joinedCount: hookAnswers.length }));
+        setAppState(prev => ({ ...prev, phase: Phases.Waiting, joinedCount: currentAnswers.length }));
         return;
       }
     }
@@ -142,7 +143,7 @@ function App() {
         }
       } catch (e) { }
     })();
-  }, [didGameStart, phase, hookAnswers, playerId, currentRoundId]);
+  }, [didGameStart, phase, currentAnswers, playerId, currentRoundId]);
 
   useEffect(() => {
     const saved = localStorage.getItem(STATE_STORAGE_KEY);
@@ -243,6 +244,10 @@ function App() {
         const activeRound = sortedRounds[0];
 
         if (activeRound) {
+          // If we are re-syncing/re-joining, also check if we already answered
+          // to set the phase correctly from the start.
+          let initialPhase = (phase === Phases.Waiting) ? Phases.Waiting : Phases.Main;
+
           setAppState(prev => ({
             ...prev,
             currentRoundId: activeRound.id,
@@ -250,8 +255,8 @@ function App() {
             roundStartedAt: activeRound.started_at || prev.roundStartedAt,
             didGameStart: true,
             isLobby: false,
-            joinedCount: 0, // Reset count on re-sync or re-join
-            phase: (prev.phase === Phases.Waiting) ? Phases.Waiting : Phases.Main
+            joinedCount: 0,
+            phase: initialPhase
           }));
         }
 
@@ -274,8 +279,15 @@ function App() {
     const interval = setInterval(async () => {
       if (transitionLockRef.current) return;
       try {
-        const curAnswers = await getAnswersByRound(currentRoundId);
-        const freshPlayers = await getPlayersBySession(sessionId);
+        const checkRoundId = currentRoundId;
+        const [curAnswers, freshPlayers] = await Promise.all([
+          getAnswersByRound(currentRoundId),
+          getPlayersBySession(sessionId)
+        ]);
+
+        // CRITICAL: If roundId changed while fetching, ignore these results to avoid 2/2 stale bug
+        if (checkRoundId !== currentRoundId) return;
+
         const total = freshPlayers.length;
         setAppState(prev => ({ ...prev, joinedCount: curAnswers.length, totalCount: total }));
 
@@ -301,8 +313,9 @@ function App() {
         const startedAt = roundStartedAt ? Date.parse(roundStartedAt) : now;
         const timePassed = (now - startedAt) / 1000;
 
-        // Force progress if time is up (120s + 10s grace)
+        // Force progress if everyone answered or timeout
         if (curAnswers.length >= total || (isHost && timePassed > 130)) {
+          console.log("[Sync] Triggering transition. Answers:", curAnswers.length, "Total:", total);
           transitionLockRef.current = true;
 
           if (isHost && curAnswers.length < total) {
