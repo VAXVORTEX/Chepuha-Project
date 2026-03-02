@@ -364,7 +364,6 @@ function App() {
           }
 
           if (currentRound < activeTemplate.questions.length) {
-            localPhase = Phases.Main;
             if (isHost) {
               const ts = new Date().toISOString();
               const nextRoundNum = currentRound + 1;
@@ -377,6 +376,7 @@ function App() {
               });
               // SERVER-AUTHORITATIVE: Tell ALL players to start answering the new round
               await updatePlayersBySession(sessionId, { players_status: 'playing' });
+              localPhase = Phases.Main;
               setAppState(prev => ({
                 ...prev,
                 currentRoundId: nextRound.id,
@@ -387,10 +387,11 @@ function App() {
               }));
               transitionLockRef.current = false;
             } else {
-              // Non-host: try to detect the new round via polling (fallback for server-authoritative effect)
+              // Non-host: try to detect the new round via polling
               const rList = await getRoundsBySession(sessionId);
               const nextRound = rList.find((r: any) => r.round_number === currentRound + 1);
               if (nextRound) {
+                localPhase = Phases.Main; // Only set AFTER we found the round!
                 setAppState(prev => ({
                   ...prev,
                   currentRoundId: nextRound.id,
@@ -400,6 +401,7 @@ function App() {
                   phase: Phases.Main
                 }));
               }
+              // If round not found yet, localPhase stays Waiting → interval retries next tick
               transitionLockRef.current = false;
             }
           } else {
