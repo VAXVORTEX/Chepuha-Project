@@ -7,18 +7,20 @@ if (!supabaseUrl || !supabaseAnonKey) {
     console.warn('Supabase URL or Anon Key is missing from .env file.');
 }
 
-const fetchWithRetry = async (url: string | URL | Request, options?: RequestInit, retries = 4): Promise<Response> => {
+const fetchWithRetry = async (url: string | URL | Request, options?: RequestInit, retries = 5): Promise<Response> => {
     try {
         const response = await fetch(url, options);
-        if (!response.ok && response.status >= 500 && retries > 0) {
-            const delay = Math.pow(2, 4 - retries) * 1000; // Exponential: 1s, 2s, 4s, 8s
+        // Retry on 5xx (server error) AND 403/406 (common DPI/ISP block codes)
+        if (!response.ok && (response.status >= 500 || response.status === 403 || response.status === 406) && retries > 0) {
+            const delay = Math.pow(2, 5 - retries) * 1000;
             await new Promise(resolve => setTimeout(resolve, delay));
             return fetchWithRetry(url, options, retries - 1);
         }
         return response;
     } catch (err) {
+        // TypeError is often a network timeout or CORS block
         if (retries > 0) {
-            const delay = Math.pow(2, 4 - retries) * 1000;
+            const delay = Math.pow(2, 5 - retries) * 1000;
             await new Promise(resolve => setTimeout(resolve, delay));
             return fetchWithRetry(url, options, retries - 1);
         }

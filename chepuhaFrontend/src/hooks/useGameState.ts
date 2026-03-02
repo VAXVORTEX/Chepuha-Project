@@ -54,14 +54,15 @@ export function useGameState(sessionId: string | null) {
                 }
             }
 
-            setGameState({
-                session: sessionData,
-                players: playersData || [],
-                rounds: roundsData || [],
+            // Aggressive fallback: if fetch failed, use previous state data to avoid flashing empty screens
+            setGameState((prev) => ({
+                session: sessionData || prev.session,
+                players: playersData || prev.players,
+                rounds: roundsData || prev.rounds,
                 activeRoundId: activeRound?.id || null,
                 currentAnswers: activeRoundAnswers || [],
                 error: null,
-            });
+            }));
         } catch (err: any) {
             // Overall failure (e.g. initial connection)
             if (err instanceof TypeError || String(err).includes('Failed to fetch')) {
@@ -74,40 +75,48 @@ export function useGameState(sessionId: string | null) {
         fetchState();
         if (!sessionId) return;
 
-        const sessionChannel = supabase
-            .channel(`session-${sessionId}`)
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'game_sessions', filter: `id=eq.${sessionId}` },
-                (payload) => { if (payload) fetchState(); }
-            )
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'players', filter: `session_id=eq.${sessionId}` },
-                (payload) => { if (payload) fetchState(); }
-            )
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'rounds', filter: `session_id=eq.${sessionId}` },
-                (payload) => { if (payload) fetchState(); }
-            )
-            .on(
-                'postgres_changes',
-                { event: '*', schema: 'public', table: 'answers' },
-                (payload) => { if (payload) fetchState(); }
-            )
-            .subscribe((status) => {
-                console.log(`Realtime subscription status for session ${sessionId}:`, status);
-            });
+        try {
+            const sessionChannel = supabase
+                .channel(`session-${sessionId}`)
+                .on(
+                    'postgres_changes',
+                    { event: '*', schema: 'public', table: 'game_sessions', filter: `id=eq.${sessionId}` },
+                    () => { fetchState(); }
+                )
+                .on(
+                    'postgres_changes',
+                    { event: '*', schema: 'public', table: 'players', filter: `session_id=eq.${sessionId}` },
+                    () => { fetchState(); }
+                )
+                .on(
+                    'postgres_changes',
+                    { event: '*', schema: 'public', table: 'rounds', filter: `session_id=eq.${sessionId}` },
+                    () => { fetchState(); }
+                )
+                .on(
+                    'postgres_changes',
+                    { event: '*', schema: 'public', table: 'answers' },
+                    () => { fetchState(); }
+                )
+                .subscribe((status) => {
+                    console.log(`Realtime subscription status for session ${sessionId}:`, status);
+                });
 
-        const pollInterval = setInterval(() => {
-            fetchState();
-        }, 1000); // 1s polling fallback for faster sync
+            const pollInterval = setInterval(() => {
+                fetchState();
+            }, 1000); // 1s polling fallback for faster sync
 
-        return () => {
-            supabase.removeChannel(sessionChannel);
-            clearInterval(pollInterval);
-        };
+            return () => {
+                supabase.removeChannel(sessionChannel);
+                clearInterval(pollInterval);
+            };
+        } catch (err) {
+            console.error("Realtime subscription failed, using polling only", err);
+            const pollInterval = setInterval(() => {
+                fetchState();
+            }, 1000);
+            return () => clearInterval(pollInterval);
+        }
     }, [fetchState, sessionId]);
 
     return {

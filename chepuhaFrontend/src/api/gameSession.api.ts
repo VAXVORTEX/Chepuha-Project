@@ -16,7 +16,7 @@ export async function createGameSession(payload: CreateGameSessionPayload): Prom
         .select()
         .single();
     if (error) throw error;
-    return data;
+    return data as GameSession;
 }
 
 export async function getGameSession(id: string): Promise<GameSession> {
@@ -31,7 +31,7 @@ export async function getGameSession(id: string): Promise<GameSession> {
         .eq('id', id)
         .single();
     if (error) throw error;
-    return data;
+    return data as GameSession;
 }
 
 export async function getGameSessions(): Promise<GameSession[]> {
@@ -40,7 +40,7 @@ export async function getGameSessions(): Promise<GameSession[]> {
         .select('*')
         .order('session_created_at', { ascending: false });
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
 export async function updateGameSession(
@@ -54,7 +54,7 @@ export async function updateGameSession(
         .select()
         .single();
     if (error) throw error;
-    return data;
+    return data as GameSession;
 }
 
 export async function deleteGameSession(id: string): Promise<void> {
