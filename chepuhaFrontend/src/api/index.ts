@@ -23,6 +23,7 @@ export {
     getPlayer,
     getPlayersBySession,
     updatePlayer,
+    updatePlayersBySession,
     deletePlayer,
 } from './player.api';
 export type { CreatePlayerPayload } from './player.api';

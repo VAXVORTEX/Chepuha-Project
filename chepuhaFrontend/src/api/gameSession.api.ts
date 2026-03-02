@@ -19,7 +19,7 @@ export async function createGameSession(payload: CreateGameSessionPayload): Prom
     return data;
 }
 
-export async function getGameSession(id: number): Promise<GameSession> {
+export async function getGameSession(id: string): Promise<GameSession> {
     const { data, error } = await supabase
         .from('game_sessions')
         .select(`
@@ -38,13 +38,13 @@ export async function getGameSessions(): Promise<GameSession[]> {
     const { data, error } = await supabase
         .from('game_sessions')
         .select('*')
-        .order('id', { ascending: false });
+        .order('session_created_at', { ascending: false });
     if (error) throw error;
     return data;
 }
 
 export async function updateGameSession(
-    id: number,
+    id: string,
     payload: Partial<CreateGameSessionPayload>,
 ): Promise<GameSession> {
     const { data, error } = await supabase
@@ -57,7 +57,7 @@ export async function updateGameSession(
     return data;
 }
 
-export async function deleteGameSession(id: number): Promise<void> {
+export async function deleteGameSession(id: string): Promise<void> {
     const { error } = await supabase
         .from('game_sessions')
         .delete()

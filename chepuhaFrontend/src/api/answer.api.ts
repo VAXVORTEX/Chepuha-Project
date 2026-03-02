@@ -4,9 +4,9 @@ import type { Answer } from './types';
 export interface SubmitAnswerPayload {
     answer_text: string;
     position_in_sheet: number;
-    player_id?: number;
-    round_id?: number;
-    story_sheet_id?: number;
+    player_id?: string;
+    round_id?: string;
+    story_sheet_id?: string;
 }
 
 export async function submitAnswer(payload: SubmitAnswerPayload): Promise<Answer> {
@@ -19,7 +19,7 @@ export async function submitAnswer(payload: SubmitAnswerPayload): Promise<Answer
     return data;
 }
 
-export async function getAnswer(id: number): Promise<Answer> {
+export async function getAnswer(id: string): Promise<Answer> {
     const { data, error } = await supabase
         .from('answers')
         .select('*')
@@ -29,7 +29,7 @@ export async function getAnswer(id: number): Promise<Answer> {
     return data;
 }
 
-export async function getAnswersByRound(roundId: number): Promise<Answer[]> {
+export async function getAnswersByRound(roundId: string): Promise<Answer[]> {
     const { data, error } = await supabase
         .from('answers')
         .select('*')
@@ -39,7 +39,7 @@ export async function getAnswersByRound(roundId: number): Promise<Answer[]> {
     return data;
 }
 
-export async function getAnswersByStorySheet(storySheetId: number): Promise<Answer[]> {
+export async function getAnswersByStorySheet(storySheetId: string): Promise<Answer[]> {
     const { data, error } = await supabase
         .from('answers')
         .select('*')

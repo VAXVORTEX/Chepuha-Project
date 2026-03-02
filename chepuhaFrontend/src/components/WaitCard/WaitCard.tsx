@@ -18,8 +18,6 @@ const WaitCard: React.FC<WaitCardProps> = ({
   const { t } = useLanguage();
   return (
     <div className={styles.wrapper}>
-      <div className={styles.yellowGuy} onClick={playSecretMusic} />
-      <div className={styles.redGuy} onClick={playSecretMusic} />
       <div className={styles.container}>
         <h2 className={styles.nickText}>{t('YOUR_NICK')} {nick}</h2>
         <p className={styles.countText}>
