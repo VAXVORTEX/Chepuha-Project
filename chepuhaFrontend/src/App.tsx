@@ -668,14 +668,20 @@ function App() {
                 {players.length > 0 ? (
                   players.map((p, i) => (
                     <div key={p.id || String(i)} className="player-item">
-                      {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
+                      <div className="crown-side-spacer">
+                        {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
+                      </div>
                       <span className="player-name">{p.nickname}</span>
+                      <div className="crown-side-spacer" />
                     </div>
                   ))
                 ) : (
                   <div className="player-item">
-                    <img src={crownImage} alt="Host" className="crown-icon" />
+                    <div className="crown-side-spacer">
+                      <img src={crownImage} alt="Host" className="crown-icon" />
+                    </div>
                     <span className="player-name">{nickname}</span>
+                    <div className="crown-side-spacer" />
                   </div>
                 )}
               </div>
