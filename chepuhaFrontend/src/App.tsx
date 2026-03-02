@@ -387,8 +387,19 @@ function App() {
               }));
               transitionLockRef.current = false;
             } else {
-              // Non-host: server-authoritative effect will handle the transition
-              // when host sets all players_status to 'playing'
+              // Non-host: try to detect the new round via polling (fallback for server-authoritative effect)
+              const rList = await getRoundsBySession(sessionId);
+              const nextRound = rList.find((r: any) => r.round_number === currentRound + 1);
+              if (nextRound) {
+                setAppState(prev => ({
+                  ...prev,
+                  currentRoundId: nextRound.id,
+                  currentRound: currentRound + 1,
+                  roundStartedAt: nextRound.started_at || prev.roundStartedAt,
+                  joinedCount: 0,
+                  phase: Phases.Main
+                }));
+              }
               transitionLockRef.current = false;
             }
           } else {
