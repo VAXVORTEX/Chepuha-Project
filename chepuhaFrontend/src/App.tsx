@@ -199,12 +199,13 @@ function App() {
 
     if (myPlayer.players_status === 'playing' && phase === Phases.Waiting) {
       // Status changed from waiting → playing = new round started!
+      // GUARD: Only transition if the DB actually has a NEWER round than what we're on
       (async () => {
         try {
           const roundsList = await getRoundsBySession(sessionId);
           const sorted = [...roundsList].sort((a: any, b: any) => b.round_number - a.round_number);
           const latestRound = sorted[0];
-          if (latestRound) {
+          if (latestRound && latestRound.round_number > currentRound) {
             setAppState(prev => ({
               ...prev,
               currentRoundId: latestRound.id,
@@ -224,7 +225,7 @@ function App() {
       fetchFinalStoryResult();
       setAppState(prev => ({ ...prev, phase: Phases.End }));
     }
-  }, [didGameStart, playerId, players, phase, sessionId, fetchFinalStoryResult]);
+  }, [didGameStart, playerId, players, phase, sessionId, currentRound, fetchFinalStoryResult]);
   useEffect(() => {
     if (!session || !sessionId) return;
     if (session.session_status === 'active' && isLobby && !didGameStart) {
@@ -617,6 +618,8 @@ function App() {
       });
       // SERVER-AUTHORITATIVE: Mark this player as done answering
       await updatePlayer(playerId, { players_status: 'ready' });
+      // Immediately refresh hook so server-authoritative effect sees 'ready' not stale 'playing'
+      refreshState();
       const curAnswers = await getAnswersByRound(currentRoundId);
       setAppState(prev => ({ ...prev, joinedCount: curAnswers.length }));
       setAppState(prev => ({ ...prev, totalCount: playerCount > 0 ? playerCount : players.length }));
