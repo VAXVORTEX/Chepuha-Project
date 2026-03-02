@@ -32,7 +32,7 @@ export async function getStorySheet(id: string): Promise<StorySheet> {
 export async function getStorySheetsBySession(sessionId: string): Promise<StorySheet[]> {
     const { data, error } = await supabase
         .from('story_sheets')
-        .select('*, answers(*)')
+        .select('*, player_id(*), answers(*)')
         .eq('game_session_id', sessionId)
         .order('sheet_number', { ascending: true });
     if (error) throw error;

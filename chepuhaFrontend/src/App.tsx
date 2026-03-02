@@ -91,10 +91,11 @@ function App() {
   });
   const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets } = appState;
   const { session, players, rounds, currentAnswers, activeRoundId: hookActiveRoundId, error: pollError, refreshState } = useGameState(sessionId);
-  // Only use hook answers for the count if the hook is actually looking at our current active round
+  // Stable total count logic: if game started, use max_players (which host locked). Else use players list.
   const hookMatch = hookActiveRoundId && currentRoundId && hookActiveRoundId === currentRoundId;
   const derivedJoinedCount = hookMatch ? Math.max(joinedCount, currentAnswers.length) : joinedCount;
-  const derivedTotalCount = totalCount > 0 ? totalCount : (players?.length || 0);
+  const isStarted = session?.session_status === 'active' || session?.session_status === 'completed';
+  const derivedTotalCount = (isStarted && session?.max_players) ? session.max_players : (totalCount > 0 ? totalCount : players.length);
   const activeTemplate = TEMPLATES[session?.template || selectedTemplate] || TEMPLATES.classic;
   const { t, language, setLanguage } = useLanguage();
   const transitionLockRef = useRef(false);
@@ -195,10 +196,11 @@ function App() {
         .filter(s => s.answers && s.answers.length > 0)
         .map(s => {
           const sorted = [...s.answers!].sort((a, b) => a.position_in_sheet - b.position_in_sheet);
-          const p = s.player_id as Player | undefined;
+          const p = s.player_id as any;
+          const nick = p?.nickname || 'Гравець';
           return {
-            playerName: p?.nickname || 'Гравець',
-            story: activeTemplate.buildStory(sorted.map(a => a.answer_text), language, String(session?.id || sessionId || '0'), String(s.id || Math.random())),
+            playerName: nick,
+            story: activeTemplate.buildStory(sorted.map(a => a.answer_text), language, String(sessionId || 'local'), String(s.id || Math.random())),
             answers: sorted.map(a => a.answer_text),
             templateId: activeTemplate.id
           };
@@ -226,7 +228,7 @@ function App() {
       setAppState(prev => ({ ...prev, isLobby: false }));
       setAppState(prev => ({ ...prev, phase: Phases.Main }));
     }
-    if (session.session_status === 'completed' && phase !== Phases.End && phase !== Phases.Main && phase !== Phases.History) {
+    if (session.session_status === 'completed' && phase !== Phases.End && phase !== Phases.History) {
       fetchFinalStoryResult();
       setAppState(prev => ({ ...prev, phase: Phases.End }));
     }
@@ -289,7 +291,8 @@ function App() {
         // CRITICAL: If roundId changed while fetching, ignore these results to avoid 2/2 stale bug
         if (checkRoundId !== currentRoundId) return;
 
-        const total = freshPlayers.length;
+        // Use session.max_players (locked by host) or dynamic count
+        const total = session.max_players || freshPlayers.length;
         setAppState(prev => ({ ...prev, joinedCount: curAnswers.length, totalCount: total }));
 
         // Safeguard: if user rejoined and answered, they should be in Waiting
@@ -532,7 +535,8 @@ function App() {
   const doGameStart = async () => {
     if (!sessionId) return;
     try {
-      await updateGameSession(sessionId, { session_status: 'active' });
+      // Lock player count by updating max_players to actual lobby size
+      await updateGameSession(sessionId, { session_status: 'active', max_players: players.length });
       setAppState(prev => ({ ...prev, playerCount: players.length }));
       const newSheets: { playerId: string, sheetId: string }[] = [];
       for (const p of players) {
