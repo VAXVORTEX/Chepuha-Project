@@ -91,11 +91,9 @@ function App() {
   });
   const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets } = appState;
   const { session, players, rounds, currentAnswers, activeRoundId: hookActiveRoundId, error: pollError, refreshState } = useGameState(sessionId);
-  // Stable total count logic: if game started, use max_players (which host locked). Else use players list.
   const hookMatch = hookActiveRoundId && currentRoundId && hookActiveRoundId === currentRoundId;
   const derivedJoinedCount = hookMatch ? Math.max(joinedCount, currentAnswers.length) : joinedCount;
-  const isStarted = session?.session_status === 'active' || session?.session_status === 'completed';
-  const derivedTotalCount = (isStarted && session?.max_players) ? session.max_players : (totalCount > 0 ? totalCount : players.length);
+  const derivedTotalCount = totalCount > 0 ? totalCount : (players?.length || 0);
   const activeTemplate = TEMPLATES[session?.template || selectedTemplate] || TEMPLATES.classic;
   const { t, language, setLanguage } = useLanguage();
   const transitionLockRef = useRef(false);
@@ -228,7 +226,7 @@ function App() {
       setAppState(prev => ({ ...prev, isLobby: false }));
       setAppState(prev => ({ ...prev, phase: Phases.Main }));
     }
-    if (session.session_status === 'completed' && phase !== Phases.End && phase !== Phases.History) {
+    if (session.session_status === 'completed' && phase !== Phases.End && phase !== Phases.Main && phase !== Phases.History) {
       fetchFinalStoryResult();
       setAppState(prev => ({ ...prev, phase: Phases.End }));
     }
@@ -276,8 +274,8 @@ function App() {
     })();
   }, [session?.session_status, sessionId, playerId, players.length]);
   useEffect(() => {
-    if (!session || !currentRoundId || !sessionId) return;
-    if (phase !== Phases.Waiting && phase !== Phases.Main) return; // Allow running in Main phase to keep counts fresh
+    if (!session || !currentRoundId || !sessionId || !didGameStart) return;
+    if (phase !== Phases.Waiting && phase !== Phases.Main) return;
     let localPhase: Phases = phase;
     const interval = setInterval(async () => {
       if (transitionLockRef.current) return;
@@ -291,8 +289,8 @@ function App() {
         // CRITICAL: If roundId changed while fetching, ignore these results to avoid 2/2 stale bug
         if (checkRoundId !== currentRoundId) return;
 
-        // Use session.max_players (locked by host) or dynamic count
-        const total = session.max_players || freshPlayers.length;
+        // Always use actual player count from DB — session.max_players may be stale
+        const total = freshPlayers.length;
         setAppState(prev => ({ ...prev, joinedCount: curAnswers.length, totalCount: total }));
 
         // Safeguard: if user rejoined and answered, they should be in Waiting
@@ -403,7 +401,7 @@ function App() {
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, [phase, session?.id, currentRoundId, playerCount, players.length, currentRound, isHost, sessionId, fetchFinalStoryResult, roundStartedAt, activeTemplate]);
+  }, [phase, session?.id, currentRoundId, playerCount, players.length, currentRound, isHost, sessionId, fetchFinalStoryResult, roundStartedAt, activeTemplate, didGameStart]);
   const generateRoomCode = () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let code = "";
