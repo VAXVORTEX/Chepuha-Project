@@ -66,11 +66,9 @@ export function useGameState(sessionId: string | null) {
             // Overall failure (e.g. initial connection)
             if (err instanceof TypeError || String(err).includes('Failed to fetch')) {
                 setGameState((prev) => ({ ...prev, error: 'NETWORK_ERROR' }));
-            } else {
-                setGameState((prev) => ({ ...prev, error: 'Втрачено звʼязок з сервером' }));
             }
         }
-    }, [sessionId, gameState.session, gameState.players, gameState.rounds, gameState.currentAnswers]);
+    }, [sessionId]);
 
     useEffect(() => {
         fetchState();

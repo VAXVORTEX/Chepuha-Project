@@ -36,7 +36,7 @@ export async function getRoundsBySession(sessionId: string): Promise<Round[]> {
         .eq('session_id', sessionId)
         .order('round_number', { ascending: true });
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
 export async function updateRound(

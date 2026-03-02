@@ -211,7 +211,7 @@ function App() {
       (async () => {
         try {
           const roundsList = await getRoundsBySession(sessionId);
-          const sorted = [...roundsList].sort((a: any, b: any) => b.round_number - a.round_number);
+          const sorted = [...(roundsList || [])].sort((a: any, b: any) => b.round_number - a.round_number);
           const latestRound = sorted[0];
           if (latestRound) {
             setAppState(prev => ({
@@ -231,7 +231,7 @@ function App() {
       (async () => {
         try {
           const roundsList = await getRoundsBySession(sessionId);
-          const sorted = [...roundsList].sort((a: any, b: any) => b.round_number - a.round_number);
+          const sorted = [...(roundsList || [])].sort((a: any, b: any) => b.round_number - a.round_number);
           const latestRound = sorted[0];
           if (latestRound && latestRound.round_number > currentRound) {
             setAppState(prev => ({
@@ -276,7 +276,7 @@ function App() {
           getStorySheetsBySession(sessionId),
         ]);
 
-        const sortedRounds = Array.isArray(rounds) ? [...rounds].sort((a: any, b: any) => b.round_number - a.round_number) : [];
+        const sortedRounds = Array.isArray(rounds) ? [...(rounds || [])].sort((a: any, b: any) => b.round_number - a.round_number) : [];
         const activeRound = sortedRounds[0];
 
         if (activeRound) {
@@ -880,7 +880,7 @@ function App() {
               activeTemplate.id === 'chaos'
                 ? TEMPLATES[
                   ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "chaos"][
-                  Math.abs([...(playerId || nickname), currentRound].reduce((a: number, c: any) => a + String(c).charCodeAt(0), 0)) % 8
+                  Math.abs([...(playerId || nickname || "Guest"), currentRound].reduce((a: number, c: any) => a + String(c).charCodeAt(0), 0)) % 8
                   ]
                 ]?.questions[currentRound - 1] || activeTemplate.questions[currentRound - 1]
                 : activeTemplate.questions[currentRound - 1]
