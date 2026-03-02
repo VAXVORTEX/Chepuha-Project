@@ -669,7 +669,7 @@ function App() {
   };
   return (
     <div className="app-view">
-      {roomCode && !didGameStart && phase !== Phases.Join && phase !== Phases.History && phase !== Phases.End && (
+      {roomCode && !didGameStart && (isCreatingLobby || isLobby) && phase !== Phases.Join && phase !== Phases.History && phase !== Phases.End && (
         <GameCode code={roomCode} className="gameCodePos" />
       )}
       {!didGameStart && !isCreatingLobby && phase === Phases.Main && !isLobby && (
@@ -719,8 +719,8 @@ function App() {
 
       {!didGameStart && isCreatingLobby && !isLobby && phase !== Phases.Join && (
         <>
-          <div className="yellow-guy-bg" />
-          <div className="red-guy-bg" />
+          <div className="yellow-guy-bg" onClick={playSecretMusic} />
+          <div className="red-guy-bg" onClick={playSecretMusic} />
           <div className="create-game-container">
             <div className="input-wrapper">
               <input
@@ -798,9 +798,11 @@ function App() {
       )}
       {phase === Phases.Join && (
         <>
-          <div className="yellow-guy-bg" />
-          <div className="red-guy-bg" />
+          <div className="yellow-guy-bg" onClick={playSecretMusic} />
+          <div className="red-guy-bg" onClick={playSecretMusic} />
           <JoinCard
+            initialNick={nickname}
+            initialRoom={roomCode}
             onJoin={handleJoinGame}
           />
           <HomeIcon className="homeIconPos" onClick={goHome} />
