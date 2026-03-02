@@ -33,11 +33,10 @@ export function useGameState(sessionId: string | null) {
     const fetchState = useCallback(async () => {
         if (!sessionId) return;
         try {
-            const [sessionData, playersData, roundsData] = await Promise.all([
-                getGameSession(sessionId),
-                getPlayersBySession(sessionId),
-                getRoundsBySession(sessionId),
-            ]);
+            // Sequential fetching is more resilient on VPNs/DPI than Promise.all
+            const sessionData = await getGameSession(sessionId);
+            const playersData = await getPlayersBySession(sessionId);
+            const roundsData = await getRoundsBySession(sessionId);
 
             let activeRoundAnswers: Answer[] = [];
             const sortedByNum = Array.isArray(roundsData) ? [...roundsData].sort((a: any, b: any) => (b.round_number || 0) - (a.round_number || 0)) : [];
@@ -55,8 +54,13 @@ export function useGameState(sessionId: string | null) {
                 currentAnswers: activeRoundAnswers || [],
                 error: null,
             });
-        } catch (err) {
-            setGameState((prev) => ({ ...prev, error: 'Втрачено звʼязок з сервером' }));
+        } catch (err: any) {
+            // Detect fetch (network) failures
+            if (err instanceof TypeError || String(err).includes('Failed to fetch')) {
+                setGameState((prev) => ({ ...prev, error: 'NETWORK_ERROR' }));
+            } else {
+                setGameState((prev) => ({ ...prev, error: 'Втрачено звʼязок з сервером' }));
+            }
         }
     }, [sessionId]);
 

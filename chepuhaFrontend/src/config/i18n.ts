@@ -154,6 +154,8 @@ export const DICTIONARY = {
         Q_CHAOS_9: "Яким епічним фіналом це завершилося?",
         Q_CHAOS_10: "Який дивний предмет вони знайшли/зробили?",
         Q_CHAOS_11: "Яка абсурдна мораль цієї історії?",
+        NETWORK_ERROR: "Помилка мережі. Перевірте зʼєднання, VPN або DNS.",
+        DNS_CHECK: "Втрачено звʼязок. Спробуйте оновити сторінку або вимкнути VPN/DPI.",
     },
     en: {
         CREATE_GAME: "CREATE GAME",
@@ -310,6 +312,8 @@ export const DICTIONARY = {
         Q_CHAOS_9: "With what epic finale did it end?",
         Q_CHAOS_10: "What weird object did they find/make?",
         Q_CHAOS_11: "What is the absurd moral of this story?",
+        NETWORK_ERROR: "Network Error. Check your connection, VPN, or DNS.",
+        DNS_CHECK: "Connection lost. Try refreshing or disabling VPN/DPI.",
     }
 };
 export type Language = 'uk' | 'en';

@@ -784,7 +784,9 @@ function App() {
                 )}
               </div>
             </div>
-            <div className="error-message" style={{ color: "red", minHeight: '24px' }}>{pollError || '\u00A0'}</div>
+            <div className="error-message" style={{ color: "red", minHeight: '24px' }}>
+              {pollError ? (t(pollError as any) || pollError) : '\u00A0'}
+            </div>
             <div className="lobby-actions">
               {isHost ? (
                 <Button label={t('START_GAME')} variant="primary" phase={phase} onClick={doGameStart} disabled={players.length < 1} />
