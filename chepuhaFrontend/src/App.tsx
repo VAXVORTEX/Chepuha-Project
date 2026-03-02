@@ -90,9 +90,9 @@ function App() {
     allStorySheets: []
   });
   const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets } = appState;
-  const { session, players, rounds, currentAnswers, error: pollError, refreshState } = useGameState(sessionId);
-  const derivedJoinedCount = currentAnswers?.length || 0;
-  const derivedTotalCount = players?.length || 0;
+  const { session, players, rounds, currentAnswers: hookAnswers, error: pollError, refreshState } = useGameState(sessionId);
+  const derivedJoinedCount = Math.max(joinedCount, (hookAnswers && hookAnswers.length) || 0); // Use state joinedCount, fallback to hook
+  const derivedTotalCount = Math.max(totalCount, players?.length || 0);
   const activeTemplate = TEMPLATES[session?.template || selectedTemplate] || TEMPLATES.classic;
   const { t, language, setLanguage } = useLanguage();
   const transitionLockRef = useRef(false);
@@ -117,14 +117,14 @@ function App() {
   useEffect(() => {
     if (!didGameStart || phase !== Phases.Main || !playerId || !currentRoundId) return;
 
-    // Check from useGameState's currentAnswers first (fast path)
-    if (currentAnswers && currentAnswers.length > 0) {
-      const alreadyAnswered = currentAnswers.some(a => {
+    // Check from useGameState's hookAnswers first (fast path)
+    if (hookAnswers && hookAnswers.length > 0) {
+      const alreadyAnswered = hookAnswers.some(a => {
         const sid = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id);
         return sid === playerId;
       });
       if (alreadyAnswered) {
-        setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+        setAppState(prev => ({ ...prev, phase: Phases.Waiting, joinedCount: hookAnswers.length }));
         return;
       }
     }
@@ -138,11 +138,11 @@ function App() {
           return sid === playerId;
         });
         if (alreadyAnswered) {
-          setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+          setAppState(prev => ({ ...prev, phase: Phases.Waiting, joinedCount: answers.length }));
         }
       } catch (e) { }
     })();
-  }, [didGameStart, phase, currentAnswers, playerId, currentRoundId]);
+  }, [didGameStart, phase, hookAnswers, playerId, currentRoundId]);
 
   useEffect(() => {
     const saved = localStorage.getItem(STATE_STORAGE_KEY);
@@ -250,6 +250,7 @@ function App() {
             roundStartedAt: activeRound.started_at || prev.roundStartedAt,
             didGameStart: true,
             isLobby: false,
+            joinedCount: 0, // Reset count on re-sync or re-join
             phase: (prev.phase === Phases.Waiting) ? Phases.Waiting : Phases.Main
           }));
         }
@@ -267,10 +268,11 @@ function App() {
     })();
   }, [session?.session_status, sessionId, playerId, players.length]);
   useEffect(() => {
-    if (phase !== Phases.Waiting || !session || !currentRoundId || !sessionId) return;
+    if (!session || !currentRoundId || !sessionId) return;
+    if (phase !== Phases.Waiting && phase !== Phases.Main) return; // Allow running in Main phase to keep counts fresh
     let localPhase: Phases = phase;
     const interval = setInterval(async () => {
-      if (localPhase !== Phases.Waiting || transitionLockRef.current) return;
+      if (transitionLockRef.current) return;
       try {
         const curAnswers = await getAnswersByRound(currentRoundId);
         const freshPlayers = await getPlayersBySession(sessionId);
@@ -279,15 +281,18 @@ function App() {
 
         // Safeguard: if user rejoined and answered, they should be in Waiting
         if (playerId) {
-          const answered = curAnswers.some(a => {
+          const alreadyAnswered = curAnswers.some(a => {
             const sid = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id);
             return sid === playerId;
           });
-          if (answered && localPhase !== Phases.Waiting) {
-            setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+          if (alreadyAnswered && localPhase === Phases.Main) {
+            setAppState(prev => ({ ...prev, phase: Phases.Waiting, joinedCount: curAnswers.length }));
             localPhase = Phases.Waiting;
           }
         }
+
+        // Only process transitions if we are in Waiting phase
+        if (localPhase !== Phases.Waiting) return;
 
         // CRITICAL: Do NOT proceed if players haven't loaded yet
         if (total < 2) return;
@@ -343,6 +348,7 @@ function App() {
                 currentRoundId: nextRound.id,
                 currentRound: nextRoundNum,
                 roundStartedAt: ts,
+                joinedCount: 0, // CRITICAL: Reset count for the new round
                 phase: Phases.Main
               }));
               transitionLockRef.current = false;
@@ -356,6 +362,7 @@ function App() {
                   currentRoundId: nextRound.id,
                   currentRound: currentRound + 1,
                   roundStartedAt: nextRound.started_at || prev.roundStartedAt,
+                  joinedCount: 0, // CRITICAL: Reset count for the new round
                   phase: Phases.Main
                 }));
                 transitionLockRef.current = false;
