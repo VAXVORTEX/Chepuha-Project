@@ -28,9 +28,11 @@ import {
   updatePlayersBySession,
   createRound,
   createStorySheet,
+  createStorySheetsBatch,
   submitAnswer,
   getAnswersByRound,
   QuestionType,
+  StorySheetStatus,
   getGameSessions,
   getStorySheetsBySession,
   getRoundsBySession,
@@ -559,21 +561,28 @@ function App() {
   const doGameStart = async () => {
     if (!sessionId) return;
     try {
-      await updateGameSession(sessionId, { session_status: 'active', max_players: players.length });
-      setAppState(prev => ({ ...prev, playerCount: players.length }));
-      const newSheets: { playerId: string, sheetId: string }[] = [];
-      for (const p of players) {
-        const sheet = await createStorySheet({
-          game_session_id: sessionId,
-          player_id: p.id,
-          storysheets_status: 'in_progress',
-        });
-        newSheets.push({ playerId: p.id, sheetId: sheet.id });
-        if (p.id === playerId) {
-          setAppState(prev => ({ ...prev, myStorySheetId: sheet.id }));
-        }
+      // 1. Prepare batch story sheets
+      const sheetsToCreate = players.map(p => ({
+        game_session_id: sessionId,
+        player_id: p.id,
+        storysheets_status: 'in_progress' as StorySheetStatus,
+      }));
+
+      const createdSheets = await createStorySheetsBatch(sheetsToCreate);
+
+      const newSheets = createdSheets.map((s: any) => ({
+        playerId: s.player_id as string,
+        sheetId: s.id
+      }));
+
+      // Update local state for my sheet
+      const mySheet = createdSheets.find((s: any) => s.player_id === playerId);
+      if (mySheet) {
+        setAppState(prev => ({ ...prev, myStorySheetId: mySheet.id }));
       }
       setAppState(prev => ({ ...prev, allStorySheets: newSheets }));
+
+      // 2. Create the first round
       const ts = new Date().toISOString();
       const firstRound = await createRound({
         session_id: sessionId,
@@ -582,16 +591,30 @@ function App() {
         rounds_status: 'active',
         started_at: ts,
       });
-      // SERVER-AUTHORITATIVE: Tell ALL players to start answering round 1
+
+      // 3. Update ALL players to 'playing'
       await updatePlayersBySession(sessionId, { players_status: 'playing' });
-      setAppState(prev => ({ ...prev, currentRoundId: firstRound.id }));
-      setAppState(prev => ({ ...prev, roundStartedAt: ts }));
-      setAppState(prev => ({ ...prev, didGameStart: true }));
-      setAppState(prev => ({ ...prev, isLobby: false }));
-      setAppState(prev => ({ ...prev, phase: Phases.Main }));
-      setAppState(prev => ({ ...prev, currentRound: 1 }));
-      setAppState(prev => ({ ...prev, userAnswers: [] }));
-      setAppState(prev => ({ ...prev, totalCount: players.length }));
+
+      // 4. FINALLY activate the session (Atomic Start)
+      // Guests watching realtime will see everything is ready when this changes
+      await updateGameSession(sessionId, {
+        session_status: 'active',
+        max_players: players.length
+      });
+
+      // Update local state
+      setAppState(prev => ({
+        ...prev,
+        playerCount: players.length,
+        currentRoundId: firstRound.id,
+        roundStartedAt: ts,
+        didGameStart: true,
+        isLobby: false,
+        phase: Phases.Main,
+        currentRound: 1,
+        userAnswers: [],
+        totalCount: players.length
+      }));
     } catch (err: any) {
       setAppState(prev => ({ ...prev, error: String(t('ERR_START' as any)) + err.message }));
     }
@@ -760,6 +783,8 @@ function App() {
       )}
       {!didGameStart && isLobby && phase !== Phases.Join && (
         <>
+          <div className="yellow-guy-bg" onClick={playSecretMusic} />
+          <div className="red-guy-bg" onClick={playSecretMusic} />
           <div className="lobby-container">
             <div className="lobby-info">
               <h2 className="lobby-text">{t('YOUR_NICK')} {nickname}</h2>
@@ -819,14 +844,21 @@ function App() {
       )}
 
       {didGameStart && phase === Phases.Waiting && (
-        <WaitCard
-          nick={nickname}
-          joinedCount={derivedJoinedCount}
-          totalCount={derivedTotalCount}
-          currentRound={currentRound}
-          totalRounds={activeTemplate.questions.length}
-          message={t('WAITING_ANSWERS')}
-        />
+        <>
+          <div className="yellow-guy-bg" onClick={playSecretMusic} />
+          <div className="red-guy-bg" onClick={playSecretMusic} />
+          <Round
+            className="roundPos"
+            currentRound={currentRound}
+            totalRounds={activeTemplate.questions.length}
+          />
+          <WaitCard
+            nick={nickname}
+            joinedCount={derivedJoinedCount}
+            totalCount={derivedTotalCount}
+            message={t('WAITING_ANSWERS')}
+          />
+        </>
       )}
 
       {didGameStart && phase === Phases.Main && (

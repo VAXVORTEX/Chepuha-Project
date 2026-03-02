@@ -19,6 +19,15 @@ export async function createStorySheet(payload: CreateStorySheetPayload): Promis
     return data;
 }
 
+export async function createStorySheetsBatch(payloads: CreateStorySheetPayload[]): Promise<StorySheet[]> {
+    const { data, error } = await supabase
+        .from('story_sheets')
+        .insert(payloads)
+        .select();
+    if (error) throw error;
+    return data || [];
+}
+
 export async function getStorySheet(id: string): Promise<StorySheet> {
     const { data, error } = await supabase
         .from('story_sheets')

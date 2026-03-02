@@ -1,5 +1,6 @@
 @use "../../styles/typography" as *;
 @use "../../styles/colors" as *;
+
 .wrapper {
   position: relative;
   display: flex;
@@ -12,6 +13,7 @@
   padding: 150px 20px;
   box-sizing: border-box;
 }
+
 .container {
   position: relative;
   z-index: 10;
@@ -23,6 +25,7 @@
   max-width: 1000px;
   margin-top: -100px;
 }
+
 .nickText {
   @include font-pangolin(64);
   color: $black;
@@ -30,6 +33,7 @@
   margin: 0;
   margin-bottom: 20px;
 }
+
 .countText {
   @include font-pangolin(48);
   color: $red;
@@ -41,6 +45,7 @@
   -webkit-text-stroke: 1px $black;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
+
 .waitingText {
   @include font-pangolin(35);
   color: #8b0000;
@@ -48,6 +53,7 @@
   -webkit-text-stroke: 1px $black;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 }
+
 .yellowGuy,
 .redGuy {
   position: absolute;
@@ -58,6 +64,7 @@
   opacity: 0.5;
   cursor: default;
 }
+
 .yellowGuy {
   bottom: -200px;
   right: -70px;
@@ -67,6 +74,7 @@
   height: 670px;
   z-index: 1;
 }
+
 .redGuy {
   left: -85px;
   bottom: -200px;
@@ -75,6 +83,7 @@
   height: 670px;
   transform: rotate(-3deg);
 }
+
 .home {
   position: fixed;
   bottom: 40px;
@@ -88,9 +97,11 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
+
   &:hover {
     transform: scale(1.1);
   }
+
   .homeSign {
     width: 90px;
     height: 90px;
@@ -98,5 +109,24 @@
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    margin-top: 100px; // Lower content to avoid round indicator and give more space
+    gap: 20px;
+  }
+
+  .nickText {
+    font-size: 32px !important;
+  }
+
+  .countText {
+    font-size: 28px !important;
+  }
+
+  .waitingText {
+    font-size: 24px !important;
   }
 }
