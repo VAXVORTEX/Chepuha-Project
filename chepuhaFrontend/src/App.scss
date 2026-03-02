@@ -265,24 +265,33 @@
   transform: translateX(12px);
 }
 
+.yellow-guy-bg,
+.red-guy-bg {
+  position: absolute;
+  bottom: 0;
+  background-size: contain;
+  background-repeat: no-repeat;
+  z-index: 1;
+  opacity: 0.5;
+  cursor: pointer;
+}
+
 .yellow-guy-bg {
-  position: fixed;
-  left: 0;
-  top: 40%;
-  width: 250px;
-  z-index: 5;
-  pointer-events: none;
-  transform: translateX(-30px);
+  bottom: 50px;
+  right: -70px;
+  background-image: url("./assets/images/yellowGuy.png");
+  display: block;
+  width: 850px;
+  height: 850px;
+  z-index: 1;
 }
 
 .red-guy-bg {
-  position: fixed;
-  right: 0;
-  top: 45%;
-  width: 220px;
-  z-index: 5;
-  pointer-events: none;
-  transform: translateX(30px);
+  left: -85px;
+  bottom: -20px;
+  background-image: url("./assets/images/RedGuyRemoved.png");
+  width: 850px;
+  height: 850px;
 }
 
 .template-selector {
@@ -605,23 +614,27 @@
     gap: 10px;
   }
 
-  .yellow-guy-bg {
-    width: 15vh !important;
-    left: -2vh !important;
-    top: 60% !important;
+  .yellow-guy-bg,
+  .red-guy-bg {
+    width: 200px !important;
+    height: 200px !important;
+    position: absolute !important;
+    top: auto !important;
     transform: none !important;
-    position: fixed !important;
-    z-index: 5 !important;
+  }
+
+  .yellow-guy-bg {
+    right: -40px !important;
+    left: auto !important;
+    bottom: -10px !important;
   }
 
   .red-guy-bg {
-    width: 12vh !important;
-    right: -2vh !important;
-    top: 65% !important;
-    transform: none !important;
-    position: fixed !important;
-    z-index: 5 !important;
+    left: -40px !important;
+    right: auto !important;
+    bottom: -30px !important;
   }
+
 
   .lobby-info,
   .lobby-container,

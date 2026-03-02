@@ -18,8 +18,6 @@ import flagUk from "./assets/images/flag_uk.png";
 import flagEn from "./assets/images/flag_en.png";
 import { useHistory, SavedGame } from "./hooks/useHistory";
 import { playSecretMusic, secretAudio } from "./utils/audio";
-import yellowGuyImg from "./assets/images/yellowGuy.png";
-import redGuyImg from "./assets/images/RedGuyRemoved.png";
 const STATE_STORAGE_KEY = "chepuhaActiveGameState";
 import { useGameState } from "./hooks/useGameState";
 import {
@@ -648,8 +646,8 @@ function App() {
 
       {!didGameStart && isCreatingLobby && !isLobby && phase !== Phases.Join && (
         <>
-          <img src={yellowGuyImg} className="yellow-guy-bg" alt="yellow guy" />
-          <img src={redGuyImg} className="red-guy-bg" alt="red guy" />
+          <div className="yellow-guy-bg" onClick={playSecretMusic} />
+          <div className="red-guy-bg" onClick={playSecretMusic} />
           <div className="create-game-container">
             <div className="input-wrapper">
               <input
@@ -727,8 +725,8 @@ function App() {
       )}
       {phase === Phases.Join && (
         <>
-          <img src={yellowGuyImg} className="yellow-guy-bg" alt="yellow guy" />
-          <img src={redGuyImg} className="red-guy-bg" alt="red guy" />
+          <div className="yellow-guy-bg" onClick={playSecretMusic} />
+          <div className="red-guy-bg" onClick={playSecretMusic} />
           <JoinCard
             onJoin={handleJoinGame}
           />
