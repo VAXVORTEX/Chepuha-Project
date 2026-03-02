@@ -34,16 +34,24 @@ export function useGameState(sessionId: string | null) {
         if (!sessionId) return;
         try {
             // Sequential fetching is more resilient on VPNs/DPI than Promise.all
-            const sessionData = await getGameSession(sessionId);
-            const playersData = await getPlayersBySession(sessionId);
-            const roundsData = await getRoundsBySession(sessionId);
+            let sessionData = gameState.session;
+            let playersData = gameState.players;
+            let roundsData = gameState.rounds;
 
-            let activeRoundAnswers: Answer[] = [];
+            try { sessionData = await getGameSession(sessionId); } catch (e) { console.error("Session fetch failed", e); }
+            try { playersData = await getPlayersBySession(sessionId); } catch (e) { console.error("Players fetch failed", e); }
+            try { roundsData = await getRoundsBySession(sessionId); } catch (e) { console.error("Rounds fetch failed", e); }
+
+            let activeRoundAnswers: Answer[] = gameState.currentAnswers;
             const sortedByNum = Array.isArray(roundsData) ? [...roundsData].sort((a: any, b: any) => (b.round_number || 0) - (a.round_number || 0)) : [];
             const activeRound = sortedByNum.length > 0 ? sortedByNum[0] : null;
 
             if (activeRound) {
-                activeRoundAnswers = await getAnswersByRound(activeRound.id);
+                try {
+                    activeRoundAnswers = await getAnswersByRound(activeRound.id);
+                } catch (e) {
+                    console.error("Answers fetch failed", e);
+                }
             }
 
             setGameState({
@@ -55,14 +63,14 @@ export function useGameState(sessionId: string | null) {
                 error: null,
             });
         } catch (err: any) {
-            // Detect fetch (network) failures
+            // Overall failure (e.g. initial connection)
             if (err instanceof TypeError || String(err).includes('Failed to fetch')) {
                 setGameState((prev) => ({ ...prev, error: 'NETWORK_ERROR' }));
             } else {
                 setGameState((prev) => ({ ...prev, error: 'Втрачено звʼязок з сервером' }));
             }
         }
-    }, [sessionId]);
+    }, [sessionId, gameState.session, gameState.players, gameState.rounds, gameState.currentAnswers]);
 
     useEffect(() => {
         fetchState();

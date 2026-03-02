@@ -787,6 +787,13 @@ function App() {
             <div className="error-message" style={{ color: "red", minHeight: '24px' }}>
               {pollError ? (t(pollError as any) || pollError) : '\u00A0'}
             </div>
+            {pollError === 'NETWORK_ERROR' && (
+              <div className="connection-troubleshoot" style={{ fontSize: '14px', marginTop: '10px', color: '#ffcc00' }}>
+                <span style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => alert(t('TROUBLESHOOT' as any))}>
+                  {t('CONNECTION_HELP' as any)}
+                </span>
+              </div>
+            )}
             <div className="lobby-actions">
               {isHost ? (
                 <Button label={t('START_GAME')} variant="primary" phase={phase} onClick={doGameStart} disabled={players.length < 1} />
