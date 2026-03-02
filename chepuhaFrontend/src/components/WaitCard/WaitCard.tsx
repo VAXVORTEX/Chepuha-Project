@@ -7,12 +7,16 @@ interface WaitCardProps {
   nick: string;
   joinedCount: number;
   totalCount: number;
+  currentRound?: number;
+  totalRounds?: number;
   message?: string;
 }
 const WaitCard: React.FC<WaitCardProps> = ({
   nick,
   joinedCount,
   totalCount,
+  currentRound,
+  totalRounds,
   message,
 }) => {
   const { t } = useLanguage();
@@ -20,6 +24,11 @@ const WaitCard: React.FC<WaitCardProps> = ({
     <div className={styles.wrapper}>
       <div className={styles.container}>
         <h2 className={styles.nickText}>{t('YOUR_NICK')} {nick}</h2>
+        {currentRound && totalRounds && (
+          <p className={styles.roundText}>
+            {t('ROUND')} {currentRound} / {totalRounds}
+          </p>
+        )}
         <p className={styles.countText}>
           {joinedCount} {t('OUT_OF')} {totalCount} {t('PLAYERS_READY')}
         </p>

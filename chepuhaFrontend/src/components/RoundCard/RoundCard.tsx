@@ -52,6 +52,7 @@ export const RoundCard = ({
                             placeholder={t('ENTER_ANSWER')}
                             maxLength={200}
                             autoFocus={true}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
                             className={styles.cardInput}
                         />
                         <div className={styles.buttonContainer}>

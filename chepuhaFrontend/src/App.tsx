@@ -443,8 +443,6 @@ function App() {
     setAppState(prev => ({ ...prev, didGameStart: false }));
     setAppState(prev => ({ ...prev, isCreatingLobby: false }));
     setAppState(prev => ({ ...prev, isLobby: false }));
-    setAppState(prev => ({ ...prev, nickname: "" }));
-    setAppState(prev => ({ ...prev, roomCode: "" }));
     setAppState(prev => ({ ...prev, error: "" }));
     setAppState(prev => ({ ...prev, currentRound: 1 }));
     setAppState(prev => ({ ...prev, userAnswers: [] }));
@@ -808,14 +806,18 @@ function App() {
           <HomeIcon className="homeIconPos" onClick={goHome} />
         </>
       )}
+
       {didGameStart && phase === Phases.Waiting && (
         <WaitCard
           nick={nickname}
           joinedCount={derivedJoinedCount}
           totalCount={derivedTotalCount}
+          currentRound={currentRound}
+          totalRounds={activeTemplate.questions.length}
           message={t('WAITING_ANSWERS')}
         />
       )}
+
       {didGameStart && phase === Phases.Main && (
         <>
           <Timer
