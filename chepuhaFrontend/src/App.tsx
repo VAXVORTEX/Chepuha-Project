@@ -78,8 +78,8 @@ function App() {
     allStories: [],
     storyIndex: 0,
     selectedHistoryGame: null,
-    joinedCount: 1,
-    totalCount: 4,
+    joinedCount: 0,
+    totalCount: 0,
     sessionId: null,
     playerId: null,
     isHost: false,
@@ -90,9 +90,10 @@ function App() {
     allStorySheets: []
   });
   const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets } = appState;
-  const { session, players, rounds, currentAnswers, error: pollError, refreshState } = useGameState(sessionId);
-  // Strictly use state counts to avoid flickering or stale hook data
-  const derivedJoinedCount = joinedCount;
+  const { session, players, rounds, currentAnswers, activeRoundId: hookActiveRoundId, error: pollError, refreshState } = useGameState(sessionId);
+  // Only use hook answers for the count if the hook is actually looking at our current active round
+  const hookMatch = hookActiveRoundId && currentRoundId && hookActiveRoundId === currentRoundId;
+  const derivedJoinedCount = hookMatch ? Math.max(joinedCount, currentAnswers.length) : joinedCount;
   const derivedTotalCount = totalCount > 0 ? totalCount : (players?.length || 0);
   const activeTemplate = TEMPLATES[session?.template || selectedTemplate] || TEMPLATES.classic;
   const { t, language, setLanguage } = useLanguage();
@@ -118,8 +119,8 @@ function App() {
   useEffect(() => {
     if (!didGameStart || phase !== Phases.Main || !playerId || !currentRoundId) return;
 
-    // Check from useGameState's currentAnswers first (fast path)
-    if (currentAnswers && currentAnswers.length > 0) {
+    // Fast path: useGameState hook (ONLY if round IDs match!)
+    if (hookActiveRoundId === currentRoundId && currentAnswers && currentAnswers.length > 0) {
       const alreadyAnswered = currentAnswers.some(a => {
         const sid = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id);
         return sid === playerId;
@@ -130,7 +131,7 @@ function App() {
       }
     }
 
-    // Also fetch directly from DB in case useGameState hasn't updated yet (slow path)
+    // Slow path: direct DB check (always reliable for the specific target roundId)
     (async () => {
       try {
         const answers = await getAnswersByRound(currentRoundId);
@@ -143,7 +144,7 @@ function App() {
         }
       } catch (e) { }
     })();
-  }, [didGameStart, phase, currentAnswers, playerId, currentRoundId]);
+  }, [didGameStart, phase, currentAnswers, playerId, currentRoundId, hookActiveRoundId]);
 
   useEffect(() => {
     const saved = localStorage.getItem(STATE_STORAGE_KEY);

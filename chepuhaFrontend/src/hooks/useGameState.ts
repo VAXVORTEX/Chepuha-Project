@@ -15,6 +15,7 @@ interface GameState {
     session: GameSession | null;
     players: Player[];
     rounds: Round[];
+    activeRoundId: string | null;
     currentAnswers: Answer[];
     error: string | null;
 }
@@ -24,6 +25,7 @@ export function useGameState(sessionId: string | null) {
         session: null,
         players: [],
         rounds: [],
+        activeRoundId: null,
         currentAnswers: [],
         error: null,
     });
@@ -39,7 +41,6 @@ export function useGameState(sessionId: string | null) {
 
             let activeRoundAnswers: Answer[] = [];
             const sortedByNum = Array.isArray(roundsData) ? [...roundsData].sort((a: any, b: any) => (b.round_number || 0) - (a.round_number || 0)) : [];
-            // Always pick the LATEST round (highest round_number) — old rounds keep status 'active' so find() is unreliable
             const activeRound = sortedByNum.length > 0 ? sortedByNum[0] : null;
 
             if (activeRound) {
@@ -50,6 +51,7 @@ export function useGameState(sessionId: string | null) {
                 session: sessionData,
                 players: playersData || [],
                 rounds: roundsData || [],
+                activeRoundId: activeRound?.id || null,
                 currentAnswers: activeRoundAnswers || [],
                 error: null,
             });
