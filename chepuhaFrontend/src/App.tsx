@@ -170,10 +170,10 @@ function App() {
     if (!sessionId) return;
     try {
       const sheets = await getStorySheetsBySession(sessionId);
-      const built = sheets
-        .filter(s => s.answers && s.answers.length > 0)
+      const built = (sheets || [])
+        .filter(s => s && s.answers && s.answers.length > 0)
         .map(s => {
-          const sorted = [...s.answers!].sort((a, b) => a.position_in_sheet - b.position_in_sheet);
+          const sorted = [...(s.answers || [])].sort((a, b) => a.position_in_sheet - b.position_in_sheet);
           const p = s.player_id as any;
           const nick = p?.nickname || 'Гравець';
           return {
@@ -297,11 +297,11 @@ function App() {
           }));
         }
 
-        if (sheets.length > 0) {
+        if (Array.isArray(sheets) && sheets.length > 0) {
           setAppState(prev => ({ ...prev, allStorySheets: sheets.map((s: any) => ({ playerId: s.player_id?.id || s.player_id, sheetId: s.id })) }));
         }
 
-        const mySheet = sheets.find((s: any) => (s.player_id?.id || s.player_id) === playerId);
+        const mySheet = (sheets || []).find((s: any) => (s.player_id?.id || s.player_id) === playerId);
         if (mySheet) setAppState(prev => ({ ...prev, myStorySheetId: mySheet.id }));
         if (players.length > 0) setAppState(prev => ({ ...prev, playerCount: players.length }));
       } catch (err) {
@@ -428,6 +428,17 @@ function App() {
           }
         }
       } catch (err) {
+        console.error("[Sync] Error in sync loop:", err);
+      } finally {
+        // If we weren't in the middle of a delicate transition, ensure lock is released
+        // In practice, we only set lock=true right before an async transition
+        // so we should be careful not to release it TOO early if we're still waiting for a round.
+        // However, the current logic sets it back to false at the end of each path.
+        // To be safe, if we hit an error, we MUST release it or we're stuck.
+        if (transitionLockRef.current) {
+          console.log("[Sync] Releasing lock due to error/fallback.");
+          transitionLockRef.current = false;
+        }
       }
     }, 1000);
     return () => clearInterval(interval);
@@ -660,8 +671,8 @@ function App() {
         if (safeSheets.length > 0) setAppState(prev => ({ ...prev, allStorySheets: safeSheets }));
       }
       let targetSheet = myStorySheetId || safeSheets.find(s => s.playerId === playerId)?.sheetId;
-      if (safeSheets.length > 0 && players.length > 0) {
-        const sortedPlayers = [...players].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+      if ((safeSheets || []).length > 0 && (players || []).length > 0) {
+        const sortedPlayers = [...(players || [])].sort((a, b) => String(a.id).localeCompare(String(b.id)));
         const myIndex = sortedPlayers.findIndex(p => p.id === playerId);
         let targetIndex = (myIndex - (currentRound - 1)) % sortedPlayers.length;
         if (targetIndex < 0) targetIndex += sortedPlayers.length;
@@ -880,7 +891,7 @@ function App() {
               activeTemplate.id === 'chaos'
                 ? TEMPLATES[
                   ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "chaos"][
-                  Math.abs([...(playerId || nickname || "Guest"), currentRound].reduce((a: number, c: any) => a + String(c).charCodeAt(0), 0)) % 8
+                  Math.abs(String(playerId || nickname || "Guest").split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0) + (currentRound || 0)) % 8
                   ]
                 ]?.questions[currentRound - 1] || activeTemplate.questions[currentRound - 1]
                 : activeTemplate.questions[currentRound - 1]

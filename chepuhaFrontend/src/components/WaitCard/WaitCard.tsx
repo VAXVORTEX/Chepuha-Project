@@ -23,7 +23,7 @@ const WaitCard: React.FC<WaitCardProps> = ({
       <div className={styles.container}>
         <h2 className={styles.nickText}>{t('YOUR_NICK')} {nick}</h2>
         <p className={styles.countText}>
-          {joinedCount} {t('OUT_OF')} {totalCount} {t('PLAYERS_READY')}
+          {joinedCount} / {totalCount} {t('PLAYERS_READY')}
         </p>
         <h1 className={styles.waitingText}>{message || t('WAITING_PLAYERS')}</h1>
       </div>

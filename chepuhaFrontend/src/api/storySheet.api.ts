@@ -16,7 +16,7 @@ export async function createStorySheet(payload: CreateStorySheetPayload): Promis
         .select()
         .single();
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
 export async function createStorySheetsBatch(payloads: CreateStorySheetPayload[]): Promise<StorySheet[]> {
@@ -35,7 +35,7 @@ export async function getStorySheet(id: string): Promise<StorySheet> {
         .eq('id', id)
         .single();
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
 export async function getStorySheetsBySession(sessionId: string): Promise<StorySheet[]> {
@@ -45,7 +45,7 @@ export async function getStorySheetsBySession(sessionId: string): Promise<StoryS
         .eq('game_session_id', sessionId)
         .order('sheet_number', { ascending: true });
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
 export async function updateStorySheet(

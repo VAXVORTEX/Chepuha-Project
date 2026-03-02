@@ -16,7 +16,7 @@ export async function createPlayer(payload: CreatePlayerPayload): Promise<Player
         .single();
 
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
 export async function getPlayer(id: string): Promise<Player> {
@@ -27,7 +27,7 @@ export async function getPlayer(id: string): Promise<Player> {
         .single();
 
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
 export async function getPlayersBySession(sessionId: string): Promise<Player[]> {
@@ -38,7 +38,7 @@ export async function getPlayersBySession(sessionId: string): Promise<Player[]> 
         .order('id', { ascending: true });
 
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
 export async function updatePlayer(id: string, payload: Partial<CreatePlayerPayload>): Promise<Player> {
@@ -50,7 +50,7 @@ export async function updatePlayer(id: string, payload: Partial<CreatePlayerPayl
         .single();
 
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
 export async function updatePlayersBySession(
