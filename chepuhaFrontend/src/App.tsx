@@ -302,7 +302,7 @@ function App() {
 
           // Only force a phase change if we don't have a round yet (initial load)
           // or if we are clearly out of sync
-          if (!currentRoundId || activeRound.id !== currentRoundId) {
+          if (!currentRoundId || activeRound.round_number > currentRound) {
             initialPhase = Phases.Main;
             if (myPlayer?.players_status === 'ready') initialPhase = Phases.Waiting;
             else if (myPlayer?.players_status === 'finished') initialPhase = Phases.End;
