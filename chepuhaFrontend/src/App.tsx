@@ -95,6 +95,25 @@ function App() {
     allStorySheets: [],
     lobbyCreatedAt: null
   });
+
+  const [serverTimeOffset, setServerTimeOffset] = useState(0);
+
+  useEffect(() => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    if (!supabaseUrl) return;
+    fetch(`${supabaseUrl}/auth/v1/health`, { method: 'GET' })
+      .then(res => {
+        const dateHeader = res.headers.get('date');
+        if (dateHeader) {
+          const sTime = Date.parse(dateHeader);
+          if (!isNaN(sTime)) {
+            setServerTimeOffset(Date.now() - sTime);
+          }
+        }
+      })
+      .catch(() => { });
+  }, []);
+
   const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets, lobbyCreatedAt } = appState;
   const { session, players, rounds, currentAnswers, activeRoundId: hookActiveRoundId, error: pollError, refreshState } = useGameState(sessionId);
   const hookMatch = hookActiveRoundId && currentRoundId && hookActiveRoundId === currentRoundId;
@@ -835,7 +854,7 @@ function App() {
           <Timer
             key={`${currentRound}-${roundStartedAt}`}
             initialSeconds={roundStartedAt
-              ? Math.max(0, 120 - Math.floor((Date.now() - Date.parse(roundStartedAt)) / 1000))
+              ? Math.max(0, 120 - Math.floor(((Date.now() - serverTimeOffset) - Date.parse(roundStartedAt)) / 1000))
               : 120
             }
             onTimeUp={() => doAnswerSubmit("Час вийшов")}
