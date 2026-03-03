@@ -823,14 +823,7 @@ function App() {
             <div className="error-message" style={{ color: "red", minHeight: '24px' }}>
               {pollError ? (t(pollError as any) || pollError) : '\u00A0'}
             </div>
-            <div className="connection-troubleshoot" style={{ fontSize: '14px', marginTop: '10px', color: '#ffcc00' }}>
-              <span style={{ cursor: 'pointer', textDecoration: 'underline' }} onClick={() => alert(t('TROUBLESHOOT' as any))}>
-                {t('CONNECTION_HELP' as any)}
-              </span>
-              <span style={{ cursor: 'pointer', marginLeft: '15px', textDecoration: 'underline', color: '#00ff88' }} onClick={() => refreshState()}>
-                {t('READY')} 🔄
-              </span>
-            </div>
+
             <div className="lobby-actions">
               {isHost ? (
                 <Button label={t('START_GAME')} variant="primary" phase={phase} onClick={doGameStart} disabled={players.length < 1} />
@@ -870,11 +863,7 @@ function App() {
             totalCount={derivedTotalCount}
             message={t('WAITING_ANSWERS')}
           />
-          <div style={{ textAlign: 'center', marginTop: '-20px', zIndex: 100, position: 'relative' }}>
-            <span style={{ cursor: 'pointer', fontSize: '14px', color: '#00ff88', textDecoration: 'underline' }} onClick={() => refreshState()}>
-              {t('READY')} 🔄
-            </span>
-          </div>
+
         </>
       )}
 
