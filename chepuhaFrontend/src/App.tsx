@@ -101,6 +101,8 @@ function App() {
   const activeTemplate = TEMPLATES[session?.template || selectedTemplate] || TEMPLATES.classic;
   const { t, language, setLanguage } = useLanguage();
   const transitionLockRef = useRef(false);
+  const currentRoundIdRef = useRef(currentRoundId);
+  const currentRoundRef = useRef(currentRound);
   const { savedGames, saveGameToHistory } = useHistory();
   useEffect(() => {
     if (sessionId && playerId && nickname) {
@@ -318,6 +320,9 @@ function App() {
       }
     })();
   }, [session?.session_status, sessionId, playerId, players.length, rounds.length]);
+  // Keep refs in sync with state for use inside setInterval closures
+  useEffect(() => { currentRoundIdRef.current = currentRoundId; }, [currentRoundId]);
+  useEffect(() => { currentRoundRef.current = currentRound; }, [currentRound]);
   useEffect(() => {
     if (!session || !currentRoundId || !sessionId || !didGameStart) return;
     if (phase !== Phases.Waiting && phase !== Phases.Main) return;
@@ -325,14 +330,15 @@ function App() {
     const interval = setInterval(async () => {
       if (transitionLockRef.current) return;
       try {
-        const checkRoundId = currentRoundId;
+        const liveRoundId = currentRoundIdRef.current;
+        if (!liveRoundId) return;
         const [curAnswers, freshPlayers] = await Promise.all([
-          getAnswersByRound(currentRoundId),
+          getAnswersByRound(liveRoundId),
           getPlayersBySession(sessionId)
         ]);
 
-        // CRITICAL: If roundId changed while fetching, ignore these results to avoid 2/2 stale bug
-        if (checkRoundId !== currentRoundId) return;
+        // CRITICAL: If roundId changed while fetching, ignore these results
+        if (liveRoundId !== currentRoundIdRef.current) return;
 
         // Always use actual player count from DB — session.max_players may be stale
         const total = freshPlayers.length;
@@ -396,6 +402,8 @@ function App() {
               });
               // SERVER-AUTHORITATIVE: Tell ALL players to start answering the new round
               await updatePlayersBySession(sessionId, { players_status: 'playing' });
+              currentRoundIdRef.current = nextRound.id;
+              currentRoundRef.current = nextRoundNum;
               localPhase = Phases.Main;
               setAppState(prev => ({
                 ...prev,
@@ -405,27 +413,8 @@ function App() {
                 joinedCount: 0,
                 phase: Phases.Main
               }));
-              transitionLockRef.current = false;
-            } else {
-              // Non-host: aggressively retry to detect the new round
-              for (let retries = 0; retries < 5; retries++) {
-                const rList = await getRoundsBySession(sessionId);
-                const nextRound = rList.find((r: any) => r.round_number === currentRound + 1);
-                if (nextRound) {
-                  localPhase = Phases.Main;
-                  setAppState(prev => ({
-                    ...prev,
-                    currentRoundId: nextRound.id,
-                    currentRound: currentRound + 1,
-                    roundStartedAt: nextRound.started_at || prev.roundStartedAt,
-                    joinedCount: 0,
-                    phase: Phases.Main
-                  }));
-                  break;
-                }
-                if (retries < 4) await new Promise(r => setTimeout(r, 300));
-              }
-              transitionLockRef.current = false;
+              // Small delay before releasing lock to let state propagate
+              setTimeout(() => { transitionLockRef.current = false; }, 500);
             }
           } else {
             localPhase = Phases.End;
@@ -443,16 +432,7 @@ function App() {
         }
       } catch (err) {
         console.error("[Sync] Error in sync loop:", err);
-      } finally {
-        // If we weren't in the middle of a delicate transition, ensure lock is released
-        // In practice, we only set lock=true right before an async transition
-        // so we should be careful not to release it TOO early if we're still waiting for a round.
-        // However, the current logic sets it back to false at the end of each path.
-        // To be safe, if we hit an error, we MUST release it or we're stuck.
-        if (transitionLockRef.current) {
-          console.log("[Sync] Releasing lock due to error/fallback.");
-          transitionLockRef.current = false;
-        }
+        transitionLockRef.current = false;
       }
     }, 500);
     return () => clearInterval(interval);
