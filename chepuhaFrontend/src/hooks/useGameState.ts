@@ -104,7 +104,7 @@ export function useGameState(sessionId: string | null) {
 
             const pollInterval = setInterval(() => {
                 fetchState();
-            }, 1000); // 1s polling fallback for faster sync
+            }, 500); // 500ms polling for faster sync
 
             return () => {
                 supabase.removeChannel(sessionChannel);

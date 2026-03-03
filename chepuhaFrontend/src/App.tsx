@@ -227,23 +227,27 @@ function App() {
       })();
     } else if (myPlayer.players_status === 'playing' && phase === Phases.Waiting && currentRoundId) {
       // Status changed from waiting → playing = new round started!
-      // GUARD: Only transition if the DB actually has a NEWER round than what we're on
+      // Aggressively retry to find the new round with short delays
       (async () => {
-        try {
-          const roundsList = await getRoundsBySession(sessionId);
-          const sorted = [...(roundsList || [])].sort((a: any, b: any) => b.round_number - a.round_number);
-          const latestRound = sorted[0];
-          if (latestRound && latestRound.round_number > currentRound) {
-            setAppState(prev => ({
-              ...prev,
-              currentRoundId: latestRound.id,
-              currentRound: latestRound.round_number,
-              roundStartedAt: latestRound.started_at || prev.roundStartedAt,
-              joinedCount: 0,
-              phase: Phases.Main,
-            }));
-          }
-        } catch (e) { }
+        for (let attempt = 0; attempt < 5; attempt++) {
+          try {
+            const roundsList = await getRoundsBySession(sessionId);
+            const sorted = [...(roundsList || [])].sort((a: any, b: any) => b.round_number - a.round_number);
+            const latestRound = sorted[0];
+            if (latestRound && latestRound.round_number > currentRound) {
+              setAppState(prev => ({
+                ...prev,
+                currentRoundId: latestRound.id,
+                currentRound: latestRound.round_number,
+                roundStartedAt: latestRound.started_at || prev.roundStartedAt,
+                joinedCount: 0,
+                phase: Phases.Main,
+              }));
+              return; // Found it, exit retry loop
+            }
+          } catch (e) { }
+          if (attempt < 4) await new Promise(r => setTimeout(r, 200)); // Brief pause before retry
+        }
       })();
     } else if (myPlayer.players_status === 'ready' && phase === Phases.Main) {
       // Player already answered this round → show waiting
@@ -396,21 +400,24 @@ function App() {
               }));
               transitionLockRef.current = false;
             } else {
-              // Non-host: try to detect the new round via polling
-              const rList = await getRoundsBySession(sessionId);
-              const nextRound = rList.find((r: any) => r.round_number === currentRound + 1);
-              if (nextRound) {
-                localPhase = Phases.Main; // Only set AFTER we found the round!
-                setAppState(prev => ({
-                  ...prev,
-                  currentRoundId: nextRound.id,
-                  currentRound: currentRound + 1,
-                  roundStartedAt: nextRound.started_at || prev.roundStartedAt,
-                  joinedCount: 0,
-                  phase: Phases.Main
-                }));
+              // Non-host: aggressively retry to detect the new round
+              for (let retries = 0; retries < 5; retries++) {
+                const rList = await getRoundsBySession(sessionId);
+                const nextRound = rList.find((r: any) => r.round_number === currentRound + 1);
+                if (nextRound) {
+                  localPhase = Phases.Main;
+                  setAppState(prev => ({
+                    ...prev,
+                    currentRoundId: nextRound.id,
+                    currentRound: currentRound + 1,
+                    roundStartedAt: nextRound.started_at || prev.roundStartedAt,
+                    joinedCount: 0,
+                    phase: Phases.Main
+                  }));
+                  break;
+                }
+                if (retries < 4) await new Promise(r => setTimeout(r, 300));
               }
-              // If round not found yet, localPhase stays Waiting → interval retries next tick
               transitionLockRef.current = false;
             }
           } else {
@@ -440,7 +447,7 @@ function App() {
           transitionLockRef.current = false;
         }
       }
-    }, 1000);
+    }, 500);
     return () => clearInterval(interval);
   }, [phase, session?.id, currentRoundId, playerCount, players.length, currentRound, isHost, sessionId, fetchFinalStoryResult, roundStartedAt, activeTemplate, didGameStart]);
   const generateRoomCode = () => {
