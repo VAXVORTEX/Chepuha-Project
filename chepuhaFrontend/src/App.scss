@@ -218,6 +218,17 @@
   pointer-events: auto;
 }
 
+.lobby-timer-display {
+  position: absolute;
+  top: 40px;
+  left: 60px;
+  z-index: 100;
+  @include font-pangolin(48);
+  color: $black;
+  -webkit-text-stroke: 1px $black;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 .roundPos {
   position: absolute;
   top: 40px;
@@ -609,6 +620,12 @@
     top: 10px;
     right: 15px;
     transform: scale(0.7);
+  }
+
+  .lobby-timer-display {
+    top: 20px;
+    left: 20px;
+    font-size: 20px;
   }
 
   .homeIconPos {

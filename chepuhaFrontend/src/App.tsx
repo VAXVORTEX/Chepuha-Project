@@ -66,6 +66,7 @@ export interface AppState {
   playerCount: number;
   roundStartedAt: string | null;
   allStorySheets: { playerId: string, sheetId: string }[];
+  lobbyCreatedAt: number | null;
 }
 function App() {
   const [appState, setAppState] = useState<AppState>({
@@ -91,13 +92,17 @@ function App() {
     myStorySheetId: null,
     playerCount: 0,
     roundStartedAt: null,
-    allStorySheets: []
+    allStorySheets: [],
+    lobbyCreatedAt: null
   });
-  const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets } = appState;
+  const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets, lobbyCreatedAt } = appState;
   const { session, players, rounds, currentAnswers, activeRoundId: hookActiveRoundId, error: pollError, refreshState } = useGameState(sessionId);
   const hookMatch = hookActiveRoundId && currentRoundId && hookActiveRoundId === currentRoundId;
-  const derivedJoinedCount = hookMatch ? Math.max(joinedCount, currentAnswers.length) : joinedCount;
   const derivedTotalCount = totalCount > 0 ? totalCount : (players?.length || 0);
+  const derivedJoinedCount = Math.min(
+    hookMatch ? Math.max(joinedCount, currentAnswers.length) : joinedCount,
+    derivedTotalCount > 0 ? derivedTotalCount : Infinity
+  );
   const activeTemplate = TEMPLATES[session?.template || selectedTemplate] || TEMPLATES.classic;
   const { t, language, setLanguage } = useLanguage();
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -273,14 +278,28 @@ function App() {
   const phaseRef = useRef(phase);
   useEffect(() => { phaseRef.current = phase; }, [phase]);
 
+  const [lobbyTimeLeft, setLobbyTimeLeft] = useState(25 * 60);
+
   useEffect(() => {
     if (isLobby) {
-      const timer = setTimeout(() => {
-        goHome();
-      }, 25 * 60 * 1000);
-      return () => clearTimeout(timer);
+      const start = lobbyCreatedAt || Date.now();
+      if (!lobbyCreatedAt) {
+        setAppState(prev => ({ ...prev, lobbyCreatedAt: start }));
+      }
+      const tick = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - start) / 1000);
+        const remaining = Math.max(0, 25 * 60 - elapsed);
+        setLobbyTimeLeft(remaining);
+        if (remaining <= 0) {
+          clearInterval(tick);
+          goHome();
+        }
+      }, 1000);
+      return () => clearInterval(tick);
+    } else {
+      setLobbyTimeLeft(25 * 60);
     }
-  }, [isLobby]);
+  }, [isLobby, lobbyCreatedAt]);
 
   useEffect(() => {
     if (!session || !currentRoundId || !sessionId || !didGameStart) return;
@@ -408,6 +427,7 @@ function App() {
     setAppState(prev => ({ ...prev, currentRoundId: null }));
     setAppState(prev => ({ ...prev, myStorySheetId: null }));
     setAppState(prev => ({ ...prev, selectedHistoryGame: null }));
+    setAppState(prev => ({ ...prev, lobbyCreatedAt: null }));
     localStorage.removeItem(STATE_STORAGE_KEY);
   };
   const doShowCreateScreen = () => {
@@ -449,6 +469,8 @@ function App() {
       setAppState(prev => ({ ...prev, playerId: hostPlayer.id }));
       setAppState(prev => ({ ...prev, isHost: true }));
       setAppState(prev => ({ ...prev, isLobby: true }));
+      setAppState(prev => ({ ...prev, lobbyCreatedAt: Date.now() }));
+      localStorage.setItem('chepuhaUserPrefs', JSON.stringify({ nickname, roomCode }));
       await refreshState();
     } catch (err: any) {
       setAppState(prev => ({ ...prev, error: String(t('ERR_CREATE' as any)) + err.message }));
@@ -730,6 +752,9 @@ function App() {
         <>
           <div className="yellow-guy-bg" onClick={playSecretMusic} />
           <div className="red-guy-bg" onClick={playSecretMusic} />
+          <div className="lobby-timer-display">
+            {Math.floor(lobbyTimeLeft / 60)}:{String(lobbyTimeLeft % 60).padStart(2, '0')}
+          </div>
           <div className="lobby-container">
             <div className="lobby-info">
               <h2 className="lobby-text">{t('YOUR_NICK')} {nickname}</h2>
