@@ -100,6 +100,7 @@ function App() {
   const derivedTotalCount = totalCount > 0 ? totalCount : (players?.length || 0);
   const activeTemplate = TEMPLATES[session?.template || selectedTemplate] || TEMPLATES.classic;
   const { t, language, setLanguage } = useLanguage();
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const transitionLockRef = useRef(false);
   const currentRoundIdRef = useRef(currentRoundId);
   const currentRoundRef = useRef(currentRound);
@@ -206,7 +207,7 @@ function App() {
   useEffect(() => {
     if (!didGameStart || !playerId || !players.length || !sessionId) return;
     // CRITICAL: Don't override phase during active transitions
-    if (transitionLockRef.current) return;
+    if (isTransitioning || transitionLockRef.current) return;
     const myPlayer = players.find(p => p.id === playerId);
     if (!myPlayer) return;
 
@@ -223,7 +224,6 @@ function App() {
               currentRoundId: latestRound.id,
               currentRound: latestRound.round_number,
               roundStartedAt: latestRound.started_at || prev.roundStartedAt,
-              joinedCount: 0,
               phase: Phases.Main,
             }));
           }
@@ -232,6 +232,7 @@ function App() {
     } else if (myPlayer.players_status === 'playing' && phase === Phases.Waiting && currentRoundId) {
       // Status changed from waiting → playing = new round started!
       // Aggressively retry to find the new round with short delays
+      setIsTransitioning(true);
       transitionLockRef.current = true;
       (async () => {
         for (let attempt = 0; attempt < 5; attempt++) {
@@ -239,6 +240,7 @@ function App() {
             const roundsList = await getRoundsBySession(sessionId);
             const sorted = [...(roundsList || [])].sort((a: any, b: any) => b.round_number - a.round_number);
             const latestRound = sorted[0];
+            // CRITICAL: Only sync FORWARD
             if (latestRound && latestRound.round_number > currentRound) {
               setAppState(prev => ({
                 ...prev,
@@ -248,15 +250,17 @@ function App() {
                 joinedCount: 0,
                 phase: Phases.Main,
               }));
+              setIsTransitioning(false);
               transitionLockRef.current = false;
               return; // Found it, exit retry loop
             }
           } catch (e) { }
-          if (attempt < 4) await new Promise(r => setTimeout(r, 200));
+          await new Promise(r => setTimeout(r, 200));
         }
+        setIsTransitioning(false);
         transitionLockRef.current = false;
       })();
-    } else if (phase === Phases.Main && currentAnswers.some(a => a.player_id === playerId)) {
+    } else if (phase === Phases.Main && hookActiveRoundId === currentRoundId && currentAnswers.some(a => a.player_id === playerId)) {
       // Player already answered THIS round → show waiting
       setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
     } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
@@ -264,7 +268,7 @@ function App() {
       fetchFinalStoryResult();
       setAppState(prev => ({ ...prev, phase: Phases.End }));
     }
-  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, fetchFinalStoryResult, currentAnswers]);
+  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, fetchFinalStoryResult, currentAnswers, hookActiveRoundId, isTransitioning]);
   useEffect(() => {
     if (!session || !sessionId) return;
     if (session.session_status === 'active' && isLobby && !didGameStart) {
@@ -279,6 +283,7 @@ function App() {
   }, [session?.session_status, isLobby, didGameStart, isHost, phase, fetchFinalStoryResult, sessionId]);
   useEffect(() => {
     if (!session || session.session_status !== 'active' || !sessionId || !playerId) return;
+    if (isTransitioning) return;
 
     (async () => {
       try {
@@ -293,9 +298,15 @@ function App() {
         if (activeRound) {
           // Phase is determined by server-authoritative player status, not guessed here
           const myPlayer = players.find(p => p.id === playerId);
-          let initialPhase = Phases.Main;
-          if (myPlayer?.players_status === 'ready') initialPhase = Phases.Waiting;
-          else if (myPlayer?.players_status === 'finished') initialPhase = Phases.End;
+          let initialPhase = phase;
+
+          // Only force a phase change if we don't have a round yet (initial load)
+          // or if we are clearly out of sync
+          if (!currentRoundId || activeRound.id !== currentRoundId) {
+            initialPhase = Phases.Main;
+            if (myPlayer?.players_status === 'ready') initialPhase = Phases.Waiting;
+            else if (myPlayer?.players_status === 'finished') initialPhase = Phases.End;
+          }
 
           setAppState(prev => ({
             ...prev,
@@ -319,7 +330,7 @@ function App() {
         console.error("Error syncing state on start/re-join:", err);
       }
     })();
-  }, [session?.session_status, sessionId, playerId, players.length, rounds.length]);
+  }, [session?.session_status, sessionId, playerId, players.length, rounds.length, isTransitioning]);
   // Keep refs in sync with state for use inside setInterval closures
   useEffect(() => { currentRoundIdRef.current = currentRoundId; }, [currentRoundId]);
   useEffect(() => { currentRoundRef.current = currentRound; }, [currentRound]);
@@ -328,7 +339,7 @@ function App() {
     if (phase !== Phases.Waiting && phase !== Phases.Main) return;
     let localPhase: Phases = phase;
     const interval = setInterval(async () => {
-      if (transitionLockRef.current) return;
+      if (isTransitioning || transitionLockRef.current) return;
       try {
         const liveRoundId = currentRoundIdRef.current;
         if (!liveRoundId) return;
@@ -338,7 +349,7 @@ function App() {
         ]);
 
         // CRITICAL: If roundId changed while fetching, ignore these results
-        if (liveRoundId !== currentRoundIdRef.current) return;
+        if (liveRoundId !== currentRoundIdRef.current || isTransitioning || transitionLockRef.current) return;
 
         // Always use actual player count from DB — session.max_players may be stale
         const total = freshPlayers.length;
@@ -361,6 +372,7 @@ function App() {
           // CRITICAL: Only HOST should trigger round transitions
           if (!isHost) return;
           console.log("[Sync] Everyone answered. Host triggering transition.", curAnswers.length, "/", total);
+          setIsTransitioning(true);
           transitionLockRef.current = true;
 
           if (isHost && curAnswers.length < total) {
@@ -414,7 +426,10 @@ function App() {
                 phase: Phases.Main
               }));
               // Small delay before releasing lock to let state propagate
-              setTimeout(() => { transitionLockRef.current = false; }, 500);
+              setTimeout(() => {
+                setIsTransitioning(false);
+                transitionLockRef.current = false;
+              }, 500);
             }
           } else {
             localPhase = Phases.End;
@@ -425,6 +440,7 @@ function App() {
             }
             fetchFinalStoryResult();
             setTimeout(() => {
+              setIsTransitioning(false);
               transitionLockRef.current = false;
               setAppState(prev => ({ ...prev, phase: Phases.End }));
             }, 1000);
@@ -432,11 +448,12 @@ function App() {
         }
       } catch (err) {
         console.error("[Sync] Error in sync loop:", err);
+        setIsTransitioning(false);
         transitionLockRef.current = false;
       }
     }, 500);
     return () => clearInterval(interval);
-  }, [phase, session?.id, currentRoundId, playerCount, players.length, currentRound, isHost, sessionId, fetchFinalStoryResult, roundStartedAt, activeTemplate, didGameStart]);
+  }, [phase, session?.id, currentRoundId, playerCount, players.length, currentRound, isHost, sessionId, fetchFinalStoryResult, roundStartedAt, activeTemplate, didGameStart, isTransitioning]);
   const generateRoomCode = () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let code = "";
@@ -636,12 +653,12 @@ function App() {
     const updatedAnswers = [...userAnswers, cleanAnswer];
     setAppState(prev => ({ ...prev, userAnswers: updatedAnswers }));
     if (!currentRoundId || !playerId || !sessionId) {
-      transitionLockRef.current = false;
+      setIsTransitioning(false);
       setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
       setTimeout(() => {
         if (currentRound < activeTemplate.questions.length) {
           setAppState(prev => ({ ...prev, currentRound: prev.currentRound + 1 }));
-          transitionLockRef.current = false;
+          setIsTransitioning(false);
           setAppState(prev => ({ ...prev, phase: Phases.Main }));
           setAppState(prev => ({
             ...prev,
@@ -687,11 +704,11 @@ function App() {
       const curAnswers = await getAnswersByRound(currentRoundId);
       setAppState(prev => ({ ...prev, joinedCount: curAnswers.length }));
       setAppState(prev => ({ ...prev, totalCount: playerCount > 0 ? playerCount : players.length }));
-      transitionLockRef.current = false;
+      setIsTransitioning(false);
       setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
     } catch (err: any) {
       console.error("Answer submission failed", err);
-      transitionLockRef.current = false;
+      setIsTransitioning(false);
       setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
     }
   };

@@ -47,6 +47,10 @@ export function useGameState(sessionId: string | null) {
             const activeRound = sortedByNum.length > 0 ? sortedByNum[0] : null;
 
             if (activeRound) {
+                // If round changed, don't carry over old answers
+                if (activeRound.id !== gameState.activeRoundId) {
+                    activeRoundAnswers = [];
+                }
                 try {
                     activeRoundAnswers = await getAnswersByRound(activeRound.id);
                 } catch (e) {
