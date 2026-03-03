@@ -526,7 +526,7 @@ function App() {
           isHost: existingPlayer.player_order === 1,
           isLobby: targetSession.session_status === 'waiting',
           didGameStart: targetSession.session_status === 'active',
-          phase: targetSession.session_status === 'active' ? Phases.Main : Phases.Main
+          phase: targetSession.session_status === 'active' ? Phases.Waiting : Phases.Main
         }));
       } else {
         const guest = await createPlayer({
@@ -542,7 +542,7 @@ function App() {
 
       setAppState(prev => ({ ...prev, isCreatingLobby: false }));
       if (targetSession.session_status === 'active') {
-        setAppState(prev => ({ ...prev, phase: Phases.Main, isLobby: false, didGameStart: true }));
+        setAppState(prev => ({ ...prev, phase: Phases.Waiting, isLobby: false, didGameStart: true }));
       } else {
         setAppState(prev => ({ ...prev, phase: Phases.Main }));
       }
@@ -772,7 +772,6 @@ function App() {
           <div className="yellow-guy-bg" onClick={playSecretMusic} />
           <div className="red-guy-bg" onClick={playSecretMusic} />
           <div className="lobby-timer-display">
-            <span className="timer-title">{t('LOBBY_TIMER_TITLE' as any)}</span>
             <span className="timer-time">
               {Math.ceil(lobbyTimeLeft / 60)} {t('LOBBY_MIN_SUFFIX' as any)}
             </span>
@@ -853,10 +852,8 @@ function App() {
         <>
           <Timer
             key={`${currentRound}-${roundStartedAt}`}
-            initialSeconds={roundStartedAt
-              ? Math.max(0, 120 - Math.floor(((Date.now() - serverTimeOffset) - Date.parse(roundStartedAt)) / 1000))
-              : 120
-            }
+            roundStartedAt={roundStartedAt}
+            serverTimeOffset={serverTimeOffset}
             onTimeUp={() => doAnswerSubmit("Час вийшов")}
             className="timerPos"
           />
