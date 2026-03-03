@@ -121,7 +121,6 @@ function App() {
     }
   }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate]);
 
-  // Persist user preferences (survives game end)
   useEffect(() => {
     if (nickname || roomCode) {
       localStorage.setItem('chepuhaUserPrefs', JSON.stringify({ nickname, roomCode }));
@@ -151,7 +150,6 @@ function App() {
     }
   }, []);
 
-  // Asset Preloading
   useEffect(() => {
     const imagesToPreload = [
       logoImage, logoImageEng, homeImage, crownImage, flagUk, flagEn,
@@ -163,7 +161,6 @@ function App() {
       const img = new Image();
       img.src = src;
     });
-    // Warm up audio
     playSecretMusic();
     setTimeout(() => {
       if (secretAudio && !secretAudio.paused) secretAudio.pause();
@@ -203,8 +200,6 @@ function App() {
     } catch (err) { }
   }, [sessionId, players, session, roomCode, language, activeTemplate]);
 
-  // ------------- UNIFIED REACTIVE SYNC -------------
-  // Instead of brittle REST polling, we rely on `rounds` from `useGameState` (updated via Realtime).
   useEffect(() => {
     if (!didGameStart || !playerId || !sessionId) return;
     if (isTransitioning || transitionLockRef.current) return;
@@ -215,12 +210,9 @@ function App() {
 
     if (!latestRound || !myPlayer) return;
 
-    // 1. FORWARD-ONLY ROUND PROGRESSION (The core fix)
     if (latestRound.round_number > currentRound || !currentRoundId) {
-      // NEW ROUND DETECTED!
       let newPhase = Phases.Main;
 
-      // Safety check: if they reloaded the page and had ALREADY answered this new round
       if (myPlayer.players_status === 'ready' && currentAnswers.some(a =>
         (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
         (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === latestRound.id
@@ -239,15 +231,12 @@ function App() {
         joinedCount: 0
       }));
     } else if (latestRound.id === currentRoundId) {
-      // 2. SAME ROUND STATE UPDATES
       if (phase === Phases.Main && currentAnswers.some(a =>
         (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
         (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
       )) {
-        // Player answered THIS round -> show waiting
         setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
       } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
-        // Game ended
         fetchFinalStoryResult();
         setAppState(prev => ({ ...prev, phase: Phases.End }));
       }
@@ -260,9 +249,7 @@ function App() {
       setAppState(prev => ({ ...prev, isLobby: false }));
       setAppState(prev => ({ ...prev, phase: Phases.Main }));
     }
-    // Phase.End is handled by UNIFIED REACTIVE SYNC when players_status === 'finished'
   }, [session?.session_status, isLobby, didGameStart, sessionId]);
-  // ------------- INITIAL STORY SHEETS FETCH -------------
   useEffect(() => {
     if (!session || session.session_status !== 'active' || !sessionId || !playerId) return;
 
@@ -270,7 +257,6 @@ function App() {
       try {
         const sheets = await getStorySheetsBySession(sessionId);
 
-        // Just establish the sheets (players list)
         if (Array.isArray(sheets) && sheets.length > 0) {
           setAppState(prev => ({ ...prev, allStorySheets: sheets.map((s: any) => ({ playerId: s.player_id?.id || s.player_id, sheetId: s.id })) }));
         }
@@ -282,18 +268,16 @@ function App() {
       }
     })();
   }, [session?.session_status, sessionId, playerId, players.length]);
-  // Keep refs in sync with state for use inside setInterval closures
   useEffect(() => { currentRoundIdRef.current = currentRoundId; }, [currentRoundId]);
   useEffect(() => { currentRoundRef.current = currentRound; }, [currentRound]);
   const phaseRef = useRef(phase);
   useEffect(() => { phaseRef.current = phase; }, [phase]);
 
-  // 25 MINUTE LOBBY TIMEOUT
   useEffect(() => {
     if (isLobby) {
       const timer = setTimeout(() => {
         goHome();
-      }, 25 * 60 * 1000); // 25 minutes
+      }, 25 * 60 * 1000);
       return () => clearTimeout(timer);
     }
   }, [isLobby]);
@@ -311,26 +295,19 @@ function App() {
           getPlayersBySession(sessionId)
         ]);
 
-        // CRITICAL: If roundId changed while fetching, ignore these results
         if (liveRoundId !== currentRoundIdRef.current || isTransitioning || transitionLockRef.current) return;
 
-        // Always use actual player count from DB — session.max_players may be stale
         const total = freshPlayers.length;
         setAppState(prev => ({ ...prev, joinedCount: curAnswers.length, totalCount: total }));
 
-        // Phase is now controlled by players_status from DB, no client-side guessing needed
-
-        // Only process transitions if we are in Waiting phase
         if (phaseRef.current !== Phases.Waiting) return;
 
-        // CRITICAL: Do NOT proceed if players haven't loaded yet
         if (total < 2) return;
 
         const now = Date.now();
         const startedAt = roundStartedAt ? Date.parse(roundStartedAt) : now;
         const timePassed = (now - startedAt) / 1000;
 
-        // Force progress if everyone answered or timeout
         if (curAnswers.length >= total || (isHost && timePassed > 130)) {
           // CRITICAL: Only HOST should trigger round transitions
           if (!isHost) return;
@@ -338,7 +315,6 @@ function App() {
           transitionLockRef.current = true;
 
           if (isHost && curAnswers.length < total) {
-            // Host fills missing answers before proceeding
             const playerIdsWhoAnswered = new Set(curAnswers.map(a =>
               typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)
             ));
@@ -374,7 +350,6 @@ function App() {
                 rounds_status: 'active',
                 started_at: ts,
               });
-              // SERVER-AUTHORITATIVE: Tell ALL players to start answering the new round
               await updatePlayersBySession(sessionId, { players_status: 'playing' });
               currentRoundIdRef.current = nextRound.id;
               currentRoundRef.current = nextRoundNum;
@@ -386,7 +361,6 @@ function App() {
                 joinedCount: 0,
                 phase: Phases.Main
               }));
-              // Small delay before releasing lock to let state propagate
               setTimeout(() => {
                 setIsTransitioning(false);
                 transitionLockRef.current = false;
@@ -394,7 +368,6 @@ function App() {
             }
           } else {
             if (isHost) {
-              // SERVER-AUTHORITATIVE: Tell ALL players the game is finished
               await updatePlayersBySession(sessionId, { players_status: 'finished' });
               await updateGameSession(sessionId, { session_status: 'completed' });
             }
@@ -506,7 +479,6 @@ function App() {
       }
 
       if (existingPlayer) {
-        // Re-join existing session
         setAppState(prev => ({
           ...prev,
           playerId: existingPlayer.id,
@@ -516,7 +488,6 @@ function App() {
           phase: targetSession.session_status === 'active' ? Phases.Main : Phases.Main
         }));
       } else {
-        // Create new player
         const guest = await createPlayer({
           nickname: nick,
           session_id: targetSession.id,
@@ -542,7 +513,6 @@ function App() {
   const doGameStart = async () => {
     if (!sessionId) return;
     try {
-      // 1. Prepare batch story sheets
       const sheetsToCreate = players.map(p => ({
         game_session_id: sessionId,
         player_id: p.id,
@@ -556,14 +526,12 @@ function App() {
         sheetId: s.id
       }));
 
-      // Update local state for my sheet
       const mySheet = createdSheets.find((s: any) => s.player_id === playerId);
       if (mySheet) {
         setAppState(prev => ({ ...prev, myStorySheetId: mySheet.id }));
       }
       setAppState(prev => ({ ...prev, allStorySheets: newSheets }));
 
-      // 2. Create the first round
       const ts = new Date().toISOString();
       const firstRound = await createRound({
         session_id: sessionId,
@@ -573,7 +541,6 @@ function App() {
         started_at: ts,
       });
 
-      // 3. Update ALL players to 'playing'
       await updatePlayersBySession(sessionId, { players_status: 'playing' });
 
       // 4. FINALLY activate the session (Atomic Start)
@@ -656,9 +623,7 @@ function App() {
         round_id: currentRoundId,
         story_sheet_id: targetSheet,
       });
-      // SERVER-AUTHORITATIVE: Mark this player as done answering
       await updatePlayer(playerId, { players_status: 'ready' });
-      // Immediately refresh hook so server-authoritative effect sees 'ready' not stale 'playing'
       refreshState();
       const curAnswers = await getAnswersByRound(currentRoundId);
       setAppState(prev => ({ ...prev, joinedCount: curAnswers.length }));
