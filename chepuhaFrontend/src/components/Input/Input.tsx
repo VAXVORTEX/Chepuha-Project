@@ -7,6 +7,7 @@ interface InputProps {
     type?: string;
     maxLength?: number;
     autoFocus?: boolean;
+    onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     className?: string;
 }
 const Input: React.FC<InputProps> = ({
@@ -16,6 +17,7 @@ const Input: React.FC<InputProps> = ({
     type = 'text',
     maxLength,
     autoFocus,
+    onKeyDown,
     className = ''
 }) => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -30,6 +32,7 @@ const Input: React.FC<InputProps> = ({
             placeholder={placeholder}
             maxLength={maxLength}
             autoFocus={autoFocus}
+            onKeyDown={onKeyDown}
         />
     );
 };

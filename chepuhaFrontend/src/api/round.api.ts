@@ -16,7 +16,7 @@ export async function createRound(payload: CreateRoundPayload): Promise<Round> {
         .select()
         .single();
     if (error) throw error;
-    return data;
+    return data as Round;
 }
 
 export async function getRound(id: string): Promise<Round> {
@@ -26,7 +26,7 @@ export async function getRound(id: string): Promise<Round> {
         .eq('id', id)
         .single();
     if (error) throw error;
-    return data;
+    return data as Round;
 }
 
 export async function getRoundsBySession(sessionId: string): Promise<Round[]> {
@@ -36,7 +36,7 @@ export async function getRoundsBySession(sessionId: string): Promise<Round[]> {
         .eq('session_id', sessionId)
         .order('round_number', { ascending: true });
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
 export async function updateRound(
@@ -50,5 +50,5 @@ export async function updateRound(
         .select()
         .single();
     if (error) throw error;
-    return data;
+    return data as Round;
 }

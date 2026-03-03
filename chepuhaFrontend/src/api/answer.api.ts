@@ -16,7 +16,7 @@ export async function submitAnswer(payload: SubmitAnswerPayload): Promise<Answer
         .select()
         .single();
     if (error) throw error;
-    return data;
+    return data as Answer;
 }
 
 export async function getAnswer(id: string): Promise<Answer> {
@@ -26,7 +26,7 @@ export async function getAnswer(id: string): Promise<Answer> {
         .eq('id', id)
         .single();
     if (error) throw error;
-    return data;
+    return data as Answer;
 }
 
 export async function getAnswersByRound(roundId: string): Promise<Answer[]> {
@@ -36,7 +36,7 @@ export async function getAnswersByRound(roundId: string): Promise<Answer[]> {
         .eq('round_id', roundId)
         .order('position_in_sheet', { ascending: true });
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
 export async function getAnswersByStorySheet(storySheetId: string): Promise<Answer[]> {
@@ -46,5 +46,5 @@ export async function getAnswersByStorySheet(storySheetId: string): Promise<Answ
         .eq('story_sheet_id', storySheetId)
         .order('position_in_sheet', { ascending: true });
     if (error) throw error;
-    return data;
+    return data || [];
 }

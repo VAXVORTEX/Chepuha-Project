@@ -16,7 +16,16 @@ export async function createStorySheet(payload: CreateStorySheetPayload): Promis
         .select()
         .single();
     if (error) throw error;
-    return data;
+    return data as StorySheet;
+}
+
+export async function createStorySheetsBatch(payloads: CreateStorySheetPayload[]): Promise<StorySheet[]> {
+    const { data, error } = await supabase
+        .from('story_sheets')
+        .insert(payloads)
+        .select();
+    if (error) throw error;
+    return data || [];
 }
 
 export async function getStorySheet(id: string): Promise<StorySheet> {
@@ -26,7 +35,7 @@ export async function getStorySheet(id: string): Promise<StorySheet> {
         .eq('id', id)
         .single();
     if (error) throw error;
-    return data;
+    return data as StorySheet;
 }
 
 export async function getStorySheetsBySession(sessionId: string): Promise<StorySheet[]> {
@@ -36,7 +45,7 @@ export async function getStorySheetsBySession(sessionId: string): Promise<StoryS
         .eq('game_session_id', sessionId)
         .order('sheet_number', { ascending: true });
     if (error) throw error;
-    return data;
+    return data || [];
 }
 
 export async function updateStorySheet(
@@ -50,5 +59,5 @@ export async function updateStorySheet(
         .select()
         .single();
     if (error) throw error;
-    return data;
+    return data as StorySheet;
 }

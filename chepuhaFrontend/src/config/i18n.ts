@@ -19,7 +19,7 @@ export const DICTIONARY = {
         ERR_CREATE: "Помилка створення кімнати: ",
         ERR_NOT_FOUND: "Кімнату не знайдено або гра вже почалася",
         ERR_JOIN: "Помилка приєднання: ",
-        ERR_START: "Помилка старту: ",
+        ERR_START: "☹️ Помилка старту: ",
         CHOOSE_STORY: "ОБЕРІТЬ ІСТОРІЮ",
         FINAL_STORY: "ФІНАЛЬНА ІСТОРІЯ",
         HISTORY: "ІСТОРІЯ ІГОР",
@@ -154,6 +154,10 @@ export const DICTIONARY = {
         Q_CHAOS_9: "Яким епічним фіналом це завершилося?",
         Q_CHAOS_10: "Який дивний предмет вони знайшли/зробили?",
         Q_CHAOS_11: "Яка абсурдна мораль цієї історії?",
+        NETWORK_ERROR: "Помилка мережі. Перевірте зʼєднання, VPN або DNS.",
+        DNS_CHECK: "Втрачено звʼязок. Спробуйте оновити сторінку або вимкнути VPN/DPI.",
+        CONNECTION_HELP: "Проблеми зі з'єднанням?",
+        TROUBLESHOOT: "Спробуйте змінити вузол VPN (крім Гельсінкі), вимкнути GoodByeDPI або використати мобільний інтернет.",
     },
     en: {
         CREATE_GAME: "CREATE GAME",
@@ -175,7 +179,7 @@ export const DICTIONARY = {
         ERR_CREATE: "Error creating room: ",
         ERR_NOT_FOUND: "Room not found or game already started",
         ERR_JOIN: "Error joining: ",
-        ERR_START: "Error starting: ",
+        ERR_START: "☹️ Error starting: ",
         CHOOSE_STORY: "CHOOSE A STORY",
         FINAL_STORY: "FINAL STORY",
         HISTORY: "GAME HISTORY",
@@ -310,6 +314,10 @@ export const DICTIONARY = {
         Q_CHAOS_9: "With what epic finale did it end?",
         Q_CHAOS_10: "What weird object did they find/make?",
         Q_CHAOS_11: "What is the absurd moral of this story?",
+        NETWORK_ERROR: "Network Error. Check your connection, VPN, or DNS.",
+        DNS_CHECK: "Connection lost. Try refreshing or disabling VPN/DPI.",
+        CONNECTION_HELP: "Connection problems?",
+        TROUBLESHOOT: "Try changing VPN node (avoid Helsinki), disabling GoodByeDPI, or using mobile data.",
     }
 };
 export type Language = 'uk' | 'en';

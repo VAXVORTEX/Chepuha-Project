@@ -28,9 +28,11 @@ import {
   updatePlayersBySession,
   createRound,
   createStorySheet,
+  createStorySheetsBatch,
   submitAnswer,
   getAnswersByRound,
   QuestionType,
+  StorySheetStatus,
   getGameSessions,
   getStorySheetsBySession,
   getRoundsBySession,
@@ -73,8 +75,8 @@ function App() {
     userAnswers: [],
     isCreatingLobby: false,
     isLobby: false,
-    nickname: "",
-    roomCode: "",
+    nickname: localStorage.getItem('chepuhaUserPrefs') ? JSON.parse(localStorage.getItem('chepuhaUserPrefs')!).nickname || '' : '',
+    roomCode: localStorage.getItem('chepuhaUserPrefs') ? JSON.parse(localStorage.getItem('chepuhaUserPrefs')!).roomCode || '' : '',
     selectedTemplate: "classic",
     error: "",
     allStories: [],
@@ -99,6 +101,8 @@ function App() {
   const activeTemplate = TEMPLATES[session?.template || selectedTemplate] || TEMPLATES.classic;
   const { t, language, setLanguage } = useLanguage();
   const transitionLockRef = useRef(false);
+  const currentRoundIdRef = useRef(currentRoundId);
+  const currentRoundRef = useRef(currentRound);
   const { savedGames, saveGameToHistory } = useHistory();
   useEffect(() => {
     if (sessionId && playerId && nickname) {
@@ -115,6 +119,13 @@ function App() {
       localStorage.removeItem(STATE_STORAGE_KEY);
     }
   }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate]);
+
+  // Persist user preferences (survives game end)
+  useEffect(() => {
+    if (nickname || roomCode) {
+      localStorage.setItem('chepuhaUserPrefs', JSON.stringify({ nickname, roomCode }));
+    }
+  }, [nickname, roomCode]);
 
   useEffect(() => {
     const saved = localStorage.getItem(STATE_STORAGE_KEY);
@@ -161,10 +172,10 @@ function App() {
     if (!sessionId) return;
     try {
       const sheets = await getStorySheetsBySession(sessionId);
-      const built = sheets
-        .filter(s => s.answers && s.answers.length > 0)
+      const built = (sheets || [])
+        .filter(s => s && s.answers && s.answers.length > 0)
         .map(s => {
-          const sorted = [...s.answers!].sort((a, b) => a.position_in_sheet - b.position_in_sheet);
+          const sorted = [...(s.answers || [])].sort((a, b) => a.position_in_sheet - b.position_in_sheet);
           const p = s.player_id as any;
           const nick = p?.nickname || 'Гравець';
           return {
@@ -194,15 +205,17 @@ function App() {
   // SERVER-AUTHORITATIVE: Read player's status from DB to determine correct phase
   useEffect(() => {
     if (!didGameStart || !playerId || !players.length || !sessionId) return;
+    // CRITICAL: Don't override phase during active transitions
+    if (transitionLockRef.current) return;
     const myPlayer = players.find(p => p.id === playerId);
     if (!myPlayer) return;
 
-    if (myPlayer.players_status === 'playing' && phase === Phases.Waiting) {
-      // Status changed from waiting → playing = new round started!
+    if (myPlayer.players_status === 'playing' && !currentRoundId) {
+      // Game started but we don't have a round yet
       (async () => {
         try {
           const roundsList = await getRoundsBySession(sessionId);
-          const sorted = [...roundsList].sort((a: any, b: any) => b.round_number - a.round_number);
+          const sorted = [...(roundsList || [])].sort((a: any, b: any) => b.round_number - a.round_number);
           const latestRound = sorted[0];
           if (latestRound) {
             setAppState(prev => ({
@@ -216,15 +229,42 @@ function App() {
           }
         } catch (e) { }
       })();
-    } else if (myPlayer.players_status === 'ready' && phase === Phases.Main) {
-      // Player already answered this round → show waiting
+    } else if (myPlayer.players_status === 'playing' && phase === Phases.Waiting && currentRoundId) {
+      // Status changed from waiting → playing = new round started!
+      // Aggressively retry to find the new round with short delays
+      transitionLockRef.current = true;
+      (async () => {
+        for (let attempt = 0; attempt < 5; attempt++) {
+          try {
+            const roundsList = await getRoundsBySession(sessionId);
+            const sorted = [...(roundsList || [])].sort((a: any, b: any) => b.round_number - a.round_number);
+            const latestRound = sorted[0];
+            if (latestRound && latestRound.round_number > currentRound) {
+              setAppState(prev => ({
+                ...prev,
+                currentRoundId: latestRound.id,
+                currentRound: latestRound.round_number,
+                roundStartedAt: latestRound.started_at || prev.roundStartedAt,
+                joinedCount: 0,
+                phase: Phases.Main,
+              }));
+              transitionLockRef.current = false;
+              return; // Found it, exit retry loop
+            }
+          } catch (e) { }
+          if (attempt < 4) await new Promise(r => setTimeout(r, 200));
+        }
+        transitionLockRef.current = false;
+      })();
+    } else if (phase === Phases.Main && currentAnswers.some(a => a.player_id === playerId)) {
+      // Player already answered THIS round → show waiting
       setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
     } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
       // Game ended
       fetchFinalStoryResult();
       setAppState(prev => ({ ...prev, phase: Phases.End }));
     }
-  }, [didGameStart, playerId, players, phase, sessionId, fetchFinalStoryResult]);
+  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, fetchFinalStoryResult, currentAnswers]);
   useEffect(() => {
     if (!session || !sessionId) return;
     if (session.session_status === 'active' && isLobby && !didGameStart) {
@@ -247,7 +287,7 @@ function App() {
           getStorySheetsBySession(sessionId),
         ]);
 
-        const sortedRounds = Array.isArray(rounds) ? [...rounds].sort((a: any, b: any) => b.round_number - a.round_number) : [];
+        const sortedRounds = Array.isArray(rounds) ? [...(rounds || [])].sort((a: any, b: any) => b.round_number - a.round_number) : [];
         const activeRound = sortedRounds[0];
 
         if (activeRound) {
@@ -264,23 +304,25 @@ function App() {
             roundStartedAt: activeRound.started_at || prev.roundStartedAt,
             didGameStart: true,
             isLobby: false,
-            joinedCount: 0,
             phase: initialPhase
           }));
         }
 
-        if (sheets.length > 0) {
+        if (Array.isArray(sheets) && sheets.length > 0) {
           setAppState(prev => ({ ...prev, allStorySheets: sheets.map((s: any) => ({ playerId: s.player_id?.id || s.player_id, sheetId: s.id })) }));
         }
 
-        const mySheet = sheets.find((s: any) => (s.player_id?.id || s.player_id) === playerId);
+        const mySheet = (sheets || []).find((s: any) => (s.player_id?.id || s.player_id) === playerId);
         if (mySheet) setAppState(prev => ({ ...prev, myStorySheetId: mySheet.id }));
         if (players.length > 0) setAppState(prev => ({ ...prev, playerCount: players.length }));
       } catch (err) {
         console.error("Error syncing state on start/re-join:", err);
       }
     })();
-  }, [session?.session_status, sessionId, playerId, players.length]);
+  }, [session?.session_status, sessionId, playerId, players.length, rounds.length]);
+  // Keep refs in sync with state for use inside setInterval closures
+  useEffect(() => { currentRoundIdRef.current = currentRoundId; }, [currentRoundId]);
+  useEffect(() => { currentRoundRef.current = currentRound; }, [currentRound]);
   useEffect(() => {
     if (!session || !currentRoundId || !sessionId || !didGameStart) return;
     if (phase !== Phases.Waiting && phase !== Phases.Main) return;
@@ -288,14 +330,15 @@ function App() {
     const interval = setInterval(async () => {
       if (transitionLockRef.current) return;
       try {
-        const checkRoundId = currentRoundId;
+        const liveRoundId = currentRoundIdRef.current;
+        if (!liveRoundId) return;
         const [curAnswers, freshPlayers] = await Promise.all([
-          getAnswersByRound(currentRoundId),
+          getAnswersByRound(liveRoundId),
           getPlayersBySession(sessionId)
         ]);
 
-        // CRITICAL: If roundId changed while fetching, ignore these results to avoid 2/2 stale bug
-        if (checkRoundId !== currentRoundId) return;
+        // CRITICAL: If roundId changed while fetching, ignore these results
+        if (liveRoundId !== currentRoundIdRef.current) return;
 
         // Always use actual player count from DB — session.max_players may be stale
         const total = freshPlayers.length;
@@ -315,7 +358,9 @@ function App() {
 
         // Force progress if everyone answered or timeout
         if (curAnswers.length >= total || (isHost && timePassed > 130)) {
-          console.log("[Sync] Triggering transition. Answers:", curAnswers.length, "Total:", total);
+          // CRITICAL: Only HOST should trigger round transitions
+          if (!isHost) return;
+          console.log("[Sync] Everyone answered. Host triggering transition.", curAnswers.length, "/", total);
           transitionLockRef.current = true;
 
           if (isHost && curAnswers.length < total) {
@@ -345,7 +390,6 @@ function App() {
           }
 
           if (currentRound < activeTemplate.questions.length) {
-            localPhase = Phases.Main;
             if (isHost) {
               const ts = new Date().toISOString();
               const nextRoundNum = currentRound + 1;
@@ -358,6 +402,9 @@ function App() {
               });
               // SERVER-AUTHORITATIVE: Tell ALL players to start answering the new round
               await updatePlayersBySession(sessionId, { players_status: 'playing' });
+              currentRoundIdRef.current = nextRound.id;
+              currentRoundRef.current = nextRoundNum;
+              localPhase = Phases.Main;
               setAppState(prev => ({
                 ...prev,
                 currentRoundId: nextRound.id,
@@ -366,11 +413,8 @@ function App() {
                 joinedCount: 0,
                 phase: Phases.Main
               }));
-              transitionLockRef.current = false;
-            } else {
-              // Non-host: server-authoritative effect will handle the transition
-              // when host sets all players_status to 'playing'
-              transitionLockRef.current = false;
+              // Small delay before releasing lock to let state propagate
+              setTimeout(() => { transitionLockRef.current = false; }, 500);
             }
           } else {
             localPhase = Phases.End;
@@ -387,8 +431,10 @@ function App() {
           }
         }
       } catch (err) {
+        console.error("[Sync] Error in sync loop:", err);
+        transitionLockRef.current = false;
       }
-    }, 1000);
+    }, 500);
     return () => clearInterval(interval);
   }, [phase, session?.id, currentRoundId, playerCount, players.length, currentRound, isHost, sessionId, fetchFinalStoryResult, roundStartedAt, activeTemplate, didGameStart]);
   const generateRoomCode = () => {
@@ -404,8 +450,6 @@ function App() {
     setAppState(prev => ({ ...prev, didGameStart: false }));
     setAppState(prev => ({ ...prev, isCreatingLobby: false }));
     setAppState(prev => ({ ...prev, isLobby: false }));
-    setAppState(prev => ({ ...prev, nickname: "" }));
-    setAppState(prev => ({ ...prev, roomCode: "" }));
     setAppState(prev => ({ ...prev, error: "" }));
     setAppState(prev => ({ ...prev, currentRound: 1 }));
     setAppState(prev => ({ ...prev, userAnswers: [] }));
@@ -522,21 +566,28 @@ function App() {
   const doGameStart = async () => {
     if (!sessionId) return;
     try {
-      await updateGameSession(sessionId, { session_status: 'active', max_players: players.length });
-      setAppState(prev => ({ ...prev, playerCount: players.length }));
-      const newSheets: { playerId: string, sheetId: string }[] = [];
-      for (const p of players) {
-        const sheet = await createStorySheet({
-          game_session_id: sessionId,
-          player_id: p.id,
-          storysheets_status: 'in_progress',
-        });
-        newSheets.push({ playerId: p.id, sheetId: sheet.id });
-        if (p.id === playerId) {
-          setAppState(prev => ({ ...prev, myStorySheetId: sheet.id }));
-        }
+      // 1. Prepare batch story sheets
+      const sheetsToCreate = players.map(p => ({
+        game_session_id: sessionId,
+        player_id: p.id,
+        storysheets_status: 'in_progress' as StorySheetStatus,
+      }));
+
+      const createdSheets = await createStorySheetsBatch(sheetsToCreate);
+
+      const newSheets = createdSheets.map((s: any) => ({
+        playerId: s.player_id as string,
+        sheetId: s.id
+      }));
+
+      // Update local state for my sheet
+      const mySheet = createdSheets.find((s: any) => s.player_id === playerId);
+      if (mySheet) {
+        setAppState(prev => ({ ...prev, myStorySheetId: mySheet.id }));
       }
       setAppState(prev => ({ ...prev, allStorySheets: newSheets }));
+
+      // 2. Create the first round
       const ts = new Date().toISOString();
       const firstRound = await createRound({
         session_id: sessionId,
@@ -545,16 +596,30 @@ function App() {
         rounds_status: 'active',
         started_at: ts,
       });
-      // SERVER-AUTHORITATIVE: Tell ALL players to start answering round 1
+
+      // 3. Update ALL players to 'playing'
       await updatePlayersBySession(sessionId, { players_status: 'playing' });
-      setAppState(prev => ({ ...prev, currentRoundId: firstRound.id }));
-      setAppState(prev => ({ ...prev, roundStartedAt: ts }));
-      setAppState(prev => ({ ...prev, didGameStart: true }));
-      setAppState(prev => ({ ...prev, isLobby: false }));
-      setAppState(prev => ({ ...prev, phase: Phases.Main }));
-      setAppState(prev => ({ ...prev, currentRound: 1 }));
-      setAppState(prev => ({ ...prev, userAnswers: [] }));
-      setAppState(prev => ({ ...prev, totalCount: players.length }));
+
+      // 4. FINALLY activate the session (Atomic Start)
+      // Guests watching realtime will see everything is ready when this changes
+      await updateGameSession(sessionId, {
+        session_status: 'active',
+        max_players: players.length
+      });
+
+      // Update local state
+      setAppState(prev => ({
+        ...prev,
+        playerCount: players.length,
+        currentRoundId: firstRound.id,
+        roundStartedAt: ts,
+        didGameStart: true,
+        isLobby: false,
+        phase: Phases.Main,
+        currentRound: 1,
+        userAnswers: [],
+        totalCount: players.length
+      }));
     } catch (err: any) {
       setAppState(prev => ({ ...prev, error: String(t('ERR_START' as any)) + err.message }));
     }
@@ -600,8 +665,8 @@ function App() {
         if (safeSheets.length > 0) setAppState(prev => ({ ...prev, allStorySheets: safeSheets }));
       }
       let targetSheet = myStorySheetId || safeSheets.find(s => s.playerId === playerId)?.sheetId;
-      if (safeSheets.length > 0 && players.length > 0) {
-        const sortedPlayers = [...players].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+      if ((safeSheets || []).length > 0 && (players || []).length > 0) {
+        const sortedPlayers = [...(players || [])].sort((a, b) => String(a.id).localeCompare(String(b.id)));
         const myIndex = sortedPlayers.findIndex(p => p.id === playerId);
         let targetIndex = (myIndex - (currentRound - 1)) % sortedPlayers.length;
         if (targetIndex < 0) targetIndex += sortedPlayers.length;
@@ -617,6 +682,8 @@ function App() {
       });
       // SERVER-AUTHORITATIVE: Mark this player as done answering
       await updatePlayer(playerId, { players_status: 'ready' });
+      // Immediately refresh hook so server-authoritative effect sees 'ready' not stale 'playing'
+      refreshState();
       const curAnswers = await getAnswersByRound(currentRoundId);
       setAppState(prev => ({ ...prev, joinedCount: curAnswers.length }));
       setAppState(prev => ({ ...prev, totalCount: playerCount > 0 ? playerCount : players.length }));
@@ -630,7 +697,7 @@ function App() {
   };
   return (
     <div className="app-view">
-      {roomCode && !didGameStart && phase !== Phases.Join && phase !== Phases.History && phase !== Phases.End && (
+      {roomCode && !didGameStart && (isCreatingLobby || isLobby) && phase !== Phases.Join && phase !== Phases.History && phase !== Phases.End && (
         <GameCode code={roomCode} className="gameCodePos" />
       )}
       {!didGameStart && !isCreatingLobby && phase === Phases.Main && !isLobby && (
@@ -721,6 +788,8 @@ function App() {
       )}
       {!didGameStart && isLobby && phase !== Phases.Join && (
         <>
+          <div className="yellow-guy-bg" onClick={playSecretMusic} />
+          <div className="red-guy-bg" onClick={playSecretMusic} />
           <div className="lobby-container">
             <div className="lobby-info">
               <h2 className="lobby-text">{t('YOUR_NICK')} {nickname}</h2>
@@ -745,7 +814,10 @@ function App() {
                 )}
               </div>
             </div>
-            <div className="error-message" style={{ color: "red", minHeight: '24px' }}>{pollError || '\u00A0'}</div>
+            <div className="error-message" style={{ color: "red", minHeight: '24px' }}>
+              {pollError ? (t(pollError as any) || pollError) : '\u00A0'}
+            </div>
+
             <div className="lobby-actions">
               {isHost ? (
                 <Button label={t('START_GAME')} variant="primary" phase={phase} onClick={doGameStart} disabled={players.length < 1} />
@@ -762,19 +834,33 @@ function App() {
           <div className="yellow-guy-bg" onClick={playSecretMusic} />
           <div className="red-guy-bg" onClick={playSecretMusic} />
           <JoinCard
+            initialNick={nickname}
+            initialRoom={roomCode}
             onJoin={handleJoinGame}
           />
           <HomeIcon className="homeIconPos" onClick={goHome} />
         </>
       )}
+
       {didGameStart && phase === Phases.Waiting && (
-        <WaitCard
-          nick={nickname}
-          joinedCount={derivedJoinedCount}
-          totalCount={derivedTotalCount}
-          message={t('WAITING_ANSWERS')}
-        />
+        <>
+          <div className="yellow-guy-bg" onClick={playSecretMusic} />
+          <div className="red-guy-bg" onClick={playSecretMusic} />
+          <Round
+            className="roundPos"
+            currentRound={currentRound}
+            totalRounds={activeTemplate.questions.length}
+          />
+          <WaitCard
+            nick={nickname}
+            joinedCount={derivedJoinedCount}
+            totalCount={derivedTotalCount}
+            message={t('WAITING_ANSWERS')}
+          />
+
+        </>
       )}
+
       {didGameStart && phase === Phases.Main && (
         <>
           <Timer
@@ -794,7 +880,7 @@ function App() {
               activeTemplate.id === 'chaos'
                 ? TEMPLATES[
                   ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "chaos"][
-                  Math.abs([...(playerId || nickname), currentRound].reduce((a: number, c: any) => a + String(c).charCodeAt(0), 0)) % 8
+                  Math.abs(String(playerId || nickname || "Guest").split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0) + (currentRound || 0)) % 8
                   ]
                 ]?.questions[currentRound - 1] || activeTemplate.questions[currentRound - 1]
                 : activeTemplate.questions[currentRound - 1]

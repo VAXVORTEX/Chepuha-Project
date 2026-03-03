@@ -43,6 +43,7 @@ export {
 export type { SubmitAnswerPayload } from './answer.api';
 export {
     createStorySheet,
+    createStorySheetsBatch,
     getStorySheet,
     getStorySheetsBySession,
     updateStorySheet,

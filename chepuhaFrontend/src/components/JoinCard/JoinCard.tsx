@@ -8,6 +8,8 @@ import { Phases } from "../../types/phaseVariant";
 import Input from "../Input/Input";
 import { useLanguage } from "../../contexts/LanguageContext";
 interface JoinCardProps {
+  initialNick?: string;
+  initialRoom?: string;
   onJoin: (nick: string, room: string) => void;
   errors?: {
     nick?: string;
@@ -15,12 +17,14 @@ interface JoinCardProps {
   };
 }
 const JoinCard: React.FC<JoinCardProps> = ({
+  initialNick = "",
+  initialRoom = "",
   onJoin,
   errors,
 }) => {
   const { t } = useLanguage();
-  const [nickInputValue, setNickInputValue] = useState("");
-  const [roomInputValue, setRoomInputValue] = useState("");
+  const [nickInputValue, setNickInputValue] = useState(initialNick);
+  const [roomInputValue, setRoomInputValue] = useState(initialRoom);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const doJoinClick = () => {
     setIsSubmitted(true);
