@@ -805,6 +805,7 @@ function App() {
             initialNick={nickname}
             initialRoom={roomCode}
             onJoin={handleJoinGame}
+            errors={error ? { room: error } : undefined}
           />
           <HomeIcon className="homeIconPos" onClick={goHome} />
         </>
