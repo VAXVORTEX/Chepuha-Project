@@ -203,11 +203,13 @@ function App() {
   // SERVER-AUTHORITATIVE: Read player's status from DB to determine correct phase
   useEffect(() => {
     if (!didGameStart || !playerId || !players.length || !sessionId) return;
+    // CRITICAL: Don't override phase during active transitions
+    if (transitionLockRef.current) return;
     const myPlayer = players.find(p => p.id === playerId);
     if (!myPlayer) return;
 
     if (myPlayer.players_status === 'playing' && !currentRoundId) {
-      // Game started but we don't have a round yet (timing: session became active before round was created)
+      // Game started but we don't have a round yet
       (async () => {
         try {
           const roundsList = await getRoundsBySession(sessionId);
@@ -228,6 +230,7 @@ function App() {
     } else if (myPlayer.players_status === 'playing' && phase === Phases.Waiting && currentRoundId) {
       // Status changed from waiting → playing = new round started!
       // Aggressively retry to find the new round with short delays
+      transitionLockRef.current = true;
       (async () => {
         for (let attempt = 0; attempt < 5; attempt++) {
           try {
@@ -243,11 +246,13 @@ function App() {
                 joinedCount: 0,
                 phase: Phases.Main,
               }));
+              transitionLockRef.current = false;
               return; // Found it, exit retry loop
             }
           } catch (e) { }
-          if (attempt < 4) await new Promise(r => setTimeout(r, 200)); // Brief pause before retry
+          if (attempt < 4) await new Promise(r => setTimeout(r, 200));
         }
+        transitionLockRef.current = false;
       })();
     } else if (myPlayer.players_status === 'ready' && phase === Phases.Main) {
       // Player already answered this round → show waiting
@@ -347,7 +352,9 @@ function App() {
 
         // Force progress if everyone answered or timeout
         if (curAnswers.length >= total || (isHost && timePassed > 130)) {
-          console.log("[Sync] Triggering transition. Answers:", curAnswers.length, "Total:", total);
+          // CRITICAL: Only HOST should trigger round transitions
+          if (!isHost) return;
+          console.log("[Sync] Everyone answered. Host triggering transition.", curAnswers.length, "/", total);
           transitionLockRef.current = true;
 
           if (isHost && curAnswers.length < total) {
