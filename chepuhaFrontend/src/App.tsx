@@ -100,8 +100,14 @@ function App() {
 
   useEffect(() => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    if (!supabaseUrl) return;
-    fetch(`${supabaseUrl}/auth/v1/health`, { method: 'GET' })
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseAnonKey) return;
+    fetch(`${supabaseUrl}/auth/v1/health`, {
+      method: 'GET',
+      headers: {
+        'apikey': supabaseAnonKey
+      }
+    })
       .then(res => {
         const dateHeader = res.headers.get('date');
         if (dateHeader) {
