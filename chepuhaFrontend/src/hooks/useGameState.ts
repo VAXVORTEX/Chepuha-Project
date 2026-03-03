@@ -84,29 +84,29 @@ export function useGameState(sessionId: string | null) {
                 .on(
                     'postgres_changes',
                     { event: '*', schema: 'public', table: 'game_sessions', filter: `id=eq.${sessionId}` },
-                    () => { fetchState(); }
+                    (payload) => { fetchState(); }
                 )
                 .on(
                     'postgres_changes',
                     { event: '*', schema: 'public', table: 'players', filter: `session_id=eq.${sessionId}` },
-                    () => { fetchState(); }
+                    (payload) => { fetchState(); }
                 )
                 .on(
                     'postgres_changes',
                     { event: '*', schema: 'public', table: 'rounds', filter: `session_id=eq.${sessionId}` },
-                    () => { fetchState(); }
+                    (payload) => { fetchState(); }
                 )
                 .on(
                     'postgres_changes',
                     { event: '*', schema: 'public', table: 'answers' },
-                    () => { fetchState(); }
+                    (payload) => { fetchState(); }
                 )
                 .subscribe((status) => {
                 });
 
             const pollInterval = setInterval(() => {
                 fetchState();
-            }, 500); // 500ms polling for faster sync
+            }, 5000); // 5s fallback polling
 
             return () => {
                 supabase.removeChannel(sessionChannel);
@@ -115,7 +115,7 @@ export function useGameState(sessionId: string | null) {
         } catch (err) {
             const pollInterval = setInterval(() => {
                 fetchState();
-            }, 1000);
+            }, 5000);
             return () => clearInterval(pollInterval);
         }
     }, [fetchState, sessionId]);

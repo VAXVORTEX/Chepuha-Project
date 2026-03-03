@@ -753,7 +753,10 @@ function App() {
           <div className="yellow-guy-bg" onClick={playSecretMusic} />
           <div className="red-guy-bg" onClick={playSecretMusic} />
           <div className="lobby-timer-display">
-            {Math.floor(lobbyTimeLeft / 60)}:{String(lobbyTimeLeft % 60).padStart(2, '0')}
+            <span className="timer-title">{t('LOBBY_TIMER_TITLE' as any)}</span>
+            <span className="timer-time">
+              {Math.floor(lobbyTimeLeft / 60)}:{String(lobbyTimeLeft % 60).padStart(2, '0')}
+            </span>
           </div>
           <div className="lobby-container">
             <div className="lobby-info">
