@@ -7,13 +7,21 @@ interface GameCodeProps {
 }
 const GameCode: React.FC<GameCodeProps> = ({ code, className = "" }) => {
     const { t } = useLanguage();
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
 
     return (
         <div
             className={`${styles.container} ${className}`}
-            title={t('GAME_CODE_LABEL')}
+            onClick={handleCopy}
+            title={t('CLICK_TO_COPY' as any)}
         >
-            <span className={styles.label}>{t('GAME_CODE_LABEL')}</span>
+            <span className={styles.label}>{copied ? t('COPIED' as any) : t('GAME_CODE_LABEL')}</span>
             <span className={styles.code}>{code}</span>
         </div>
     );

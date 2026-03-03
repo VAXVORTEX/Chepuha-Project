@@ -772,6 +772,7 @@ function App() {
           <div className="yellow-guy-bg" onClick={playSecretMusic} />
           <div className="red-guy-bg" onClick={playSecretMusic} />
           <div className="lobby-timer-display">
+            <span className="timer-title">{t('LOBBY_TIMER_TITLE' as any)}</span>
             <span className="timer-time">
               {Math.ceil(lobbyTimeLeft / 60)} {t('LOBBY_MIN_SUFFIX' as any)}
             </span>
