@@ -256,15 +256,15 @@ function App() {
         }
         transitionLockRef.current = false;
       })();
-    } else if (myPlayer.players_status === 'ready' && phase === Phases.Main) {
-      // Player already answered this round → show waiting
+    } else if (phase === Phases.Main && currentAnswers.some(a => a.player_id === playerId)) {
+      // Player already answered THIS round → show waiting
       setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
     } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
       // Game ended
       fetchFinalStoryResult();
       setAppState(prev => ({ ...prev, phase: Phases.End }));
     }
-  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, fetchFinalStoryResult]);
+  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, fetchFinalStoryResult, currentAnswers]);
   useEffect(() => {
     if (!session || !sessionId) return;
     if (session.session_status === 'active' && isLobby && !didGameStart) {
