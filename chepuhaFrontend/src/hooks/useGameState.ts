@@ -38,9 +38,9 @@ export function useGameState(sessionId: string | null) {
             let playersData = gameState.players;
             let roundsData = gameState.rounds;
 
-            try { sessionData = await getGameSession(sessionId); } catch (e) { console.error("Session fetch failed", e); }
-            try { playersData = await getPlayersBySession(sessionId); } catch (e) { console.error("Players fetch failed", e); }
-            try { roundsData = await getRoundsBySession(sessionId); } catch (e) { console.error("Rounds fetch failed", e); }
+            try { sessionData = await getGameSession(sessionId); } catch (e) { }
+            try { playersData = await getPlayersBySession(sessionId); } catch (e) { }
+            try { roundsData = await getRoundsBySession(sessionId); } catch (e) { }
 
             let activeRoundAnswers: Answer[] = gameState.currentAnswers;
             const sortedByNum = Array.isArray(roundsData) ? [...roundsData].sort((a: any, b: any) => (b.round_number || 0) - (a.round_number || 0)) : [];
@@ -54,7 +54,6 @@ export function useGameState(sessionId: string | null) {
                 try {
                     activeRoundAnswers = await getAnswersByRound(activeRound.id);
                 } catch (e) {
-                    console.error("Answers fetch failed", e);
                 }
             }
 
@@ -103,7 +102,6 @@ export function useGameState(sessionId: string | null) {
                     () => { fetchState(); }
                 )
                 .subscribe((status) => {
-                    console.log(`Realtime subscription status for session ${sessionId}:`, status);
                 });
 
             const pollInterval = setInterval(() => {
@@ -115,7 +113,6 @@ export function useGameState(sessionId: string | null) {
                 clearInterval(pollInterval);
             };
         } catch (err) {
-            console.error("Realtime subscription failed, using polling only", err);
             const pollInterval = setInterval(() => {
                 fetchState();
             }, 1000);

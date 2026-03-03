@@ -63,7 +63,7 @@ const JoinCard: React.FC<JoinCardProps> = ({
           <div className={styles.inputWrapper}>
             <Input
               value={roomInputValue}
-              onChange={setRoomInputValue}
+              onChange={(val) => setRoomInputValue(val.toUpperCase())}
               placeholder={t('ENTER_ROOM_PLACEHOLDER')}
               className={styles.input}
             />

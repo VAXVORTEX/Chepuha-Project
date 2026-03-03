@@ -221,7 +221,10 @@ function App() {
       let newPhase = Phases.Main;
 
       // Safety check: if they reloaded the page and had ALREADY answered this new round
-      if (myPlayer.players_status === 'ready' && currentAnswers.some(a => a.player_id === playerId)) {
+      if (myPlayer.players_status === 'ready' && currentAnswers.some(a =>
+        (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
+        (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === latestRound.id
+      )) {
         newPhase = Phases.Waiting;
       } else if (myPlayer.players_status === 'finished') {
         newPhase = Phases.End;
@@ -237,7 +240,10 @@ function App() {
       }));
     } else if (latestRound.id === currentRoundId) {
       // 2. SAME ROUND STATE UPDATES
-      if (phase === Phases.Main && currentAnswers.some(a => a.player_id === playerId)) {
+      if (phase === Phases.Main && currentAnswers.some(a =>
+        (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
+        (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
+      )) {
         // Player answered THIS round -> show waiting
         setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
       } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
@@ -273,7 +279,6 @@ function App() {
         if (mySheet) setAppState(prev => ({ ...prev, myStorySheetId: mySheet.id }));
         if (players.length > 0) setAppState(prev => ({ ...prev, playerCount: players.length }));
       } catch (err) {
-        console.error("Error syncing sheets on start/re-join:", err);
       }
     })();
   }, [session?.session_status, sessionId, playerId, players.length]);
@@ -282,6 +287,16 @@ function App() {
   useEffect(() => { currentRoundRef.current = currentRound; }, [currentRound]);
   const phaseRef = useRef(phase);
   useEffect(() => { phaseRef.current = phase; }, [phase]);
+
+  // 25 MINUTE LOBBY TIMEOUT
+  useEffect(() => {
+    if (isLobby) {
+      const timer = setTimeout(() => {
+        goHome();
+      }, 25 * 60 * 1000); // 25 minutes
+      return () => clearTimeout(timer);
+    }
+  }, [isLobby]);
 
   useEffect(() => {
     if (!session || !currentRoundId || !sessionId || !didGameStart) return;
@@ -319,7 +334,6 @@ function App() {
         if (curAnswers.length >= total || (isHost && timePassed > 130)) {
           // CRITICAL: Only HOST should trigger round transitions
           if (!isHost) return;
-          console.log("[Sync] Everyone answered. Host triggering transition.", curAnswers.length, "/", total);
           setIsTransitioning(true);
           transitionLockRef.current = true;
 
@@ -393,7 +407,6 @@ function App() {
           }
         }
       } catch (err) {
-        console.error("[Sync] Error in sync loop:", err);
         setIsTransitioning(false);
         transitionLockRef.current = false;
       }
@@ -653,7 +666,6 @@ function App() {
       setIsTransitioning(false);
       setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
     } catch (err: any) {
-      console.error("Answer submission failed", err);
       setIsTransitioning(false);
       setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
     }
