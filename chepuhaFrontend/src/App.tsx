@@ -203,72 +203,50 @@ function App() {
     } catch (err) { }
   }, [sessionId, players, session, roomCode, language, activeTemplate]);
 
-  // SERVER-AUTHORITATIVE: Read player's status from DB to determine correct phase
+  // ------------- UNIFIED REACTIVE SYNC -------------
+  // Instead of brittle REST polling, we rely on `rounds` from `useGameState` (updated via Realtime).
   useEffect(() => {
-    if (!didGameStart || !playerId || !players.length || !sessionId) return;
-    // CRITICAL: Don't override phase during active transitions
+    if (!didGameStart || !playerId || !sessionId) return;
     if (isTransitioning || transitionLockRef.current) return;
-    const myPlayer = players.find(p => p.id === playerId);
-    if (!myPlayer) return;
 
-    if (myPlayer.players_status === 'playing' && !currentRoundId) {
-      // Game started but we don't have a round yet
-      (async () => {
-        try {
-          const roundsList = await getRoundsBySession(sessionId);
-          const sorted = [...(roundsList || [])].sort((a: any, b: any) => b.round_number - a.round_number);
-          const latestRound = sorted[0];
-          if (latestRound) {
-            setAppState(prev => ({
-              ...prev,
-              currentRoundId: latestRound.id,
-              currentRound: latestRound.round_number,
-              roundStartedAt: latestRound.started_at || prev.roundStartedAt,
-              phase: Phases.Main,
-            }));
-          }
-        } catch (e) { }
-      })();
-    } else if (myPlayer.players_status === 'playing' && phase === Phases.Waiting && currentRoundId) {
-      // Status changed from waiting → playing = new round started!
-      // Aggressively retry to find the new round with short delays
-      setIsTransitioning(true);
-      transitionLockRef.current = true;
-      (async () => {
-        for (let attempt = 0; attempt < 5; attempt++) {
-          try {
-            const roundsList = await getRoundsBySession(sessionId);
-            const sorted = [...(roundsList || [])].sort((a: any, b: any) => b.round_number - a.round_number);
-            const latestRound = sorted[0];
-            // CRITICAL: Only sync FORWARD
-            if (latestRound && latestRound.round_number > currentRound) {
-              setAppState(prev => ({
-                ...prev,
-                currentRoundId: latestRound.id,
-                currentRound: latestRound.round_number,
-                roundStartedAt: latestRound.started_at || prev.roundStartedAt,
-                joinedCount: 0,
-                phase: Phases.Main,
-              }));
-              setIsTransitioning(false);
-              transitionLockRef.current = false;
-              return; // Found it, exit retry loop
-            }
-          } catch (e) { }
-          await new Promise(r => setTimeout(r, 200));
-        }
-        setIsTransitioning(false);
-        transitionLockRef.current = false;
-      })();
-    } else if (phase === Phases.Main && hookActiveRoundId === currentRoundId && currentAnswers.some(a => a.player_id === playerId)) {
-      // Player already answered THIS round → show waiting
-      setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
-    } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
-      // Game ended
-      fetchFinalStoryResult();
-      setAppState(prev => ({ ...prev, phase: Phases.End }));
+    const sorted = [...(rounds || [])].sort((a: any, b: any) => b.round_number - a.round_number);
+    const latestRound = sorted[0];
+    const myPlayer = players.find(p => p.id === playerId);
+
+    if (!latestRound || !myPlayer) return;
+
+    // 1. FORWARD-ONLY ROUND PROGRESSION (The core fix)
+    if (latestRound.round_number > currentRound || !currentRoundId) {
+      // NEW ROUND DETECTED!
+      let newPhase = Phases.Main;
+
+      // Safety check: if they reloaded the page and had ALREADY answered this new round
+      if (myPlayer.players_status === 'ready' && currentAnswers.some(a => a.player_id === playerId)) {
+        newPhase = Phases.Waiting;
+      } else if (myPlayer.players_status === 'finished') {
+        newPhase = Phases.End;
+      }
+
+      setAppState(prev => ({
+        ...prev,
+        currentRoundId: latestRound.id,
+        currentRound: latestRound.round_number,
+        roundStartedAt: latestRound.started_at || prev.roundStartedAt,
+        phase: newPhase,
+        joinedCount: 0
+      }));
+    } else if (latestRound.id === currentRoundId) {
+      // 2. SAME ROUND STATE UPDATES
+      if (phase === Phases.Main && currentAnswers.some(a => a.player_id === playerId)) {
+        // Player answered THIS round -> show waiting
+        setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+      } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
+        // Game ended
+        fetchFinalStoryResult();
+        setAppState(prev => ({ ...prev, phase: Phases.End }));
+      }
     }
-  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, fetchFinalStoryResult, currentAnswers, hookActiveRoundId, isTransitioning]);
+  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, currentAnswers, rounds, isTransitioning, fetchFinalStoryResult]);
   useEffect(() => {
     if (!session || !sessionId) return;
     if (session.session_status === 'active' && isLobby && !didGameStart) {
@@ -276,49 +254,17 @@ function App() {
       setAppState(prev => ({ ...prev, isLobby: false }));
       setAppState(prev => ({ ...prev, phase: Phases.Main }));
     }
-    if (session.session_status === 'completed' && phase !== Phases.End && phase !== Phases.Main && phase !== Phases.History) {
-      fetchFinalStoryResult();
-      setAppState(prev => ({ ...prev, phase: Phases.End }));
-    }
-  }, [session?.session_status, isLobby, didGameStart, isHost, phase, fetchFinalStoryResult, sessionId]);
+    // Phase.End is handled by UNIFIED REACTIVE SYNC when players_status === 'finished'
+  }, [session?.session_status, isLobby, didGameStart, sessionId]);
+  // ------------- INITIAL STORY SHEETS FETCH -------------
   useEffect(() => {
     if (!session || session.session_status !== 'active' || !sessionId || !playerId) return;
-    if (isTransitioning) return;
 
     (async () => {
       try {
-        const [rounds, sheets] = await Promise.all([
-          getRoundsBySession(sessionId),
-          getStorySheetsBySession(sessionId),
-        ]);
+        const sheets = await getStorySheetsBySession(sessionId);
 
-        const sortedRounds = Array.isArray(rounds) ? [...(rounds || [])].sort((a: any, b: any) => b.round_number - a.round_number) : [];
-        const activeRound = sortedRounds[0];
-
-        if (activeRound) {
-          // Phase is determined by server-authoritative player status, not guessed here
-          const myPlayer = players.find(p => p.id === playerId);
-          let initialPhase = phase;
-
-          // Only force a phase change if we don't have a round yet (initial load)
-          // or if we are clearly out of sync
-          if (!currentRoundId || activeRound.round_number > currentRound) {
-            initialPhase = Phases.Main;
-            if (myPlayer?.players_status === 'ready') initialPhase = Phases.Waiting;
-            else if (myPlayer?.players_status === 'finished') initialPhase = Phases.End;
-          }
-
-          setAppState(prev => ({
-            ...prev,
-            currentRoundId: activeRound.id,
-            currentRound: activeRound.round_number,
-            roundStartedAt: activeRound.started_at || prev.roundStartedAt,
-            didGameStart: true,
-            isLobby: false,
-            phase: initialPhase
-          }));
-        }
-
+        // Just establish the sheets (players list)
         if (Array.isArray(sheets) && sheets.length > 0) {
           setAppState(prev => ({ ...prev, allStorySheets: sheets.map((s: any) => ({ playerId: s.player_id?.id || s.player_id, sheetId: s.id })) }));
         }
@@ -327,17 +273,19 @@ function App() {
         if (mySheet) setAppState(prev => ({ ...prev, myStorySheetId: mySheet.id }));
         if (players.length > 0) setAppState(prev => ({ ...prev, playerCount: players.length }));
       } catch (err) {
-        console.error("Error syncing state on start/re-join:", err);
+        console.error("Error syncing sheets on start/re-join:", err);
       }
     })();
-  }, [session?.session_status, sessionId, playerId, players.length, rounds.length, isTransitioning]);
+  }, [session?.session_status, sessionId, playerId, players.length]);
   // Keep refs in sync with state for use inside setInterval closures
   useEffect(() => { currentRoundIdRef.current = currentRoundId; }, [currentRoundId]);
   useEffect(() => { currentRoundRef.current = currentRound; }, [currentRound]);
+  const phaseRef = useRef(phase);
+  useEffect(() => { phaseRef.current = phase; }, [phase]);
+
   useEffect(() => {
     if (!session || !currentRoundId || !sessionId || !didGameStart) return;
     if (phase !== Phases.Waiting && phase !== Phases.Main) return;
-    let localPhase: Phases = phase;
     const interval = setInterval(async () => {
       if (isTransitioning || transitionLockRef.current) return;
       try {
@@ -358,7 +306,7 @@ function App() {
         // Phase is now controlled by players_status from DB, no client-side guessing needed
 
         // Only process transitions if we are in Waiting phase
-        if (localPhase !== Phases.Waiting) return;
+        if (phaseRef.current !== Phases.Waiting) return;
 
         // CRITICAL: Do NOT proceed if players haven't loaded yet
         if (total < 2) return;
@@ -416,7 +364,6 @@ function App() {
               await updatePlayersBySession(sessionId, { players_status: 'playing' });
               currentRoundIdRef.current = nextRound.id;
               currentRoundRef.current = nextRoundNum;
-              localPhase = Phases.Main;
               setAppState(prev => ({
                 ...prev,
                 currentRoundId: nextRound.id,
@@ -432,7 +379,6 @@ function App() {
               }, 500);
             }
           } else {
-            localPhase = Phases.End;
             if (isHost) {
               // SERVER-AUTHORITATIVE: Tell ALL players the game is finished
               await updatePlayersBySession(sessionId, { players_status: 'finished' });
