@@ -755,7 +755,7 @@ function App() {
           <div className="lobby-timer-display">
             <span className="timer-title">{t('LOBBY_TIMER_TITLE' as any)}</span>
             <span className="timer-time">
-              {Math.floor(lobbyTimeLeft / 60)}:{String(lobbyTimeLeft % 60).padStart(2, '0')}
+              {Math.ceil(lobbyTimeLeft / 60)}
             </span>
           </div>
           <div className="lobby-container">
