@@ -304,7 +304,7 @@
 
 .yellow-guy-bg {
   bottom: 50px;
-  right: -150px;
+  right: -50px;
   background-image: url("./assets/images/yellowGuy.png");
   display: block;
   width: 850px;
@@ -313,7 +313,7 @@
 }
 
 .red-guy-bg {
-  left: -150px;
+  left: -50px;
   bottom: -20px;
   background-image: url("./assets/images/RedGuyRemoved.png");
   width: 850px;
@@ -617,6 +617,7 @@
   }
 
   .gameCodePos {
+    position: absolute;
     top: 20px;
     right: 20px;
     transform: none;
@@ -640,11 +641,11 @@
     left: 15px;
 
     .timer-title {
-      font-size: 14px;
+      font-size: 20px;
     }
 
     .timer-time {
-      font-size: 24px;
+      font-size: 28px;
     }
   }
 
@@ -671,7 +672,7 @@
   }
 
   .language-selector {
-    bottom: 85px;
+    bottom: 20px;
     right: 15px;
     left: auto;
     gap: 10px;
