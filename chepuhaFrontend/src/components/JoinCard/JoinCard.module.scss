@@ -41,7 +41,7 @@
   align-items: flex-start;
   margin: 0 auto;
   position: relative;
-  padding-bottom: 5px; // Just minor space
+  min-height: 120px; // Reserve space for input + error
 }
 
 .input {
@@ -76,9 +76,8 @@
 }
 
 .errorText {
-  position: relative; // Back to flow but with reserved space
   display: block;
-  min-height: 24px;
+  min-height: 28px; // Always reserve this height
   color: $red;
   -webkit-text-stroke: 1px $black;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);

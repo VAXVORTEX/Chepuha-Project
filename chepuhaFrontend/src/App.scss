@@ -47,6 +47,10 @@
     z-index: 50;
     cursor: pointer;
     pointer-events: auto;
+
+    &:hover {
+      transform: none; // No hover effect on PC
+    }
   }
 
   .hitbox-1 {
@@ -598,20 +602,11 @@
   }
 
   .menu-buttons {
-    gap: 15px; // Small gap back
+    gap: 15px;
     width: 100%;
     align-items: center;
     margin-top: 10px;
-
-    button {
-      min-width: 280px !important;
-      height: auto !important; // Less dead space
-      padding: 15px 30px !important;
-      font-size: 40px !important;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
+    transform: none;
   }
 
   .crown-icon {
@@ -700,7 +695,7 @@
     top: auto !important;
     transform: none !important;
     opacity: 0.5;
-    z-index: 30 !important; // Above container (20) for clickability
+    z-index: 5 !important; // Below buttons so Create Game is always clickable
     pointer-events: auto !important;
   }
 
