@@ -276,11 +276,10 @@ function App() {
   useEffect(() => {
     if (!session || !sessionId) return;
     if (session.session_status === 'active' && isLobby && !didGameStart) {
-      setAppState(prev => ({ ...prev, didGameStart: true }));
-      setAppState(prev => ({ ...prev, isLobby: false }));
-      setAppState(prev => ({ ...prev, phase: Phases.Main }));
+      setAppState(prev => ({ ...prev, didGameStart: true, isLobby: false, phase: Phases.Main }));
+      refreshState();
     }
-  }, [session?.session_status, isLobby, didGameStart, sessionId]);
+  }, [session?.session_status, isLobby, didGameStart, sessionId, refreshState]);
   useEffect(() => {
     if (!session || session.session_status !== 'active' || !sessionId || !playerId) return;
 
@@ -298,7 +297,7 @@ function App() {
       } catch (err) {
       }
     })();
-  }, [session?.session_status, sessionId, playerId, players.length]);
+  }, [session?.session_status, sessionId, playerId, players.length, refreshState]);
   useEffect(() => { currentRoundIdRef.current = currentRoundId; }, [currentRoundId]);
   useEffect(() => { currentRoundRef.current = currentRound; }, [currentRound]);
   const phaseRef = useRef(phase);
@@ -308,12 +307,18 @@ function App() {
 
   useEffect(() => {
     if (isLobby) {
-      const start = lobbyCreatedAt || Date.now();
-      if (!lobbyCreatedAt) {
+      // Use DB timestamp if available for sync across all users
+      const dbStart = session?.session_created_at ? Date.parse(session.session_created_at) : null;
+      const start = dbStart || lobbyCreatedAt || Date.now();
+
+      if (!lobbyCreatedAt && !dbStart) {
         setAppState(prev => ({ ...prev, lobbyCreatedAt: start }));
       }
+
       const tick = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - start) / 1000);
+        // Use serverTimeOffset to account for local clock drift
+        const now = Date.now() - serverTimeOffset;
+        const elapsed = Math.floor((now - start) / 1000);
         const remaining = Math.max(0, 25 * 60 - elapsed);
         setLobbyTimeLeft(remaining);
         if (remaining <= 0) {
@@ -325,7 +330,7 @@ function App() {
     } else {
       setLobbyTimeLeft(25 * 60);
     }
-  }, [isLobby, lobbyCreatedAt]);
+  }, [isLobby, lobbyCreatedAt, session?.session_created_at, serverTimeOffset]);
 
   useEffect(() => {
     if (!session || !currentRoundId || !sessionId || !didGameStart) return;

@@ -42,8 +42,11 @@
 
   .logo-boy-hitbox {
     position: absolute;
-    cursor: default;
-    z-index: 10;
+    width: 60px;
+    height: 60px;
+    z-index: 50;
+    cursor: pointer;
+    pointer-events: auto;
   }
 
   .hitbox-1 {
@@ -545,14 +548,7 @@
     padding-bottom: 30px;
   }
 
-  .menu-buttons {
-    gap: 21px;
-    transform: none;
 
-    .button {
-      font-size: 50px !important;
-    }
-  }
 
   .box {
     padding: 15px 5px;
@@ -601,6 +597,22 @@
     font-size: 28px !important;
   }
 
+  .menu-buttons {
+    gap: 20px;
+    width: 100%;
+    align-items: center;
+    margin-top: 10px;
+
+    button {
+      min-width: 280px !important;
+      height: 85px !important;
+      font-size: 32px !important;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
   .crown-icon {
     width: 35px !important;
     right: 100%;
@@ -608,18 +620,21 @@
   }
 
   .logo-wrapper {
-    margin-top: -10px;
+    margin-top: -30px;
     margin-bottom: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
   }
 
   .logo-wrapper .logo {
-    max-width: 88vw;
+    max-width: 95vw;
   }
 
   .gameCodePos {
     position: absolute;
     top: 20px;
-    right: -5px;
+    right: 0px;
     transform: none;
     z-index: 100;
   }
@@ -641,7 +656,7 @@
     left: 15px;
 
     .timer-title {
-      font-size: 20px;
+      font-size: 11px;
     }
 
     .timer-time {
@@ -680,23 +695,24 @@
 
   .yellow-guy-bg,
   .red-guy-bg {
-    width: 110px !important;
-    height: 110px !important;
+    width: 150px !important;
+    height: 150px !important;
     position: absolute !important;
     top: auto !important;
     transform: none !important;
-    opacity: 0.9;
-    z-index: 10 !important;
+    opacity: 1;
+    z-index: 500 !important;
+    pointer-events: auto !important;
   }
 
   .yellow-guy-bg {
-    right: -40px !important;
+    right: 0px !important;
     left: auto !important;
     bottom: -10px !important;
   }
 
   .red-guy-bg {
-    left: -40px !important;
+    left: 0px !important;
     right: auto !important;
     bottom: 20px !important;
   }
