@@ -611,15 +611,15 @@ function App() {
       // Update local state
       setAppState(prev => ({
         ...prev,
-        playerCount: players.length,
-        currentRoundId: firstRound.id,
-        roundStartedAt: ts,
         didGameStart: true,
         isLobby: false,
         phase: Phases.Main,
         currentRound: 1,
+        currentRoundId: firstRound.id,
+        roundStartedAt: ts,
         userAnswers: [],
-        totalCount: players.length
+        totalCount: players.length,
+        playerCount: players.length,
       }));
     } catch (err: any) {
       setAppState(prev => ({ ...prev, error: String(t('ERR_START' as any)) + err.message }));
@@ -629,6 +629,15 @@ function App() {
     setAppState(prev => ({ ...prev, phase: Phases.History }));
   };
   const doAnswerSubmit = async (answer: string) => {
+    // Prevent double answering rapidly when rejoined
+    if (currentAnswers.some(a =>
+      (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
+      (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
+    )) {
+      setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+      return;
+    }
+
     const isMissing = answer.trim() === "" || answer.trim() === "Час вийшов";
     const fallbackPool = activeTemplate.fallbacks[currentRound - 1] ?? [""];
     const cleanAnswer = isMissing

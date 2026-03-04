@@ -85,7 +85,7 @@ export function useGameState(sessionId: string | null) {
                     'postgres_changes',
                     { event: '*', schema: 'public', table: 'game_sessions', filter: `id=eq.${sessionId}` },
                     (payload) => {
-                        if (payload.new) setGameState(prev => ({ ...prev, session: { ...prev.session, ...payload.new } as any }));
+                        if (payload?.new) setGameState(prev => ({ ...prev, session: { ...prev.session, ...payload.new } as any }));
                         fetchState();
                     }
                 )
@@ -93,14 +93,14 @@ export function useGameState(sessionId: string | null) {
                     'postgres_changes',
                     { event: '*', schema: 'public', table: 'players', filter: `session_id=eq.${sessionId}` },
                     (payload) => {
-                        if (payload.new) {
+                        if (payload?.new) {
                             setGameState(prev => {
                                 const newPlayer = payload.new as any;
                                 const exists = prev.players.some(p => p.id === newPlayer.id);
                                 return { ...prev, players: exists ? prev.players.map(p => p.id === newPlayer.id ? newPlayer : p) : [...prev.players, newPlayer] };
                             });
                         }
-                        if (payload.eventType === 'DELETE' && payload.old) {
+                        if (payload?.eventType === 'DELETE' && payload?.old) {
                             setGameState(prev => ({ ...prev, players: prev.players.filter(p => p.id !== (payload.old as any).id) }));
                         }
                         fetchState();
@@ -110,7 +110,7 @@ export function useGameState(sessionId: string | null) {
                     'postgres_changes',
                     { event: '*', schema: 'public', table: 'rounds', filter: `session_id=eq.${sessionId}` },
                     (payload) => {
-                        if (payload.new) {
+                        if (payload?.new) {
                             setGameState(prev => {
                                 const newRound = payload.new as any;
                                 const exists = prev.rounds.some(r => r.id === newRound.id);
@@ -124,7 +124,7 @@ export function useGameState(sessionId: string | null) {
                     'postgres_changes',
                     { event: '*', schema: 'public', table: 'answers' },
                     (payload) => {
-                        if (payload.new && payload.eventType === 'INSERT') {
+                        if (payload?.new && payload?.eventType === 'INSERT') {
                             setGameState(prev => ({ ...prev, currentAnswers: [...prev.currentAnswers, payload.new as any] }));
                         }
                         fetchState();

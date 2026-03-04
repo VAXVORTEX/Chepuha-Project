@@ -94,11 +94,15 @@
   .container {
     padding: 0 10px;
     max-width: 95vw;
-    margin-top: -10vh; // Moved even higher
+    margin-top: 5vh; // Moved inputs down slightly as requested
+  }
+
+  .inputWrapper {
+    min-height: 95px; // Reduced from 120px to bring inputs/button instantly closer
   }
 
   .form {
-    gap: 15px; // Increased gap to match PC style more closely
+    gap: 0px; // min-height already provides spacing
   }
 
   .input {
@@ -108,5 +112,9 @@
 
   .errorText {
     font-size: 20px;
+  }
+
+  .submitBlock {
+    margin-top: 0px; // Pulled button significantly higher relative to inputs
   }
 }
