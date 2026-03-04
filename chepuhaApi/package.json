@@ -10,7 +10,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "Node.js Express API gateway for Chepuha — proxies requests between Frontend and Strapi",
+  "description": "Node.js Express API gateway for Chepuha",
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",

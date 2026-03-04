@@ -303,6 +303,13 @@ function App() {
   const phaseRef = useRef(phase);
   useEffect(() => { phaseRef.current = phase; }, [phase]);
 
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setAppState(prev => ({ ...prev, error: "" })), 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
   const [lobbyTimeLeft, setLobbyTimeLeft] = useState(25 * 60);
 
   useEffect(() => {
@@ -686,6 +693,13 @@ function App() {
       setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
     }
   };
+
+  const myPlayer = players.find(p => p.id === playerId);
+  const amIReady = myPlayer?.players_status === 'ready' && currentAnswers.some(a =>
+    (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
+    (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
+  );
+
   return (
     <div className="app-view">
       {roomCode && !didGameStart && (isCreatingLobby || isLobby) && phase !== Phases.Join && phase !== Phases.History && phase !== Phases.End && (
@@ -873,7 +887,7 @@ function App() {
           <Round currentRound={currentRound} totalRounds={activeTemplate.questions.length} className="roundPos" />
           <RoundCard
             playerName={nickname}
-            phase={phase}
+            phase={amIReady ? Phases.Waiting : phase}
             question={(() => {
               const baseTemplate = activeTemplate.id === 'chaos'
                 ? TEMPLATES[

@@ -94,7 +94,11 @@
   .container {
     padding: 0 10px;
     max-width: 95vw;
-    margin-top: 10px; // Moved higher from 60px
+    margin-top: -5vh; // Moved even higher
+  }
+
+  .form {
+    gap: 10px; // Reduce gap between inputs
   }
 
   .input {

@@ -545,7 +545,7 @@
 
   .create-game-container {
     gap: 15px; // Reduced from 30px
-    margin-top: -5vh; // Moved higher from 10vh
+    margin-top: -2vh; // Moved lower from -5vh
     height: auto;
     min-height: 70vh;
     justify-content: center;
@@ -602,7 +602,7 @@
   }
 
   .menu-buttons {
-    gap: 15px;
+    gap: 5px;
     width: 100%;
     align-items: center;
     margin-top: 10px;
@@ -616,7 +616,7 @@
   }
 
   .logo-wrapper {
-    margin-top: 30px; // Moved down further
+    margin-top: 20px; // Moved up from 30px
     margin-bottom: 20px;
     width: 100%;
     display: flex;
