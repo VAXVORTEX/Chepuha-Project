@@ -871,8 +871,8 @@ function App() {
             question={
               activeTemplate.id === 'chaos'
                 ? TEMPLATES[
-                  ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "chaos"][
-                  Math.abs(String((sessionId || "") + (playerId || nickname || "Guest")).split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0) + (currentRound || 0)) % 8
+                  ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "adult", "anime", "cyber", "it"][
+                  Math.abs(String((sessionId || "") + (playerId || nickname || "Guest")).split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0) + (currentRound || 0)) % 11
                   ]
                 ]?.questions[currentRound - 1] || activeTemplate.questions[currentRound - 1]
                 : activeTemplate.questions[currentRound - 1]
