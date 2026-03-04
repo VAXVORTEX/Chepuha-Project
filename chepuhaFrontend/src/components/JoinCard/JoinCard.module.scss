@@ -94,11 +94,11 @@
   .container {
     padding: 0 10px;
     max-width: 95vw;
-    margin-top: -5vh; // Moved even higher
+    margin-top: -10vh; // Moved even higher
   }
 
   .form {
-    gap: 10px; // Reduce gap between inputs
+    gap: 15px; // Increased gap to match PC style more closely
   }
 
   .input {

@@ -695,7 +695,7 @@ function App() {
   };
 
   const myPlayer = players.find(p => p.id === playerId);
-  const amIReady = myPlayer?.players_status === 'ready' && currentAnswers.some(a =>
+  const amIReady = currentAnswers.some(a =>
     (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
     (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
   );
