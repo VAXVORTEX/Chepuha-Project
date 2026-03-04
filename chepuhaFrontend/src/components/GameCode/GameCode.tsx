@@ -17,10 +17,9 @@ const GameCode: React.FC<GameCodeProps> = ({ code, className = "" }) => {
 
     return (
         <div
-            className={`${styles.container} ${className} ${copied ? styles.copied : ""}`}
+            className={`${styles.container} ${className}`}
             onClick={handleCopy}
             title={t('CLICK_TO_COPY' as any)}
-            style={{ cursor: 'pointer' }}
         >
             <span className={styles.label}>{copied ? t('COPIED' as any) : t('GAME_CODE_LABEL')}</span>
             <span className={styles.code}>{code}</span>

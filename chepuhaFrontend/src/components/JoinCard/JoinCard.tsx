@@ -49,29 +49,26 @@ const JoinCard: React.FC<JoinCardProps> = ({
               placeholder={t('ENTER_NICK_PLACEHOLDER')}
               className={styles.input}
             />
-            {nickInputValue.length >= 25 && (
-              <span className={styles.errorText}>
-                {t('ERR_NICK_LONG')}
-              </span>
-            )}
-            {(errors?.nick || (isSubmitted && !nickInputValue.trim())) && (
-              <span className={styles.errorText}>
-                {errors?.nick || t('NICKNAME_REQUIRED')}
-              </span>
-            )}
+            <span className={styles.errorText}>
+              {nickInputValue.length >= 25
+                ? t('ERR_NICK_LONG')
+                : (errors?.nick || (isSubmitted && !nickInputValue.trim())
+                  ? (errors?.nick || t('NICKNAME_REQUIRED'))
+                  : '\u00A0')}
+            </span>
           </div>
           <div className={styles.inputWrapper}>
             <Input
               value={roomInputValue}
-              onChange={setRoomInputValue}
+              onChange={(val) => setRoomInputValue(val.toUpperCase())}
               placeholder={t('ENTER_ROOM_PLACEHOLDER')}
               className={styles.input}
             />
-            {(errors?.room || (isSubmitted && !roomInputValue.trim())) && (
-              <span className={styles.errorText}>
-                {errors?.room || t('ROOM_NOT_FOUND')}
-              </span>
-            )}
+            <span className={styles.errorText}>
+              {(errors?.room || (isSubmitted && !roomInputValue.trim()))
+                ? (errors?.room || t('ROOM_NOT_FOUND'))
+                : '\u00A0'}
+            </span>
           </div>
           <div className={styles.submitBlock}>
             <Button

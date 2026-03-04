@@ -5,7 +5,6 @@ export const playSecretMusic = () => {
     }
     if (secretAudio.paused) {
         secretAudio.play().catch(e => {
-            console.error("Could not play secret audio:", e);
         });
     } else {
         secretAudio.pause();

@@ -21,7 +21,7 @@
   line-height: 1;
 
   @media (max-width: 768px) {
-    font-size: 40px;
+    font-size: 32px;
   }
 
   &:hover {
@@ -44,15 +44,15 @@
 
 .secondary {
   background-color: $gray-medium;
-  border-radius: 50px;
+  border-radius: 25px;
   color: $white;
-  @include font-abel-32;
-  padding: 12px 60px;
+  @include font-abel(32);
+  padding: 10px 40px;
   border: none;
 
   @media (max-width: 768px) {
-    padding: 8px 30px;
-    font-size: 20px;
+    padding: 6px 20px;
+    font-size: 16px;
   }
 
   &.main {

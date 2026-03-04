@@ -38,19 +38,22 @@ export function useGameState(sessionId: string | null) {
             let playersData = gameState.players;
             let roundsData = gameState.rounds;
 
-            try { sessionData = await getGameSession(sessionId); } catch (e) { console.error("Session fetch failed", e); }
-            try { playersData = await getPlayersBySession(sessionId); } catch (e) { console.error("Players fetch failed", e); }
-            try { roundsData = await getRoundsBySession(sessionId); } catch (e) { console.error("Rounds fetch failed", e); }
+            try { sessionData = await getGameSession(sessionId); } catch (e) { }
+            try { playersData = await getPlayersBySession(sessionId); } catch (e) { }
+            try { roundsData = await getRoundsBySession(sessionId); } catch (e) { }
 
             let activeRoundAnswers: Answer[] = gameState.currentAnswers;
             const sortedByNum = Array.isArray(roundsData) ? [...roundsData].sort((a: any, b: any) => (b.round_number || 0) - (a.round_number || 0)) : [];
             const activeRound = sortedByNum.length > 0 ? sortedByNum[0] : null;
 
             if (activeRound) {
+                // If round changed, don't carry over old answers
+                if (activeRound.id !== gameState.activeRoundId) {
+                    activeRoundAnswers = [];
+                }
                 try {
                     activeRoundAnswers = await getAnswersByRound(activeRound.id);
                 } catch (e) {
-                    console.error("Answers fetch failed", e);
                 }
             }
 
@@ -81,40 +84,67 @@ export function useGameState(sessionId: string | null) {
                 .on(
                     'postgres_changes',
                     { event: '*', schema: 'public', table: 'game_sessions', filter: `id=eq.${sessionId}` },
-                    () => { fetchState(); }
+                    (payload) => {
+                        if (payload.new) setGameState(prev => ({ ...prev, session: { ...prev.session, ...payload.new } as any }));
+                        fetchState();
+                    }
                 )
                 .on(
                     'postgres_changes',
                     { event: '*', schema: 'public', table: 'players', filter: `session_id=eq.${sessionId}` },
-                    () => { fetchState(); }
+                    (payload) => {
+                        if (payload.new) {
+                            setGameState(prev => {
+                                const newPlayer = payload.new as any;
+                                const exists = prev.players.some(p => p.id === newPlayer.id);
+                                return { ...prev, players: exists ? prev.players.map(p => p.id === newPlayer.id ? newPlayer : p) : [...prev.players, newPlayer] };
+                            });
+                        }
+                        if (payload.eventType === 'DELETE' && payload.old) {
+                            setGameState(prev => ({ ...prev, players: prev.players.filter(p => p.id !== (payload.old as any).id) }));
+                        }
+                        fetchState();
+                    }
                 )
                 .on(
                     'postgres_changes',
                     { event: '*', schema: 'public', table: 'rounds', filter: `session_id=eq.${sessionId}` },
-                    () => { fetchState(); }
+                    (payload) => {
+                        if (payload.new) {
+                            setGameState(prev => {
+                                const newRound = payload.new as any;
+                                const exists = prev.rounds.some(r => r.id === newRound.id);
+                                return { ...prev, rounds: exists ? prev.rounds.map(r => r.id === newRound.id ? newRound : r) : [...prev.rounds, newRound] };
+                            });
+                        }
+                        fetchState();
+                    }
                 )
                 .on(
                     'postgres_changes',
                     { event: '*', schema: 'public', table: 'answers' },
-                    () => { fetchState(); }
+                    (payload) => {
+                        if (payload.new && payload.eventType === 'INSERT') {
+                            setGameState(prev => ({ ...prev, currentAnswers: [...prev.currentAnswers, payload.new as any] }));
+                        }
+                        fetchState();
+                    }
                 )
                 .subscribe((status) => {
-                    console.log(`Realtime subscription status for session ${sessionId}:`, status);
                 });
 
             const pollInterval = setInterval(() => {
                 fetchState();
-            }, 500); // 500ms polling for faster sync
+            }, 5000); // 5s fallback polling
 
             return () => {
                 supabase.removeChannel(sessionChannel);
                 clearInterval(pollInterval);
             };
         } catch (err) {
-            console.error("Realtime subscription failed, using polling only", err);
             const pollInterval = setInterval(() => {
                 fetchState();
-            }, 1000);
+            }, 5000);
             return () => clearInterval(pollInterval);
         }
     }, [fetchState, sessionId]);

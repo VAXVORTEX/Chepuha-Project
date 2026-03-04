@@ -66,6 +66,7 @@ export interface AppState {
   playerCount: number;
   roundStartedAt: string | null;
   allStorySheets: { playerId: string, sheetId: string }[];
+  lobbyCreatedAt: number | null;
 }
 function App() {
   const [appState, setAppState] = useState<AppState>({
@@ -91,15 +92,45 @@ function App() {
     myStorySheetId: null,
     playerCount: 0,
     roundStartedAt: null,
-    allStorySheets: []
+    allStorySheets: [],
+    lobbyCreatedAt: null
   });
-  const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets } = appState;
+
+  const [serverTimeOffset, setServerTimeOffset] = useState(0);
+
+  useEffect(() => {
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+    if (!supabaseUrl || !supabaseAnonKey) return;
+    fetch(`${supabaseUrl}/auth/v1/health`, {
+      method: 'GET',
+      headers: {
+        'apikey': supabaseAnonKey
+      }
+    })
+      .then(res => {
+        const dateHeader = res.headers.get('date');
+        if (dateHeader) {
+          const sTime = Date.parse(dateHeader);
+          if (!isNaN(sTime)) {
+            setServerTimeOffset(Date.now() - sTime);
+          }
+        }
+      })
+      .catch(() => { });
+  }, []);
+
+  const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets, lobbyCreatedAt } = appState;
   const { session, players, rounds, currentAnswers, activeRoundId: hookActiveRoundId, error: pollError, refreshState } = useGameState(sessionId);
   const hookMatch = hookActiveRoundId && currentRoundId && hookActiveRoundId === currentRoundId;
-  const derivedJoinedCount = hookMatch ? Math.max(joinedCount, currentAnswers.length) : joinedCount;
   const derivedTotalCount = totalCount > 0 ? totalCount : (players?.length || 0);
+  const derivedJoinedCount = Math.min(
+    hookMatch ? Math.max(joinedCount, currentAnswers.length) : joinedCount,
+    derivedTotalCount > 0 ? derivedTotalCount : Infinity
+  );
   const activeTemplate = TEMPLATES[session?.template || selectedTemplate] || TEMPLATES.classic;
   const { t, language, setLanguage } = useLanguage();
+  const [isTransitioning, setIsTransitioning] = useState(false);
   const transitionLockRef = useRef(false);
   const currentRoundIdRef = useRef(currentRoundId);
   const currentRoundRef = useRef(currentRound);
@@ -120,7 +151,6 @@ function App() {
     }
   }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate]);
 
-  // Persist user preferences (survives game end)
   useEffect(() => {
     if (nickname || roomCode) {
       localStorage.setItem('chepuhaUserPrefs', JSON.stringify({ nickname, roomCode }));
@@ -150,7 +180,6 @@ function App() {
     }
   }, []);
 
-  // Asset Preloading
   useEffect(() => {
     const imagesToPreload = [
       logoImage, logoImageEng, homeImage, crownImage, flagUk, flagEn,
@@ -162,7 +191,6 @@ function App() {
       const img = new Image();
       img.src = src;
     });
-    // Warm up audio
     playSecretMusic();
     setTimeout(() => {
       if (secretAudio && !secretAudio.paused) secretAudio.pause();
@@ -202,69 +230,48 @@ function App() {
     } catch (err) { }
   }, [sessionId, players, session, roomCode, language, activeTemplate]);
 
-  // SERVER-AUTHORITATIVE: Read player's status from DB to determine correct phase
   useEffect(() => {
-    if (!didGameStart || !playerId || !players.length || !sessionId) return;
-    // CRITICAL: Don't override phase during active transitions
-    if (transitionLockRef.current) return;
-    const myPlayer = players.find(p => p.id === playerId);
-    if (!myPlayer) return;
+    if (!didGameStart || !playerId || !sessionId) return;
+    if (isTransitioning || transitionLockRef.current) return;
 
-    if (myPlayer.players_status === 'playing' && !currentRoundId) {
-      // Game started but we don't have a round yet
-      (async () => {
-        try {
-          const roundsList = await getRoundsBySession(sessionId);
-          const sorted = [...(roundsList || [])].sort((a: any, b: any) => b.round_number - a.round_number);
-          const latestRound = sorted[0];
-          if (latestRound) {
-            setAppState(prev => ({
-              ...prev,
-              currentRoundId: latestRound.id,
-              currentRound: latestRound.round_number,
-              roundStartedAt: latestRound.started_at || prev.roundStartedAt,
-              joinedCount: 0,
-              phase: Phases.Main,
-            }));
-          }
-        } catch (e) { }
-      })();
-    } else if (myPlayer.players_status === 'playing' && phase === Phases.Waiting && currentRoundId) {
-      // Status changed from waiting → playing = new round started!
-      // Aggressively retry to find the new round with short delays
-      transitionLockRef.current = true;
-      (async () => {
-        for (let attempt = 0; attempt < 5; attempt++) {
-          try {
-            const roundsList = await getRoundsBySession(sessionId);
-            const sorted = [...(roundsList || [])].sort((a: any, b: any) => b.round_number - a.round_number);
-            const latestRound = sorted[0];
-            if (latestRound && latestRound.round_number > currentRound) {
-              setAppState(prev => ({
-                ...prev,
-                currentRoundId: latestRound.id,
-                currentRound: latestRound.round_number,
-                roundStartedAt: latestRound.started_at || prev.roundStartedAt,
-                joinedCount: 0,
-                phase: Phases.Main,
-              }));
-              transitionLockRef.current = false;
-              return; // Found it, exit retry loop
-            }
-          } catch (e) { }
-          if (attempt < 4) await new Promise(r => setTimeout(r, 200));
-        }
-        transitionLockRef.current = false;
-      })();
-    } else if (phase === Phases.Main && currentAnswers.some(a => a.player_id === playerId)) {
-      // Player already answered THIS round → show waiting
-      setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
-    } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
-      // Game ended
-      fetchFinalStoryResult();
-      setAppState(prev => ({ ...prev, phase: Phases.End }));
+    const sorted = [...(rounds || [])].sort((a: any, b: any) => b.round_number - a.round_number);
+    const latestRound = sorted[0];
+    const myPlayer = players.find(p => p.id === playerId);
+
+    if (!latestRound || !myPlayer) return;
+
+    if (latestRound.round_number > currentRound || !currentRoundId) {
+      let newPhase = Phases.Main;
+
+      if (myPlayer.players_status === 'ready' && currentAnswers.some(a =>
+        (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
+        (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === latestRound.id
+      )) {
+        newPhase = Phases.Waiting;
+      } else if (myPlayer.players_status === 'finished') {
+        newPhase = Phases.End;
+      }
+
+      setAppState(prev => ({
+        ...prev,
+        currentRoundId: latestRound.id,
+        currentRound: latestRound.round_number,
+        roundStartedAt: latestRound.started_at || prev.roundStartedAt,
+        phase: newPhase,
+        joinedCount: 0
+      }));
+    } else if (latestRound.id === currentRoundId) {
+      if (phase === Phases.Main && currentAnswers.some(a =>
+        (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
+        (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
+      )) {
+        setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+      } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
+        fetchFinalStoryResult();
+        setAppState(prev => ({ ...prev, phase: Phases.End }));
+      }
     }
-  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, fetchFinalStoryResult, currentAnswers]);
+  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, currentAnswers, rounds, isTransitioning, fetchFinalStoryResult]);
   useEffect(() => {
     if (!session || !sessionId) return;
     if (session.session_status === 'active' && isLobby && !didGameStart) {
@@ -272,41 +279,13 @@ function App() {
       setAppState(prev => ({ ...prev, isLobby: false }));
       setAppState(prev => ({ ...prev, phase: Phases.Main }));
     }
-    if (session.session_status === 'completed' && phase !== Phases.End && phase !== Phases.Main && phase !== Phases.History) {
-      fetchFinalStoryResult();
-      setAppState(prev => ({ ...prev, phase: Phases.End }));
-    }
-  }, [session?.session_status, isLobby, didGameStart, isHost, phase, fetchFinalStoryResult, sessionId]);
+  }, [session?.session_status, isLobby, didGameStart, sessionId]);
   useEffect(() => {
     if (!session || session.session_status !== 'active' || !sessionId || !playerId) return;
 
     (async () => {
       try {
-        const [rounds, sheets] = await Promise.all([
-          getRoundsBySession(sessionId),
-          getStorySheetsBySession(sessionId),
-        ]);
-
-        const sortedRounds = Array.isArray(rounds) ? [...(rounds || [])].sort((a: any, b: any) => b.round_number - a.round_number) : [];
-        const activeRound = sortedRounds[0];
-
-        if (activeRound) {
-          // Phase is determined by server-authoritative player status, not guessed here
-          const myPlayer = players.find(p => p.id === playerId);
-          let initialPhase = Phases.Main;
-          if (myPlayer?.players_status === 'ready') initialPhase = Phases.Waiting;
-          else if (myPlayer?.players_status === 'finished') initialPhase = Phases.End;
-
-          setAppState(prev => ({
-            ...prev,
-            currentRoundId: activeRound.id,
-            currentRound: activeRound.round_number,
-            roundStartedAt: activeRound.started_at || prev.roundStartedAt,
-            didGameStart: true,
-            isLobby: false,
-            phase: initialPhase
-          }));
-        }
+        const sheets = await getStorySheetsBySession(sessionId);
 
         if (Array.isArray(sheets) && sheets.length > 0) {
           setAppState(prev => ({ ...prev, allStorySheets: sheets.map((s: any) => ({ playerId: s.player_id?.id || s.player_id, sheetId: s.id })) }));
@@ -316,19 +295,42 @@ function App() {
         if (mySheet) setAppState(prev => ({ ...prev, myStorySheetId: mySheet.id }));
         if (players.length > 0) setAppState(prev => ({ ...prev, playerCount: players.length }));
       } catch (err) {
-        console.error("Error syncing state on start/re-join:", err);
       }
     })();
-  }, [session?.session_status, sessionId, playerId, players.length, rounds.length]);
-  // Keep refs in sync with state for use inside setInterval closures
+  }, [session?.session_status, sessionId, playerId, players.length]);
   useEffect(() => { currentRoundIdRef.current = currentRoundId; }, [currentRoundId]);
   useEffect(() => { currentRoundRef.current = currentRound; }, [currentRound]);
+  const phaseRef = useRef(phase);
+  useEffect(() => { phaseRef.current = phase; }, [phase]);
+
+  const [lobbyTimeLeft, setLobbyTimeLeft] = useState(25 * 60);
+
+  useEffect(() => {
+    if (isLobby) {
+      const start = lobbyCreatedAt || Date.now();
+      if (!lobbyCreatedAt) {
+        setAppState(prev => ({ ...prev, lobbyCreatedAt: start }));
+      }
+      const tick = setInterval(() => {
+        const elapsed = Math.floor((Date.now() - start) / 1000);
+        const remaining = Math.max(0, 25 * 60 - elapsed);
+        setLobbyTimeLeft(remaining);
+        if (remaining <= 0) {
+          clearInterval(tick);
+          goHome();
+        }
+      }, 1000);
+      return () => clearInterval(tick);
+    } else {
+      setLobbyTimeLeft(25 * 60);
+    }
+  }, [isLobby, lobbyCreatedAt]);
+
   useEffect(() => {
     if (!session || !currentRoundId || !sessionId || !didGameStart) return;
     if (phase !== Phases.Waiting && phase !== Phases.Main) return;
-    let localPhase: Phases = phase;
     const interval = setInterval(async () => {
-      if (transitionLockRef.current) return;
+      if (isTransitioning || transitionLockRef.current) return;
       try {
         const liveRoundId = currentRoundIdRef.current;
         if (!liveRoundId) return;
@@ -337,34 +339,26 @@ function App() {
           getPlayersBySession(sessionId)
         ]);
 
-        // CRITICAL: If roundId changed while fetching, ignore these results
-        if (liveRoundId !== currentRoundIdRef.current) return;
+        if (liveRoundId !== currentRoundIdRef.current || isTransitioning || transitionLockRef.current) return;
 
-        // Always use actual player count from DB — session.max_players may be stale
         const total = freshPlayers.length;
         setAppState(prev => ({ ...prev, joinedCount: curAnswers.length, totalCount: total }));
 
-        // Phase is now controlled by players_status from DB, no client-side guessing needed
+        if (phaseRef.current !== Phases.Waiting) return;
 
-        // Only process transitions if we are in Waiting phase
-        if (localPhase !== Phases.Waiting) return;
-
-        // CRITICAL: Do NOT proceed if players haven't loaded yet
         if (total < 2) return;
 
         const now = Date.now();
         const startedAt = roundStartedAt ? Date.parse(roundStartedAt) : now;
         const timePassed = (now - startedAt) / 1000;
 
-        // Force progress if everyone answered or timeout
         if (curAnswers.length >= total || (isHost && timePassed > 130)) {
           // CRITICAL: Only HOST should trigger round transitions
           if (!isHost) return;
-          console.log("[Sync] Everyone answered. Host triggering transition.", curAnswers.length, "/", total);
+          setIsTransitioning(true);
           transitionLockRef.current = true;
 
           if (isHost && curAnswers.length < total) {
-            // Host fills missing answers before proceeding
             const playerIdsWhoAnswered = new Set(curAnswers.map(a =>
               typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)
             ));
@@ -400,11 +394,9 @@ function App() {
                 rounds_status: 'active',
                 started_at: ts,
               });
-              // SERVER-AUTHORITATIVE: Tell ALL players to start answering the new round
               await updatePlayersBySession(sessionId, { players_status: 'playing' });
               currentRoundIdRef.current = nextRound.id;
               currentRoundRef.current = nextRoundNum;
-              localPhase = Phases.Main;
               setAppState(prev => ({
                 ...prev,
                 currentRoundId: nextRound.id,
@@ -413,30 +405,31 @@ function App() {
                 joinedCount: 0,
                 phase: Phases.Main
               }));
-              // Small delay before releasing lock to let state propagate
-              setTimeout(() => { transitionLockRef.current = false; }, 500);
+              setTimeout(() => {
+                setIsTransitioning(false);
+                transitionLockRef.current = false;
+              }, 500);
             }
           } else {
-            localPhase = Phases.End;
             if (isHost) {
-              // SERVER-AUTHORITATIVE: Tell ALL players the game is finished
               await updatePlayersBySession(sessionId, { players_status: 'finished' });
               await updateGameSession(sessionId, { session_status: 'completed' });
             }
             fetchFinalStoryResult();
             setTimeout(() => {
+              setIsTransitioning(false);
               transitionLockRef.current = false;
               setAppState(prev => ({ ...prev, phase: Phases.End }));
             }, 1000);
           }
         }
       } catch (err) {
-        console.error("[Sync] Error in sync loop:", err);
+        setIsTransitioning(false);
         transitionLockRef.current = false;
       }
     }, 500);
     return () => clearInterval(interval);
-  }, [phase, session?.id, currentRoundId, playerCount, players.length, currentRound, isHost, sessionId, fetchFinalStoryResult, roundStartedAt, activeTemplate, didGameStart]);
+  }, [phase, session?.id, currentRoundId, playerCount, players.length, currentRound, isHost, sessionId, fetchFinalStoryResult, roundStartedAt, activeTemplate, didGameStart, isTransitioning]);
   const generateRoomCode = () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let code = "";
@@ -459,6 +452,7 @@ function App() {
     setAppState(prev => ({ ...prev, currentRoundId: null }));
     setAppState(prev => ({ ...prev, myStorySheetId: null }));
     setAppState(prev => ({ ...prev, selectedHistoryGame: null }));
+    setAppState(prev => ({ ...prev, lobbyCreatedAt: null }));
     localStorage.removeItem(STATE_STORAGE_KEY);
   };
   const doShowCreateScreen = () => {
@@ -500,6 +494,8 @@ function App() {
       setAppState(prev => ({ ...prev, playerId: hostPlayer.id }));
       setAppState(prev => ({ ...prev, isHost: true }));
       setAppState(prev => ({ ...prev, isLobby: true }));
+      setAppState(prev => ({ ...prev, lobbyCreatedAt: Date.now() }));
+      localStorage.setItem('chepuhaUserPrefs', JSON.stringify({ nickname, roomCode }));
       await refreshState();
     } catch (err: any) {
       setAppState(prev => ({ ...prev, error: String(t('ERR_CREATE' as any)) + err.message }));
@@ -530,17 +526,15 @@ function App() {
       }
 
       if (existingPlayer) {
-        // Re-join existing session
         setAppState(prev => ({
           ...prev,
           playerId: existingPlayer.id,
           isHost: existingPlayer.player_order === 1,
           isLobby: targetSession.session_status === 'waiting',
           didGameStart: targetSession.session_status === 'active',
-          phase: targetSession.session_status === 'active' ? Phases.Main : Phases.Main
+          phase: targetSession.session_status === 'active' ? Phases.Waiting : Phases.Main
         }));
       } else {
-        // Create new player
         const guest = await createPlayer({
           nickname: nick,
           session_id: targetSession.id,
@@ -554,7 +548,7 @@ function App() {
 
       setAppState(prev => ({ ...prev, isCreatingLobby: false }));
       if (targetSession.session_status === 'active') {
-        setAppState(prev => ({ ...prev, phase: Phases.Main, isLobby: false, didGameStart: true }));
+        setAppState(prev => ({ ...prev, phase: Phases.Waiting, isLobby: false, didGameStart: true }));
       } else {
         setAppState(prev => ({ ...prev, phase: Phases.Main }));
       }
@@ -566,7 +560,6 @@ function App() {
   const doGameStart = async () => {
     if (!sessionId) return;
     try {
-      // 1. Prepare batch story sheets
       const sheetsToCreate = players.map(p => ({
         game_session_id: sessionId,
         player_id: p.id,
@@ -580,14 +573,12 @@ function App() {
         sheetId: s.id
       }));
 
-      // Update local state for my sheet
       const mySheet = createdSheets.find((s: any) => s.player_id === playerId);
       if (mySheet) {
         setAppState(prev => ({ ...prev, myStorySheetId: mySheet.id }));
       }
       setAppState(prev => ({ ...prev, allStorySheets: newSheets }));
 
-      // 2. Create the first round
       const ts = new Date().toISOString();
       const firstRound = await createRound({
         session_id: sessionId,
@@ -597,7 +588,6 @@ function App() {
         started_at: ts,
       });
 
-      // 3. Update ALL players to 'playing'
       await updatePlayersBySession(sessionId, { players_status: 'playing' });
 
       // 4. FINALLY activate the session (Atomic Start)
@@ -636,12 +626,12 @@ function App() {
     const updatedAnswers = [...userAnswers, cleanAnswer];
     setAppState(prev => ({ ...prev, userAnswers: updatedAnswers }));
     if (!currentRoundId || !playerId || !sessionId) {
-      transitionLockRef.current = false;
+      setIsTransitioning(false);
       setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
       setTimeout(() => {
         if (currentRound < activeTemplate.questions.length) {
           setAppState(prev => ({ ...prev, currentRound: prev.currentRound + 1 }));
-          transitionLockRef.current = false;
+          setIsTransitioning(false);
           setAppState(prev => ({ ...prev, phase: Phases.Main }));
           setAppState(prev => ({
             ...prev,
@@ -680,18 +670,15 @@ function App() {
         round_id: currentRoundId,
         story_sheet_id: targetSheet,
       });
-      // SERVER-AUTHORITATIVE: Mark this player as done answering
       await updatePlayer(playerId, { players_status: 'ready' });
-      // Immediately refresh hook so server-authoritative effect sees 'ready' not stale 'playing'
       refreshState();
       const curAnswers = await getAnswersByRound(currentRoundId);
       setAppState(prev => ({ ...prev, joinedCount: curAnswers.length }));
       setAppState(prev => ({ ...prev, totalCount: playerCount > 0 ? playerCount : players.length }));
-      transitionLockRef.current = false;
+      setIsTransitioning(false);
       setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
     } catch (err: any) {
-      console.error("Answer submission failed", err);
-      transitionLockRef.current = false;
+      setIsTransitioning(false);
       setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
     }
   };
@@ -790,6 +777,12 @@ function App() {
         <>
           <div className="yellow-guy-bg" onClick={playSecretMusic} />
           <div className="red-guy-bg" onClick={playSecretMusic} />
+          <div className="lobby-timer-display">
+            <span className="timer-title">{t('LOBBY_TIMER_TITLE' as any)}</span>
+            <span className="timer-time">
+              {Math.ceil(lobbyTimeLeft / 60)} {t('LOBBY_MIN_SUFFIX' as any)}
+            </span>
+          </div>
           <div className="lobby-container">
             <div className="lobby-info">
               <h2 className="lobby-text">{t('YOUR_NICK')} {nickname}</h2>
@@ -837,6 +830,7 @@ function App() {
             initialNick={nickname}
             initialRoom={roomCode}
             onJoin={handleJoinGame}
+            errors={error ? { room: error } : undefined}
           />
           <HomeIcon className="homeIconPos" onClick={goHome} />
         </>
@@ -865,10 +859,8 @@ function App() {
         <>
           <Timer
             key={`${currentRound}-${roundStartedAt}`}
-            initialSeconds={roundStartedAt
-              ? Math.max(0, 120 - Math.floor((Date.now() - Date.parse(roundStartedAt)) / 1000))
-              : 120
-            }
+            roundStartedAt={roundStartedAt}
+            serverTimeOffset={serverTimeOffset}
             onTimeUp={() => doAnswerSubmit("Час вийшов")}
             className="timerPos"
           />
@@ -879,8 +871,8 @@ function App() {
             question={
               activeTemplate.id === 'chaos'
                 ? TEMPLATES[
-                  ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "chaos"][
-                  Math.abs(String(playerId || nickname || "Guest").split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0) + (currentRound || 0)) % 8
+                  ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "adult", "anime", "cyber", "it"][
+                  Math.abs(String((sessionId || "") + (playerId || nickname || "Guest")).split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0) + (currentRound || 0)) % 11
                   ]
                 ]?.questions[currentRound - 1] || activeTemplate.questions[currentRound - 1]
                 : activeTemplate.questions[currentRound - 1]
