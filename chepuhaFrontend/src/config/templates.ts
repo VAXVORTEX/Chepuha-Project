@@ -390,6 +390,32 @@ export const TEMPLATES: Record<string, StoryTemplate> = {
                                 `Хакатонне безумство. Невиспаний(-а) ${a(0)} та накачаний(-а) енергетиками ${a(1)} кодили у ${a(2)} починаючи з ${a(3)}. Їхній проект намагався ${a(4)}, працюючи на чистому ${a(5)}. Під час демо ${a(0)} оголосив(-ла): «${a(6)}». Суддя прищурився і запитав: «${a(7)}». Інші команди подумали: ${a(8)}. Всупереч усьому ${a(9)}. Вони виграли приз у вигляді ${a(10)}. Порада для хакатонів: ${a(11)}.`;
         }
     },
+    movies: {
+        id: "movies",
+        name: "movies",
+        description: "movies / cinema theme",
+        questions: ["Q_MOVIES_0", "Q_MOVIES_1", "Q_MOVIES_2", "Q_MOVIES_3", "Q_MOVIES_4", "Q_MOVIES_5", "Q_MOVIES_6", "Q_MOVIES_7", "Q_MOVIES_8", "Q_MOVIES_9", "Q_MOVIES_10", "Q_MOVIES_11"],
+        questionTypes: ['who', 'with_whom', 'where', 'when', 'what_did', 'how_ended', 'what_said', 'what_said', 'what_did', 'how_ended', 'what_said', 'how_ended'],
+        fallbacks: [['Термінатор', 'Джек Доусон', 'Оптімус Прайм', 'Волтер Вайт'], ['з Мегатроном', 'з Декстером', 'з Таносом'], ['на борту Титаніка', 'у мет-лабораторії', 'на базі Месників'], ['коли пролунав вибух', 'під час фінальної битви', 'до фінальних титрів'], ['робили епічне сальто', 'варили синій мет', 'шукали Камені Нескінченності'], ['відчували себе супергероями', 'були на межі нервового зриву'], ['I\'ll be back!', 'Я — небезпека!'], ['Автоботи, трансформуємось!', 'Сьогодні гарний день, щоб померти.'], ['що це кросовер століття', 'що режисер геній'], ['корабель зламався навпіл', 'Мегатрон заплакав'], ['рукавицю нескінченності', 'Оскар за найкращу роль'], ['вибухи роблять усе кращим', 'ніколи не зли мафію']],
+        buildStory: (answers: string[], lang: string = 'uk', globalSeed: string = '0', localSeed: string = '0') => {
+            const a = (i: number) => answers[i] || '?';
+            const v = [...globalSeed].reduce((acc, char) => acc + char.charCodeAt(0), 0) % 6;
+            if (lang === 'en') {
+                return v === 0 ? `The ultimate crossover began when ${a(0)} met ${a(1)} ${a(2)} right at ${a(3)}. Before the CGI kicked in, they ${a(4)}. The sheer cinematic tension made them feel ${a(5)}. Looking directly at the camera, ${a(0)} declared: «${a(6)}». Not to be outdone, ${a(1)} smirked: «${a(7)}». The audience in the theater thought: ${a(8)}. The scene culminated when ${a(9)}. Only one prop survived the shoot: ${a(10)}. Hollywood's main lesson: ${a(11)}.` :
+                    v === 1 ? `I am the danger! But mostly, it was ${a(0)} confronting ${a(1)} ${a(2)} ${a(3)}. Preparing for the stunt, they started to ${a(4)}. Adrenaline spiked so high they felt ${a(5)}. With dramatic slow-motion, ${a(0)} whispered: «${a(6)}». To which ${a(1)} roared: «${a(7)}». Movie critics watching the premiere thought: ${a(8)}. The script demanded that ${a(9)}. Post-credits scene revealed ${a(10)}. Sequel rule: ${a(11)}.` :
+                        v === 2 ? `Directed by Michael Bay. Explosions echoed as ${a(0)} and ${a(1)} spawned ${a(2)} ${a(3)}. Avoiding shrapnel, they heroically ${a(4)}. Surrounded by practical effects, they were completely ${a(5)}. Pausing the action, ${a(0)} delivered the one-liner: «${a(6)}». ${a(1)} coldly replied: «${a(7)}». The stunt double thought: ${a(8)}. The finale was so massive that ${a(9)}. Box office hit generated ${a(10)}. Cinematic mantra: ${a(11)}.` :
+                            v === 3 ? `Titanic proportions of drama! ${a(0)} and a rogue ${a(1)} navigated through ${a(2)} ${a(3)}. While the soundtrack swelled, they ${a(4)}. Emotional and breathless, their status was ${a(5)}. Grabbing the hero's hand, ${a(0)} stated: «${a(6)}». ${a(1)} wiped a tear and promised: «${a(7)}». The Marvel fanbase completely misunderstood and thought: ${a(8)}. The plot twist: ${a(9)}. Ultimately leaving behind ${a(10)}. The Oscar goes to: ${a(11)}.` :
+                                v === 4 ? `Cybernetic organism deactivated. T-800 AKA ${a(0)} tracked down ${a(1)} at ${a(2)} exactly at ${a(3)}. With target locked, they proceeded to ${a(4)}. System override triggered a state of ${a(5)}. Equipping the shotgun, ${a(0)} demanded: «${a(6)}». The villain, unfazed, answered: «${a(7)}». Screenwriters ran out of ideas and thought: ${a(8)}. Ultimately, judgment day arrived and ${a(9)}. The wreckage yielded ${a(10)}. Time travel paradox: ${a(11)}.` :
+                                    `Roll cameras! Action! ${a(0)} and their sidekick ${a(1)} broke into the set ${a(2)} ${a(3)}. Following the storyboard, they ${a(4)}. The intense method acting caused them to feel ${a(5)}. Breaking the fourth wall, ${a(0)} asked: «${a(6)}». The director screamed: «${a(7)}». Fans analyzing the trailer thought: ${a(8)}. In the director's cut ${a(9)}. Hidden easter egg found: ${a(10)}. Franchise takeaway: ${a(11)}.`;
+            }
+            return v === 0 ? `Найбільший кросовер почався, коли ${a(0)} зустрів ${a(1)} ${a(2)} рівно ${a(3)}. Ще до накладання спецефектів вони ${a(4)}. Напруга сцени була такою, що вони відчували себе ${a(5)}. Дивлячись прямо в камеру, ${a(0)} заявив(-ла): «${a(6)}». Не відступаючи, ${a(1)} посміхнувся(-лася): «${a(7)}». Глядачі в кінотеатрі подумали: ${a(8)}. Сцена досягла кульмінації, коли ${a(9)}. Після зйомок вцілів лише один реквізит: ${a(10)}. Голлівудський урок: ${a(11)}.` :
+                v === 1 ? `Я — небезпека! І саме так ${a(0)} зійшовся з ${a(1)} ${a(2)} ${a(3)}. Готуючись до трюку, вони почали ${a(4)}. Адреналін підскочив так сильно, що їхній стан був ${a(5)}. З драматичним слоу-мо, ${a(0)} прошепотів(-ла): «${a(6)}». На що ${a(1)} проричав(-ла): «${a(7)}». Кінокритики на прем'єрі подумали: ${a(8)}. Сценарій вимагав, щоб ${a(9)}. А у сцені після титрів показали ${a(10)}. Правило франшизи: ${a(11)}.` :
+                    v === 2 ? `Режисер: Майкл Бей. Лунали вибухи, коли ${a(0)} та ${a(1)} опинилися ${a(2)} ${a(3)}. Ухиляючись від уламків, вони героїчно ${a(4)}. Оточені піротехнікою, їх поглинуло відчуття ${a(5)}. Ставлячи події на паузу, ${a(0)} видав(-ла) пафосну фразу: «${a(6)}». ${a(1)} холодно відповів(-ла): «${a(7)}». Каскадер в жаху подумав: ${a(8)}. Фінал був настільки масштабним, що ${a(9)}. Збори в прокаті принесли ${a(10)}. Мантра кіношників: ${a(11)}.` :
+                        v === 3 ? `Драма масштабів Титаніка! ${a(0)} та зухвалий ${a(1)} долали перешкоди ${a(2)} ${a(3)}. Під епічний саундтрек вони ${a(4)}. Затамувавши подих, їхнім емоційним станом було: ${a(5)}. Схопивши героя за руку, ${a(0)} пообіцяв(-ла): «${a(6)}». ${a(1)} змахнув(-ла) сльозу і відповів(-ла): «${a(7)}». Фанати Марвел нічого не зрозуміли і подумали: ${a(8)}. Сюжетний поворот: ${a(9)}. Зрештою після них залишилося лише ${a(10)}. Оскар отримує: ${a(11)}.` :
+                            v === 4 ? `Кібернетичний організм деактивовано. T-800, він же ${a(0)}, вистежив ${a(1)} ${a(2)} рівно ${a(3)}. Зафіксувавши ціль, вони почали ${a(4)}. Збій у системі призвів до стану ${a(5)}. Перезарядивши дробовик, ${a(0)} наказав(-ла): «${a(6)}». Лиходій, навіть не здригнувшись, кинув: «${a(7)}». У сценаристів закінчились ідеї, і вони подумали: ${a(8)}. У результаті настав судний день і ${a(9)}. Під уламками знайшли ${a(10)}. Парадокс подорожей у часі: ${a(11)}.` :
+                                `Увага, мотор! Камера! ${a(0)} та його/її напарник ${a(1)} увірвалися на знімальний майданчик ${a(2)} ${a(3)}. Дотримуючись розкадровки, вони ${a(4)}. Глибоке занурення в роль змусило їх почувати ${a(5)}. Ламаючи четверту стіну, ${a(0)} запитав(-ла): «${a(6)}». Режисер несамовито волав: «${a(7)}». Фанати, покадрово розбираючи трейлер, подумали: ${a(8)}. У режисерській версії ${a(9)}. Прихована пасхалка: ${a(10)}. Урок блокбастера: ${a(11)}.`;
+        }
+    },
     chaos: {
         id: "chaos",
         name: "chaos",
@@ -414,9 +440,9 @@ export const TEMPLATES: Record<string, StoryTemplate> = {
             const hashStr = localSeed + answers.join('');
             let sum = 0;
             for (let i = 0; i < hashStr.length; i++) sum += hashStr.charCodeAt(i);
-            const v = sum % 11;
+            const v = sum % 12;
             const chaosVariant = (sum * 7) % 6;
-            const themesArr = ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "adult", "anime", "cyber", "it"];
+            const themesArr = ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "adult", "anime", "cyber", "it", "movies"];
             const t = TEMPLATES[themesArr[v]];
             return t.buildStory(answers, lang, String(chaosVariant), localSeed);
         }
