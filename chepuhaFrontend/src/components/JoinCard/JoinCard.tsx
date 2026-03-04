@@ -47,6 +47,7 @@ const JoinCard: React.FC<JoinCardProps> = ({
                 }
               }}
               placeholder={t('ENTER_NICK_PLACEHOLDER')}
+              onKeyDown={(e) => e.key === 'Enter' && doJoinClick()}
               className={styles.input}
             />
             <span
@@ -63,7 +64,13 @@ const JoinCard: React.FC<JoinCardProps> = ({
           <div className={styles.inputWrapper}>
             <Input
               value={roomInputValue}
-              onChange={(val) => setRoomInputValue(val.toUpperCase())}
+              onChange={(val) => {
+                const upper = val.toUpperCase();
+                if (upper.length <= 8) {
+                  setRoomInputValue(upper);
+                }
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && doJoinClick()}
               placeholder={t('ENTER_ROOM_PLACEHOLDER')}
               className={styles.input}
             />
