@@ -49,12 +49,15 @@ const JoinCard: React.FC<JoinCardProps> = ({
               placeholder={t('ENTER_NICK_PLACEHOLDER')}
               className={styles.input}
             />
-            <span className={styles.errorText}>
+            <span
+              className={styles.errorText}
+              style={{ visibility: (nickInputValue.length >= 25 || errors?.nick || (isSubmitted && !nickInputValue.trim())) ? 'visible' : 'hidden' }}
+            >
               {nickInputValue.length >= 25
                 ? t('ERR_NICK_LONG')
                 : (errors?.nick || (isSubmitted && !nickInputValue.trim())
                   ? (errors?.nick || t('NICKNAME_REQUIRED'))
-                  : '\u00A0')}
+                  : 'ERROR')}
             </span>
           </div>
           <div className={styles.inputWrapper}>
@@ -64,10 +67,13 @@ const JoinCard: React.FC<JoinCardProps> = ({
               placeholder={t('ENTER_ROOM_PLACEHOLDER')}
               className={styles.input}
             />
-            <span className={styles.errorText}>
+            <span
+              className={styles.errorText}
+              style={{ visibility: (errors?.room || (isSubmitted && !roomInputValue.trim())) ? 'visible' : 'hidden' }}
+            >
               {(errors?.room || (isSubmitted && !roomInputValue.trim()))
                 ? (errors?.room || t('ROOM_NOT_FOUND'))
-                : '\u00A0'}
+                : 'ERROR'}
             </span>
           </div>
           <div className={styles.submitBlock}>

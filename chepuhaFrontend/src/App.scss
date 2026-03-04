@@ -546,11 +546,11 @@
   }
 
   .menu-buttons {
-    gap: 20px;
-    transform: none; // Removed scale to keep text sharp and large
+    gap: 21px;
+    transform: none;
 
     .button {
-      font-size: 50px !important; // Enlarge main menu texts
+      font-size: 50px !important;
     }
   }
 
@@ -608,18 +608,18 @@
   }
 
   .logo-wrapper {
-    margin-top: 5px;
-    margin-bottom: 10px;
+    margin-top: -10px;
+    margin-bottom: 20px;
   }
 
   .logo-wrapper .logo {
-    max-width: 80vw;
+    max-width: 88vw;
   }
 
   .gameCodePos {
     position: absolute;
     top: 20px;
-    right: 20px;
+    right: 5px;
     transform: none;
     z-index: 100;
   }
@@ -688,13 +688,13 @@
   }
 
   .yellow-guy-bg {
-    right: 25px !important;
+    right: -10px !important;
     left: auto !important;
     bottom: -10px !important;
   }
 
   .red-guy-bg {
-    left: 25px !important;
+    left: -10px !important;
     right: auto !important;
     bottom: 20px !important;
   }
