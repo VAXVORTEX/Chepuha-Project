@@ -738,10 +738,10 @@ function App() {
 
       {!didGameStart && isCreatingLobby && !isLobby && phase !== Phases.Join && (
         <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} />
-          <div className="red-guy-bg" onClick={playSecretMusic} />
-          <div className="create-game-container">
-            <div className="input-wrapper">
+          <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
+          <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
+          <div className="create-game-container" style={{ pointerEvents: 'none' }}>
+            <div className="input-wrapper" style={{ pointerEvents: 'auto' }}>
               <input
                 type="text"
                 className={`nickname-input ${error ? "error" : ""}`}
@@ -750,8 +750,8 @@ function App() {
                 onChange={handleNicknameChange}
               />
             </div>
-            <span className="error-message" style={{ minHeight: '24px', display: 'block' }}>{error || '\u00A0'}</span>
-            <div className="template-selector">
+            <span className="error-message" style={{ minHeight: '24px', display: 'block', pointerEvents: 'auto' }}>{error || '\u00A0'}</span>
+            <div className="template-selector" style={{ pointerEvents: 'auto' }}>
               <h3 className="template-title">{t('CHOOSE_STORY')}</h3>
               <div className="template-cards-container">
                 {Object.values(TEMPLATES).map((tpl) => (
@@ -767,20 +767,22 @@ function App() {
                 ))}
               </div>
             </div>
-            <Button
-              label={t('CREATE_GAME')}
-              variant="primary"
-              phase={phase}
-              onClick={goToLobby}
-            />
+            <div style={{ pointerEvents: 'auto' }}>
+              <Button
+                label={t('CREATE_GAME')}
+                variant="primary"
+                phase={phase}
+                onClick={goToLobby}
+              />
+            </div>
           </div>
           <HomeIcon className="homeIconPos" onClick={goHome} />
         </>
       )}
       {!didGameStart && isLobby && phase !== Phases.Join && (
         <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} />
-          <div className="red-guy-bg" onClick={playSecretMusic} />
+          <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
+          <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
           <div className="lobby-timer-display">
             <span className="timer-title">{t('LOBBY_TIMER_TITLE' as any)}</span>
             <span className="timer-time">
@@ -828,8 +830,8 @@ function App() {
       )}
       {phase === Phases.Join && (
         <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} />
-          <div className="red-guy-bg" onClick={playSecretMusic} />
+          <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
+          <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
           <JoinCard
             initialNick={nickname}
             initialRoom={roomCode}
