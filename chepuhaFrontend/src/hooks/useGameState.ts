@@ -135,7 +135,7 @@ export function useGameState(sessionId: string | null) {
 
             const pollInterval = setInterval(() => {
                 fetchState();
-            }, 5000); // 5s fallback polling
+            }, 2000); // 2s fallback polling
 
             return () => {
                 supabase.removeChannel(sessionChannel);
@@ -144,7 +144,7 @@ export function useGameState(sessionId: string | null) {
         } catch (err) {
             const pollInterval = setInterval(() => {
                 fetchState();
-            }, 5000);
+            }, 2000);
             return () => clearInterval(pollInterval);
         }
     }, [fetchState, sessionId]);

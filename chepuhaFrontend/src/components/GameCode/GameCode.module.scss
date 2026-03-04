@@ -11,6 +11,13 @@
     text-align: center;
     position: relative;
     overflow: visible;
+
+    @media (max-width: 768px) {
+        width: auto;
+        align-items: hide-end; // Use flex-end for right alignment
+        align-items: flex-end;
+        text-align: right;
+    }
 }
 
 .label {
@@ -27,6 +34,7 @@
     @media (max-width: 768px) {
         font-size: 20px;
         width: 140px;
+        justify-content: flex-end;
     }
 }
 
