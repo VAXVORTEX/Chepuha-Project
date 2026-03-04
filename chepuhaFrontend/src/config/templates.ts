@@ -416,6 +416,32 @@ export const TEMPLATES: Record<string, StoryTemplate> = {
                                 `Увага, мотор! Камера! ${a(0)} та його/її напарник ${a(1)} увірвалися на знімальний майданчик ${a(2)} ${a(3)}. Дотримуючись розкадровки, вони ${a(4)}. Глибоке занурення в роль змусило їх почувати ${a(5)}. Ламаючи четверту стіну, ${a(0)} запитав(-ла): «${a(6)}». Режисер несамовито волав: «${a(7)}». Фанати, покадрово розбираючи трейлер, подумали: ${a(8)}. У режисерській версії ${a(9)}. Прихована пасхалка: ${a(10)}. Урок блокбастера: ${a(11)}.`;
         }
     },
+    math: {
+        id: "math",
+        name: "math",
+        description: "math / science theme",
+        questions: ["Q_MATH_0", "Q_MATH_1", "Q_MATH_2", "MATH_DYN_0", "MATH_DYN_1", "Q_MATH_5", "Q_MATH_6", "Q_MATH_7", "Q_MATH_8", "MATH_DYN_2", "Q_MATH_10", "Q_MATH_11"],
+        questionTypes: ['who', 'with_whom', 'where', 'what_did', 'what_did', 'how_ended', 'what_said', 'what_said', 'how_ended', 'what_did', 'what_said', 'how_ended'],
+        fallbacks: [['Альберт Ейнштейн', 'Ісаак Ньютон', 'Рене Декарт', 'Мапа Піфагора'], ['з Марією Кюрі', 'з Ніколою Теслою', 'з Аланом Тюрінгом'], ['у квантовій лабораторії', 'на Декартовій площині', 'у Чорній Дірі'], ['2+2=?', '√144=?', '∫x^2dx=?'], ['5*5=?', '10^3=?', 'sin(90°)=?'], ['були шоковані формулою', 'ледь не зламали простір-час'], ['E=mc^2!', 'Я мислю, отже я існую!'], ['Данина науці!', 'Це ж елементарно!'], ['що гравітація - це ілюзія', 'що вони зійшли з розуму'], ['100/4=?', 'x^2=25, x=?', 'log_2(8)=?'], ['стрічку Мебіуса', 'нескінченний фрактал'], ['математика - цариця наук', 'на нуль ділити не можна']],
+        buildStory: (answers: string[], lang: string = 'uk', globalSeed: string = '0', localSeed: string = '0') => {
+            const a = (i: number) => answers[i] || '?';
+            const v = [...globalSeed].reduce((acc, char) => acc + char.charCodeAt(0), 0) % 6;
+            if (lang === 'en') {
+                return v === 0 ? `The great equation began when ${a(0)} met ${a(1)} ${a(2)}. Before they could calculate ${a(3)}, they had to solve ${a(4)}. The sheer complexity made them feel ${a(5)}. Pointing at the chalkboard, ${a(0)} declared: «${a(6)}». Not to be outdone, ${a(1)} countered: «${a(7)}». The scientific community thought: ${a(8)}. Then, they suddenly solved ${a(9)}. That's when they discovered ${a(10)}. Mathematical law: ${a(11)}.` :
+                    v === 1 ? `Breaking the laws of physics! ${a(0)} and ${a(1)} were theorizing ${a(2)}. Their first instinct was to compute ${a(3)}, and then figure out ${a(4)}. The results caused them to be ${a(5)}. Erasing the board, ${a(0)} whispered: «${a(6)}». To which ${a(1)} logically replied: «${a(7)}». Peer reviewers reading this thought: ${a(8)}. As a final test, they evaluated ${a(9)}. Yielding the legendary ${a(10)}. Theorem proved: ${a(11)}.` :
+                        v === 2 ? `A dimensional anomaly occurred. As ${a(0)} and ${a(1)} entered ${a(2)}, they encountered ${a(3)}. Trying to normalize it, they solved ${a(4)}. The resulting paradox left them completely ${a(5)}. Looking at the graph, ${a(0)} concluded: «${a(6)}». ${a(1)} adjusted their glasses and said: «${a(7)}». The Nobel committee thought: ${a(8)}. The final variable was surprisingly ${a(9)}. And the constant was ${a(10)}. Universal truth: ${a(11)}.` :
+                            v === 3 ? `Calculus madness! ${a(0)} and rival ${a(1)} debated ${a(2)}. Trying to prove who is smarter, one shouted ${a(3)}, while the other calculated ${a(4)}. Sweating bullets, their status was ${a(5)}. Throwing chalk, ${a(0)} stated: «${a(6)}». ${a(1)} confidently verified: «${a(7)}». Graduate students observing thought: ${a(8)}. The real answer turned out to be ${a(9)}. Unlocking the secret of ${a(10)}. The proof is left as: ${a(11)}.` :
+                                v === 4 ? `Quantum superposition confirmed. ${a(0)} joined forces with ${a(1)} ${a(2)}. While entangling particles, they deduced ${a(3)}. They also approximated ${a(4)}. The uncertainty principle made them feel ${a(5)}. Analyzing the scope, ${a(0)} hypothesized: «${a(6)}». The peer-reviewed journal stated: «${a(7)}». Schrödinger's cat thought: ${a(8)}. After collapsing the wave function, they found ${a(9)}. Inside the box was ${a(10)}. Fact check: ${a(11)}.` :
+                                    `Geometry of the gods! ${a(0)} and ${a(1)} constructed a polygon ${a(2)}. First angle measured ${a(3)}. The hypotenuse was exactly ${a(4)}. The elegant symmetry made them ${a(5)}. Using a compass, ${a(0)} proudly asked: «${a(6)}». The professor screamed: «${a(7)}». Fellow mathematicians thought: ${a(8)}. The golden ratio derived from ${a(9)}. Creating a perfect ${a(10)}. Axiom proved: ${a(11)}.`;
+            }
+            return v === 0 ? `Грандіозне рівняння почалося, коли ${a(0)} зустрів(-ла) ${a(1)} ${a(2)}. Перш ніж обчислити ${a(3)}, їм довелося вирішити ${a(4)}. Неймовірна складність викликала в них стан: ${a(5)}. Вказуючи на дошку, ${a(0)} заявив(-ла): «${a(6)}». Не відступаючи, ${a(1)} парирував(-ла): «${a(7)}». Наукове товариство подумало: ${a(8)}. Раптом вони згадали, що ${a(9)}. І саме тоді вони відкрили ${a(10)}. Математичний закон: ${a(11)}.` :
+                v === 1 ? `Порушуючи закони фізики! ${a(0)} та ${a(1)} розробляли теорію ${a(2)}. Їхнім першим кроком було знайти ${a(3)}, а потім розв'язати ${a(4)}. Отримані результати змусили їх відчути ${a(5)}. Стираючи крейду з дошки, ${a(0)} прошепотів(-ла): «${a(6)}». На що ${a(1)} логічно відповів(-ла): «${a(7)}». Рецензенти статей подумали: ${a(8)}. Як фінальний тест вони перевірили ${a(9)}. Що призвело до легендарного ${a(10)}. Теорему доведено: ${a(11)}.` :
+                    v === 2 ? `Трапилася просторова аномалія. Щойно ${a(0)} та ${a(1)} потрапили ${a(2)}, вони зіткнулися з ${a(3)}. Намагаючись звести це до спільного знаменника, вони порахували ${a(4)}. Отриманий парадокс залишив їх абсолютно ${a(5)}. Дивлячись на графік, ${a(0)} зробив(-ла) висновок: «${a(6)}». ${a(1)} поправив(-ла) окуляри і додав(-ла): «${a(7)}». Нобелівський комітет подумав: ${a(8)}. Остання змінна несподівано дорівнювала ${a(9)}. А константою виявився ${a(10)}. Універсальна істина: ${a(11)}.` :
+                        v === 3 ? `Матаналаіз виходить з-під контролю! ${a(0)} та конкурент ${a(1)} сперечалися ${a(2)}. З'ясовуючи, хто геніальніший, один вигукнув ${a(3)}, поки інший доводив ${a(4)}. Тримаючись за голову, їхнім станом було: ${a(5)}. Кидаючи крейду, ${a(0)} заявив(-ла): «${a(6)}». ${a(1)} впевнено підтвердив(-ла): «${a(7)}». Аспіранти, спостерігаючи за цим, подумали: ${a(8)}. Справжня відповідь виявилася ${a(9)}. Що дало змогу розблокувати ${a(10)}. Доведення залишається очевидним: ${a(11)}.` :
+                            v === 4 ? `Квантову суперпозицію підтверджено. ${a(0)} об'єднав(-ла) зусилля з ${a(1)} ${a(2)}. Сплутуючи частинки, вони вивели ${a(3)}. А також наблизили ${a(4)}. Принцип невизначеності змушував їх відчувати ${a(5)}. Аналізуючи похибку, ${a(0)} висунув(-ла) гіпотезу: «${a(6)}». Науковий журнал опублікував: «${a(7)}». Кіт Шредінгера подумав: ${a(8)}. Після колапсу хвильової функції вони порахували: ${a(9)}. Всередині коробки був ${a(10)}. Перевірка фактів: ${a(11)}.` :
+                                `Геометрія богів! ${a(0)} та ${a(1)} будували багатокутник ${a(2)}. Перший кут дорівнював ${a(3)}. Довжина гіпотенузи складала ${a(4)}. Елегантна симетрія зробила їх ${a(5)}. Використовуючи циркуль, ${a(0)} гордо запитав(-ла): «${a(6)}». Професор закричав(-ла): «${a(7)}». Інші математики подумали: ${a(8)}. Золотий перетин вивели з ${a(9)}. Створивши ідеальний ${a(10)}. Аксіому доведено: ${a(11)}.`;
+        }
+    },
     chaos: {
         id: "chaos",
         name: "chaos",
@@ -440,9 +466,9 @@ export const TEMPLATES: Record<string, StoryTemplate> = {
             const hashStr = localSeed + answers.join('');
             let sum = 0;
             for (let i = 0; i < hashStr.length; i++) sum += hashStr.charCodeAt(i);
-            const v = sum % 12;
+            const v = sum % 13;
             const chaosVariant = (sum * 7) % 6;
-            const themesArr = ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "adult", "anime", "cyber", "it", "movies"];
+            const themesArr = ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "adult", "anime", "cyber", "it", "movies", "math"];
             const t = TEMPLATES[themesArr[v]];
             return t.buildStory(answers, lang, String(chaosVariant), localSeed);
         }

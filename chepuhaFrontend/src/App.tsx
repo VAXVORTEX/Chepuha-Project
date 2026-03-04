@@ -18,6 +18,7 @@ import flagUk from "./assets/images/flag_uk.png";
 import flagEn from "./assets/images/flag_en.png";
 import { useHistory, SavedGame } from "./hooks/useHistory";
 import { playSecretMusic, secretAudio } from "./utils/audio";
+import { mathProblems } from "./config/mathProblems";
 const STATE_STORAGE_KEY = "chepuhaActiveGameState";
 import { useGameState } from "./hooks/useGameState";
 import {
@@ -868,15 +869,24 @@ function App() {
           <RoundCard
             playerName={nickname}
             phase={phase}
-            question={
-              activeTemplate.id === 'chaos'
+            question={(() => {
+              const rawQuestion = activeTemplate.id === 'chaos'
                 ? TEMPLATES[
-                  ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "adult", "anime", "cyber", "it"][
-                  Math.abs(String((sessionId || "") + (playerId || nickname || "Guest")).split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0) + (currentRound || 0)) % 11
+                  ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "adult", "anime", "cyber", "it", "movies", "math"][
+                  Math.abs(String((sessionId || "") + (playerId || nickname || "Guest")).split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0) + (currentRound || 0)) % 13
                   ]
                 ]?.questions[currentRound - 1] || activeTemplate.questions[currentRound - 1]
-                : activeTemplate.questions[currentRound - 1]
-            }
+                : activeTemplate.questions[currentRound - 1];
+
+              if (rawQuestion?.startsWith('MATH_DYN_')) {
+                const indexPart = parseInt(rawQuestion.split('_')[2] || "0", 10);
+                const seedStr = String(sessionId || roomCode || "guest");
+                const hash = seedStr.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+                const offset = hash + indexPart * 73;
+                return mathProblems[offset % mathProblems.length];
+              }
+              return rawQuestion;
+            })()}
             playerReady={derivedJoinedCount}
             playerTotal={derivedTotalCount}
             onSubmitAnswer={doAnswerSubmit}
