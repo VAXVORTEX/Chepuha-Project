@@ -868,18 +868,31 @@ function App() {
             playerName={nickname}
             phase={phase}
             question={(() => {
-              const rawQuestion = activeTemplate.id === 'chaos'
+              const baseTemplate = activeTemplate.id === 'chaos'
                 ? TEMPLATES[
-                  ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "adult", "anime", "cyber", "it", "movies", "math"][
-                  Math.abs(String((sessionId || "") + (playerId || nickname || "Guest")).split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0) + (currentRound || 0)) % 13
-                  ]
-                ]?.questions[currentRound - 1] || activeTemplate.questions[currentRound - 1]
-                : activeTemplate.questions[currentRound - 1];
+                ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "adult", "anime", "cyber", "it", "movies", "math"][
+                Math.abs(String((sessionId || "") + (playerId || nickname || "Guest")).split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0) + (currentRound || 0)) % 13
+                ]
+                ] || activeTemplate
+                : activeTemplate;
+
+              let roundQuestions = [...(baseTemplate.questions || [])];
+
+              if (baseTemplate.id === 'math') {
+                const seedStr = String(sessionId || roomCode || "guest");
+                const hash = seedStr.split("").reduce((a, c) => a + (c.charCodeAt(0) * 31), 0);
+                for (let i = roundQuestions.length - 1; i > 0; i--) {
+                  const j = Math.abs(hash + i * 53) % (i + 1);
+                  [roundQuestions[i], roundQuestions[j]] = [roundQuestions[j], roundQuestions[i]];
+                }
+              }
+
+              const rawQuestion = roundQuestions[currentRound - 1];
 
               if (rawQuestion?.startsWith('MATH_DYN_')) {
                 const indexPart = parseInt(rawQuestion.split('_')[2] || "0", 10);
                 const seedStr = String(sessionId || roomCode || "guest");
-                const hash = seedStr.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+                const hash = seedStr.split("").reduce((a, c) => a + (c.charCodeAt(0) * 17), 0);
                 const offset = hash + indexPart * 73;
                 return mathProblems[offset % mathProblems.length];
               }

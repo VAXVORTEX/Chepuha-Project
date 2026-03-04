@@ -619,7 +619,7 @@
   .gameCodePos {
     position: absolute;
     top: 20px;
-    right: 5px;
+    right: -5px;
     transform: none;
     z-index: 100;
   }
@@ -680,21 +680,23 @@
 
   .yellow-guy-bg,
   .red-guy-bg {
-    width: 200px !important;
-    height: 200px !important;
+    width: 110px !important;
+    height: 110px !important;
     position: absolute !important;
     top: auto !important;
     transform: none !important;
+    opacity: 0.9;
+    z-index: 10 !important;
   }
 
   .yellow-guy-bg {
-    right: -10px !important;
+    right: -40px !important;
     left: auto !important;
     bottom: -10px !important;
   }
 
   .red-guy-bg {
-    left: -10px !important;
+    left: -40px !important;
     right: auto !important;
     bottom: 20px !important;
   }
