@@ -41,7 +41,7 @@
   align-items: flex-start;
   margin: 0 auto;
   position: relative;
-  padding-bottom: 30px; // Reserve space for error
+  padding-bottom: 5px; // Just minor space
 }
 
 .input {
@@ -76,14 +76,14 @@
 }
 
 .errorText {
-  position: absolute;
-  bottom: 0;
-  left: 0;
+  position: relative; // Back to flow but with reserved space
+  display: block;
+  min-height: 24px;
   color: $red;
   -webkit-text-stroke: 1px $black;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-  margin-top: 5px;
-  font-size: 24px; // Small adj
+  margin-top: 4px;
+  font-size: 20px;
   text-align: left;
   width: 100%;
   max-width: 750px;

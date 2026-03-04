@@ -598,15 +598,16 @@
   }
 
   .menu-buttons {
-    gap: 0px;
+    gap: 15px; // Small gap back
     width: 100%;
     align-items: center;
     margin-top: 10px;
 
     button {
       min-width: 280px !important;
-      height: 90px !important;
-      font-size: 40px !important; // Slightly more than 38px
+      height: auto !important; // Less dead space
+      padding: 15px 30px !important;
+      font-size: 40px !important;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -620,7 +621,7 @@
   }
 
   .logo-wrapper {
-    margin-top: 0px; // Moved down from -30px
+    margin-top: 30px; // Moved down further
     margin-bottom: 20px;
     width: 100%;
     display: flex;
@@ -699,7 +700,7 @@
     top: auto !important;
     transform: none !important;
     opacity: 0.5;
-    z-index: 5 !important;
+    z-index: 30 !important; // Above container (20) for clickability
     pointer-events: auto !important;
   }
 
