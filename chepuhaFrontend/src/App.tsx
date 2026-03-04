@@ -347,8 +347,6 @@ function App() {
 
         if (phaseRef.current !== Phases.Waiting) return;
 
-        if (total < 2) return;
-
         const now = Date.now();
         const startedAt = roundStartedAt ? Date.parse(roundStartedAt) : now;
         const timePassed = (now - startedAt) / 1000;
