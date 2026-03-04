@@ -14,7 +14,6 @@
 
     @media (max-width: 768px) {
         width: auto;
-        align-items: hide-end; // Use flex-end for right alignment
         align-items: flex-end;
         text-align: right;
     }

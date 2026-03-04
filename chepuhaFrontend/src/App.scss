@@ -299,7 +299,7 @@
   bottom: 0;
   background-size: contain;
   background-repeat: no-repeat;
-  z-index: 10;
+  z-index: 5;
   opacity: 0.5;
   cursor: default;
   pointer-events: auto;
@@ -598,7 +598,7 @@
   }
 
   .menu-buttons {
-    gap: 25px;
+    gap: 10px;
     width: 100%;
     align-items: center;
     margin-top: 10px;
@@ -606,7 +606,7 @@
     button {
       min-width: 280px !important;
       height: 90px !important;
-      font-size: 38px !important;
+      font-size: 40px !important; // Slightly more than 38px
       display: flex;
       align-items: center;
       justify-content: center;
@@ -620,7 +620,7 @@
   }
 
   .logo-wrapper {
-    margin-top: -30px;
+    margin-top: 0px; // Moved down from -30px
     margin-bottom: 20px;
     width: 100%;
     display: flex;
@@ -634,7 +634,7 @@
   .gameCodePos {
     position: absolute;
     top: 20px;
-    right: 0px;
+    right: 15px; // Added margin from edge
     transform: none;
     z-index: 100;
   }
@@ -695,26 +695,28 @@
 
   .yellow-guy-bg,
   .red-guy-bg {
-    width: 150px !important;
-    height: 150px !important;
     position: absolute !important;
     top: auto !important;
     transform: none !important;
     opacity: 1;
-    z-index: 500 !important;
+    z-index: 5 !important;
     pointer-events: auto !important;
   }
 
   .yellow-guy-bg {
-    right: 0px !important;
+    width: 130px !important;
+    height: 130px !important;
+    right: -10px !important;
     left: auto !important;
-    bottom: -10px !important;
+    bottom: 80px !important; // Above home, below menu
   }
 
   .red-guy-bg {
-    left: 0px !important;
+    width: 150px !important;
+    height: 150px !important;
+    left: -10px !important;
     right: auto !important;
-    bottom: 20px !important;
+    bottom: -10px !important; // In corner
   }
 
 
