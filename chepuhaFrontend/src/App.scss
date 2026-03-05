@@ -519,201 +519,209 @@
     font-size: 20px;
   }
 
-  justify-content: center;
-  padding-bottom: 20px;
+  .create-game-container {
+    gap: 15px;
+    margin-top: -2vh;
+    height: auto;
+    min-height: 70vh;
+    justify-content: center;
+    padding-bottom: 20px;
 
-  .button {
-    margin-top: 10px; // Push button slightly lower relative to options
-  }
-}
-
-
-
-.box {
-  padding: 15px 5px;
-  border-radius: 20px;
-  border-width: 5px;
-  height: 80vh;
-  max-height: 80dvh;
-}
-
-.wrapper {
-  padding: 2vh 5px;
-}
-
-.container {
-  padding: 0;
-  max-width: 100vw;
-  display: flex;
-  justify-content: center;
-}
-
-.lobby-container {
-  gap: 30px;
-  margin-top: -5vh;
-}
-
-.lobby-info {
-  gap: 10px;
-  width: 90%;
-}
-
-.players-list {
-  max-height: 35vh;
-  overflow-y: auto;
-  padding: 10px;
-  border-radius: 10px;
-  background: transparent !important;
-}
-
-.player-name-wrapper {
-  display: flex;
-  align-items: center;
-  position: relative;
-}
-
-.player-name {
-  font-size: 28px !important;
-}
-
-.menu-buttons {
-  gap: 25px;
-  width: 100%;
-  align-items: center;
-  margin-top: 10px;
-  transform: none;
-}
-
-.crown-icon {
-  width: 35px !important;
-  right: 100%;
-  margin-right: 2px;
-}
-
-.logo-wrapper {
-  margin-top: -30px; // Pulled logo even higher
-  margin-bottom: 20px;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-
-.logo-wrapper .logo {
-  max-width: 95vw;
-}
-
-.gameCodePos {
-  position: absolute;
-  top: 20px;
-  right: 15px; // Added margin from edge
-  transform: none;
-  z-index: 100;
-}
-
-.timerPos {
-  top: 10px;
-  left: 15px;
-  transform: scale(0.8);
-}
-
-.roundPos {
-  top: 10px;
-  right: 15px;
-  transform: scale(0.7);
-}
-
-.lobby-timer-display {
-  top: 10px;
-  left: 15px;
-
-  .timer-title {
-    font-size: 11px;
+    .button {
+      margin-top: 10px; // Push button slightly lower relative to options
+    }
   }
 
-  .timer-time {
-    font-size: 28px;
-  }
-}
 
-.homeIconPos {
-  position: absolute;
-  width: 65px;
-  height: 65px;
-  bottom: 20px;
-  right: 20px;
-  background-color: $white;
-  border: 3px solid $black;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  cursor: pointer;
-  z-index: 100;
-  pointer-events: auto !important;
 
-  img {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
+  .box {
+    padding: 15px 5px;
+    border-radius: 20px;
+    border-width: 5px;
+    height: 80vh;
+    max-height: 80dvh;
   }
 
-  &:hover {
-    transform: scale(1.05);
+  .wrapper {
+    padding: 2vh 5px;
   }
 
-  &:active {
-    transform: scale(0.95);
+  .container {
+    padding: 0;
+    max-width: 100vw;
+    display: flex;
+    justify-content: center;
   }
-}
 
-.lang-btn {
-  width: 60px;
-  height: 40px;
+  .lobby-container {
+    gap: 30px;
+    margin-top: -5vh;
+  }
 
-  img {
+  .lobby-info {
+    gap: 10px;
+    width: 90%;
+  }
+
+  .players-list {
+    max-height: 35vh;
+    overflow-y: auto;
+    padding: 10px;
+    border-radius: 10px;
+    background: transparent !important;
+  }
+
+  .player-name-wrapper {
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+
+  .player-name {
+    font-size: 28px !important;
+  }
+
+  .menu-buttons {
+    gap: 25px;
     width: 100%;
-    height: 100%;
+    align-items: center;
+    margin-top: 10px;
+    transform: none;
   }
-}
 
-.language-selector {
-  bottom: 20px;
-  right: 15px;
-  left: auto;
-  gap: 10px;
-}
+  .crown-icon {
+    width: 35px !important;
+    right: 100%;
+    margin-right: 2px;
+  }
 
-.yellow-guy-bg,
-.red-guy-bg {
-  position: absolute !important;
-  top: auto !important;
-  transform: none !important;
-  opacity: 0.5;
-  z-index: 5 !important; // Below buttons so Create Game is always clickable
-  pointer-events: auto !important;
-}
+  .logo-wrapper {
+    margin-top: -30px; // Pulled logo even higher
+    margin-bottom: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
 
-.yellow-guy-bg {
-  width: 130px !important;
-  height: 130px !important;
-  right: -10px !important;
-  left: auto !important;
-  bottom: 60px !important; // Lowered from 80px
-}
+  .logo-wrapper .logo {
+    max-width: 95vw;
+  }
 
-.red-guy-bg {
-  width: 150px !important;
-  height: 150px !important;
-  left: -10px !important;
-  right: auto !important;
-  bottom: 15px !important; // Raised slightly from -10px
-}
+  .gameCodePos {
+    position: absolute;
+    top: 20px;
+    right: 15px; // Added margin from edge
+    transform: none;
+    z-index: 100;
+  }
+
+  .timerPos {
+    top: 10px;
+    left: 15px;
+    transform: scale(0.8);
+  }
+
+  .roundPos {
+    top: 10px;
+    right: 15px;
+    transform: scale(0.7);
+  }
+
+  .lobby-timer-display {
+    top: 10px;
+    left: 15px;
+
+    .timer-title {
+      font-size: 11px;
+    }
+
+    .timer-time {
+      font-size: 28px;
+    }
+  }
+
+  .homeIconPos {
+    position: absolute !important;
+    width: 65px !important;
+    height: 65px !important;
+    bottom: 20px !important;
+    right: 20px !important;
+    background-color: #ffffff !important;
+    border: 3px solid #000000 !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2) !important;
+    cursor: pointer !important;
+    z-index: 9999 !important;
+    pointer-events: auto !important;
+    transform: none !important;
+
+    img {
+      width: 35px !important;
+      height: 35px !important;
+      object-fit: contain !important;
+      margin: 0 !important;
+      padding: 0 !important;
+    }
+
+    &:hover {
+      transform: scale(1.05) !important;
+    }
+
+    &:active {
+      transform: scale(0.95) !important;
+    }
+  }
+
+  .lang-btn {
+    width: 60px;
+    height: 40px;
+
+    img {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
+  .language-selector {
+    bottom: 20px;
+    right: 15px;
+    left: auto;
+    gap: 10px;
+  }
+
+  .yellow-guy-bg,
+  .red-guy-bg {
+    position: absolute !important;
+    top: auto !important;
+    transform: none !important;
+    opacity: 0.5;
+    z-index: 5 !important; // Below buttons so Create Game is always clickable
+    pointer-events: auto !important;
+  }
+
+  .yellow-guy-bg {
+    width: 130px !important;
+    height: 130px !important;
+    right: -10px !important;
+    left: auto !important;
+    bottom: 60px !important; // Lowered from 80px
+  }
+
+  .red-guy-bg {
+    width: 150px !important;
+    height: 150px !important;
+    left: -10px !important;
+    right: auto !important;
+    bottom: 15px !important; // Raised slightly from -10px
+  }
 
 
-.lobby-info,
-.lobby-container,
-.players-list {
-  background: transparent !important;
-}
+  .lobby-info,
+  .lobby-container,
+  .players-list {
+    background: transparent !important;
+  }
 }
