@@ -602,7 +602,7 @@
   }
 
   .menu-buttons {
-    gap: 25px;
+    gap: 50px; // Matching PC gap
     width: 100%;
     align-items: center;
     margin-top: 10px;
@@ -616,7 +616,7 @@
   }
 
   .logo-wrapper {
-    margin-top: -10px; // Pulled logo even higher
+    margin-top: -25px; // Pulled logo even higher
     margin-bottom: 20px;
     width: 100%;
     display: flex;
@@ -633,6 +633,11 @@
     right: 15px; // Added margin from edge
     transform: none;
     z-index: 100;
+  }
+
+  .lobby-container {
+    padding: 0 10px;
+    margin-top: 2vh;
   }
 
   .timerPos {

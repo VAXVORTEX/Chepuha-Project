@@ -244,7 +244,7 @@ function App() {
     if (latestRound.round_number > currentRound || !currentRoundId) {
       let newPhase = Phases.Main;
 
-      if (myPlayer.players_status === 'ready' && currentAnswers.some(a =>
+      if (currentAnswers.some(a =>
         (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
         (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === latestRound.id
       )) {
@@ -405,7 +405,7 @@ function App() {
                 rounds_status: 'active',
                 started_at: ts,
               });
-              await updatePlayersBySession(sessionId, { players_status: 'playing' });
+              updatePlayersBySession(sessionId, { players_status: 'playing' }).catch(() => { });
               currentRoundIdRef.current = nextRound.id;
               currentRoundRef.current = nextRoundNum;
               setAppState(prev => ({
