@@ -881,12 +881,14 @@ function App() {
                 ))}
               </div>
             </div>
-            <Button
-              label={t('CREATE_GAME')}
-              variant="primary"
-              phase={phase}
-              onClick={goToLobby}
-            />
+            <div style={{ pointerEvents: 'auto' }}>
+              <Button
+                label={t('CREATE_GAME')}
+                variant="primary"
+                phase={phase}
+                onClick={goToLobby}
+              />
+            </div>
           </div>
         </>
       )}
