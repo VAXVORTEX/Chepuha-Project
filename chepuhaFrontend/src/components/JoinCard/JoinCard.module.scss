@@ -98,7 +98,7 @@
   }
 
   .inputWrapper {
-    min-height: 95px; // Reduced from 120px to bring inputs/button instantly closer
+    min-height: 80px; // Reduced further to bring button up more
   }
 
   .form {
@@ -115,6 +115,6 @@
   }
 
   .submitBlock {
-    margin-top: 0px; // Pulled button significantly higher relative to inputs
+    margin-top: 10px; // Aligned with Create Game button margin
   }
 }
