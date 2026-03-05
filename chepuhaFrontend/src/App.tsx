@@ -68,6 +68,7 @@ export interface AppState {
   allStorySheets: { playerId: string, sheetId: string }[];
   lobbyCreatedAt: number | null;
   answeredRoundId: string | null;
+  isJoining: boolean;
 }
 
 const getInitialState = (): AppState => {
@@ -96,7 +97,8 @@ const getInitialState = (): AppState => {
     roundStartedAt: null,
     allStorySheets: [],
     lobbyCreatedAt: null,
-    answeredRoundId: null
+    answeredRoundId: null,
+    isJoining: false
   };
 
   try {
@@ -269,10 +271,11 @@ function App() {
     if (latestRound.round_number > currentRound || !currentRoundId) {
       let newPhase = Phases.Main;
 
-      if (currentAnswers.some(a =>
-        (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
-        (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === latestRound.id
-      ) || (answeredRoundId === latestRound.id)) {
+      if (currentAnswers.some(a => {
+        const aPlayerId = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : a.player_id;
+        const aRoundId = typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : a.round_id;
+        return String(aPlayerId) === String(playerId) && String(aRoundId) === String(latestRound.id);
+      }) || (String(answeredRoundId) === String(latestRound.id))) {
         newPhase = Phases.Waiting;
       } else if (myPlayer.players_status === 'finished') {
         newPhase = Phases.End;
@@ -285,13 +288,14 @@ function App() {
         roundStartedAt: latestRound.started_at || prev.roundStartedAt,
         phase: newPhase,
         joinedCount: 0,
-        answeredRoundId: (latestRound.id === prev.answeredRoundId) ? prev.answeredRoundId : null
+        answeredRoundId: (String(latestRound.id) === String(prev.answeredRoundId)) ? prev.answeredRoundId : null
       }));
-    } else if (latestRound.id === currentRoundId) {
-      if (phase === Phases.Main && (currentAnswers.some(a =>
-        (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
-        (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
-      ) || answeredRoundId === currentRoundId)) {
+    } else if (String(latestRound.id) === String(currentRoundId)) {
+      if (phase === Phases.Main && (currentAnswers.some(a => {
+        const aPlayerId = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : a.player_id;
+        const aRoundId = typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : a.round_id;
+        return String(aPlayerId) === String(playerId) && String(aRoundId) === String(currentRoundId);
+      }) || String(answeredRoundId) === String(currentRoundId))) {
         setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
       } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
         fetchFinalStoryResult();
@@ -575,6 +579,8 @@ function App() {
   };
 
   const handleJoinGame = async (nick: string, code: string) => {
+    if (appState.isJoining) return;
+    setAppState(prev => ({ ...prev, isJoining: true, error: "" }));
     try {
       const allSessions = await getGameSessions();
       const targetSession = allSessions.find(s => s.session_name === code && s.session_status !== 'completed');
@@ -612,7 +618,7 @@ function App() {
 
             const answers = await getAnswersByRound(latestRound.id);
             const hasAnswered = answers.some((a: any) =>
-              (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === existingPlayer.id
+              String(a.player_id?.id || a.player_id) === String(existingPlayer.id)
             );
 
             rejoinPhase = hasAnswered ? Phases.Waiting : Phases.Main;
@@ -637,6 +643,7 @@ function App() {
           nickname: nick,
           roomCode: code,
           isCreatingLobby: false,
+          isJoining: false,
         }));
       } else {
         const guest = await createPlayer({
@@ -655,12 +662,17 @@ function App() {
           nickname: nick,
           roomCode: code,
           isCreatingLobby: false,
+          isJoining: false,
         }));
       }
 
       await refreshState();
     } catch (err: any) {
-      setAppState(prev => ({ ...prev, error: String(t('ERR_JOIN' as any)) + err.message }));
+      setAppState(prev => ({
+        ...prev,
+        isJoining: false,
+        error: String(t('ERR_JOIN' as any)) + err.message
+      }));
     }
   };
 
@@ -724,10 +736,11 @@ function App() {
   };
 
   const doAnswerSubmit = async (answer: string) => {
-    if (currentAnswers.some(a =>
-      (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
-      (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
-    )) {
+    if (currentAnswers.some(a => {
+      const aPlayerId = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : a.player_id;
+      const aRoundId = typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : a.round_id;
+      return String(aPlayerId) === String(playerId) && String(aRoundId) === String(currentRoundId);
+    })) {
       setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
       return;
     }
@@ -797,10 +810,11 @@ function App() {
     }
   };
 
-  const amIReady = currentAnswers.some(a =>
-    (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
-    (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
-  );
+  const amIReady = currentAnswers.some(a => {
+    const aPlayerId = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : a.player_id;
+    const aRoundId = typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : a.round_id;
+    return String(aPlayerId) === String(playerId) && String(aRoundId) === String(currentRoundId);
+  });
 
   return (
     <div className="app-view">
@@ -953,6 +967,7 @@ function App() {
             initialRoom={roomCode}
             onJoin={handleJoinGame}
             errors={error ? { room: error } : undefined}
+            loading={appState.isJoining}
           />
         </>
       )}
