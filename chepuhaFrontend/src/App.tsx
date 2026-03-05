@@ -127,9 +127,10 @@ const getInitialState = (): AppState => {
             answeredRoundId: parsed.answeredRoundId || null,
             currentRoundId: parsed.currentRoundId || null,
             currentRound: parsed.currentRound || 1,
-            didGameStart: hasAnswered || parsed.didGameStart || false,
-            isLobby: !hasAnswered && !parsed.didGameStart,
-            phase: hasAnswered ? Phases.Waiting : (parsed.didGameStart ? Phases.Main : Phases.Main) // Note: home screen and question screen both use Phases.Main, controlled by didGameStart
+            didGameStart: parsed.didGameStart || false,
+            isLobby: !parsed.didGameStart && sId !== null,
+            phase: parsed.phase || (parsed.didGameStart ? Phases.Main : Phases.Main),
+            roundStartedAt: parsed.roundStartedAt || null
           };
         }
       }
@@ -198,16 +199,20 @@ function App() {
         currentRoundId,
         currentRound,
         didGameStart,
+        phase,
+        roundStartedAt,
         timestamp: Date.now()
       }));
     }
-  }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate, answeredRoundId, currentRoundId, currentRound, didGameStart]);
+  }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate, answeredRoundId, currentRoundId, currentRound, didGameStart, phase, roundStartedAt]);
 
   useEffect(() => {
     if (nickname || roomCode) {
       localStorage.setItem('chepuhaUserPrefs', JSON.stringify({ nickname, roomCode }));
     }
   }, [nickname, roomCode]);
+
+
 
 
 
