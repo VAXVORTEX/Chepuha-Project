@@ -642,12 +642,12 @@
 
   .homeIconPos {
     position: absolute !important;
-    width: 65px !important;
-    height: 65px !important;
-    bottom: 20px !important;
-    right: 20px !important;
+    width: 48px !important;
+    height: 48px !important;
+    bottom: 12px !important;
+    right: 12px !important;
     background-color: #ffffff !important;
-    border: 3px solid #000000 !important;
+    border: 2px solid #000000 !important;
     border-radius: 50% !important;
     display: flex !important;
     align-items: center !important;
@@ -659,8 +659,8 @@
     transform: none !important;
 
     img {
-      width: 35px !important;
-      height: 35px !important;
+      width: 26px !important;
+      height: 26px !important;
       object-fit: contain !important;
       margin: 0 !important;
       padding: 0 !important;

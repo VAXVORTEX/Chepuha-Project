@@ -2,6 +2,7 @@ import React from "react";
 import classNames from "classnames";
 import styles from "./GameResult.module.scss";
 import { Phases } from "../../types/phaseVariant";
+import HomeIcon from "../HomeIcon/HomeIcon";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { TEMPLATES, parseLegacyStory } from "../../config/templates";
 interface Story {
@@ -88,9 +89,7 @@ const GameResult: React.FC<ResultProps> = ({
           </div>
           {(phase === Phases.End || phase === Phases.History) && (
             <div className={styles.actions}>
-              <button className={styles.GoBackButton} onClick={onHome}>
-                {phase === Phases.History ? t('BACK_TO_LIST') : t('GO_MAIN')}
-              </button>
+              <HomeIcon onClick={onHome} className="homeIconPos" />
               {onSave && (
                 <button
                   className={styles.GoBackButton}
