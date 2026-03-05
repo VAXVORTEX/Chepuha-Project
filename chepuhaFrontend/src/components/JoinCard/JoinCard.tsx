@@ -44,7 +44,6 @@ const JoinCard: React.FC<JoinCardProps> = ({
                 if (value.length <= 25) {
                   setNickInputValue(value);
                   setIsSubmitted(false);
-                  if (errors?.nick) onJoin(nickInputValue, roomInputValue); // Not ideal side effect, but the easiest way is just to pass a clear error. Actually let's just use the fact that submit is false to hide it. Wait, the style logic already hides it if isSubmitted is false for the empty case, but what if errors.nick is passed down?
                 }
               }}
               placeholder={t('ENTER_NICK_PLACEHOLDER')}

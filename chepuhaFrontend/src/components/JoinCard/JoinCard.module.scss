@@ -94,7 +94,7 @@
   .container {
     padding: 0 10px;
     max-width: 95vw;
-    margin-top: 10vh; // Moved inputs down slightly as requested, so the overall form is lower
+    margin-top: 5vh; // Moved inputs down slightly as requested
   }
 
   .inputWrapper {
@@ -115,6 +115,6 @@
   }
 
   .submitBlock {
-    margin-top: -20px; // Pulled button significantly higher relative to inputs
+    margin-top: 0px; // Pulled button significantly higher relative to inputs
   }
 }

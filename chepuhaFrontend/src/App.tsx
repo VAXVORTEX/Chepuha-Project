@@ -122,7 +122,7 @@ function App() {
   }, []);
 
   const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets, lobbyCreatedAt } = appState;
-  const { session, players, rounds, currentAnswers, activeRoundId: hookActiveRoundId, error: pollError, refreshState } = useGameState(sessionId);
+  const { session, players, rounds, currentAnswers, activeRoundId: hookActiveRoundId, error: pollError, refreshState, dataReady } = useGameState(sessionId);
   const hookMatch = hookActiveRoundId && currentRoundId && hookActiveRoundId === currentRoundId;
   const derivedTotalCount = totalCount > 0 ? totalCount : (players?.length || 0);
   const derivedJoinedCount = Math.min(
@@ -233,6 +233,7 @@ function App() {
 
   useEffect(() => {
     if (!didGameStart || !playerId || !sessionId) return;
+    if (!dataReady) return; // Wait for useGameState to finish first fetch
     if (isTransitioning || transitionLockRef.current) return;
 
     const sorted = [...(rounds || [])].sort((a: any, b: any) => b.round_number - a.round_number);
@@ -244,7 +245,7 @@ function App() {
     if (latestRound.round_number > currentRound || !currentRoundId) {
       let newPhase = Phases.Main;
 
-      if (currentAnswers.some(a =>
+      if (myPlayer.players_status === 'ready' && currentAnswers.some(a =>
         (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
         (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === latestRound.id
       )) {
@@ -272,9 +273,10 @@ function App() {
         setAppState(prev => ({ ...prev, phase: Phases.End }));
       }
     }
-  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, currentAnswers, rounds, isTransitioning, fetchFinalStoryResult]);
+  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, currentAnswers, rounds, isTransitioning, fetchFinalStoryResult, dataReady]);
   useEffect(() => {
     if (!session || !sessionId) return;
+    if (!dataReady) return; // Wait for useGameState to finish first fetch
     if (session.session_status === 'active' && isLobby && !didGameStart) {
       setAppState(prev => ({ ...prev, didGameStart: true, isLobby: false, phase: Phases.Main }));
       refreshState();
@@ -405,7 +407,7 @@ function App() {
                 rounds_status: 'active',
                 started_at: ts,
               });
-              updatePlayersBySession(sessionId, { players_status: 'playing' }).catch(() => { });
+              await updatePlayersBySession(sessionId, { players_status: 'playing' });
               currentRoundIdRef.current = nextRound.id;
               currentRoundRef.current = nextRoundNum;
               setAppState(prev => ({
