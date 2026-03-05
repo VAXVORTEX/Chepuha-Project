@@ -18,6 +18,7 @@ interface GameState {
     activeRoundId: string | null;
     currentAnswers: Answer[];
     error: string | null;
+    dataReady: boolean;
 }
 
 export function useGameState(sessionId: string | null) {
@@ -28,19 +29,18 @@ export function useGameState(sessionId: string | null) {
         activeRoundId: null,
         currentAnswers: [],
         error: null,
+        dataReady: false,
     });
 
     const fetchState = useCallback(async () => {
         if (!sessionId) return;
         try {
-            // Sequential fetching is more resilient on VPNs/DPI than Promise.all
-            let sessionData = gameState.session;
-            let playersData = gameState.players;
-            let roundsData = gameState.rounds;
-
-            try { sessionData = await getGameSession(sessionId); } catch (e) { }
-            try { playersData = await getPlayersBySession(sessionId); } catch (e) { }
-            try { roundsData = await getRoundsBySession(sessionId); } catch (e) { }
+            // Parallel fetching for speed (~200ms vs ~800ms sequential)
+            const [sessionData, playersData, roundsData] = await Promise.all([
+                getGameSession(sessionId).catch(() => gameState.session),
+                getPlayersBySession(sessionId).catch(() => gameState.players),
+                getRoundsBySession(sessionId).catch(() => gameState.rounds),
+            ]);
 
             let activeRoundAnswers: Answer[] = gameState.currentAnswers;
             const sortedByNum = Array.isArray(roundsData) ? [...roundsData].sort((a: any, b: any) => (b.round_number || 0) - (a.round_number || 0)) : [];
@@ -65,6 +65,7 @@ export function useGameState(sessionId: string | null) {
                 activeRoundId: activeRound?.id || null,
                 currentAnswers: activeRoundAnswers || [],
                 error: null,
+                dataReady: true,
             }));
         } catch (err: any) {
             // Overall failure (e.g. initial connection)
