@@ -148,12 +148,15 @@ function App() {
         isHost,
         selectedTemplate,
         answeredRoundId,
+        currentRoundId,
+        currentRound,
+        didGameStart,
         timestamp: Date.now()
       }));
     } else {
       localStorage.removeItem(STATE_STORAGE_KEY);
     }
-  }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate, answeredRoundId]);
+  }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate, answeredRoundId, currentRoundId, currentRound, didGameStart]);
 
   useEffect(() => {
     if (nickname || roomCode) {
@@ -167,6 +170,7 @@ function App() {
       try {
         const parsed = JSON.parse(saved);
         if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
+          const hasAnswered = !!parsed.answeredRoundId;
           setAppState(prev => ({
             ...prev,
             sessionId: parsed.sessionId ? String(parsed.sessionId) : null,
@@ -176,7 +180,11 @@ function App() {
             isHost: parsed.isHost,
             selectedTemplate: parsed.selectedTemplate || "classic",
             answeredRoundId: parsed.answeredRoundId || null,
-            isLobby: true
+            currentRoundId: parsed.currentRoundId || null,
+            currentRound: parsed.currentRound || 1,
+            didGameStart: hasAnswered || parsed.didGameStart || false,
+            isLobby: !hasAnswered,
+            phase: hasAnswered ? Phases.Waiting : prev.phase
           }));
         } else {
           localStorage.removeItem(STATE_STORAGE_KEY);
