@@ -68,6 +68,7 @@ export interface AppState {
   roundStartedAt: string | null;
   allStorySheets: { playerId: string, sheetId: string }[];
   lobbyCreatedAt: number | null;
+  answeredRoundId: string | null;
 }
 function App() {
   const [appState, setAppState] = useState<AppState>({
@@ -94,7 +95,8 @@ function App() {
     playerCount: 0,
     roundStartedAt: null,
     allStorySheets: [],
-    lobbyCreatedAt: null
+    lobbyCreatedAt: null,
+    answeredRoundId: null,
   });
 
   const [serverTimeOffset, setServerTimeOffset] = useState(0);
@@ -145,6 +147,7 @@ function App() {
         roomCode,
         isHost,
         selectedTemplate,
+        answeredRoundId: appState.answeredRoundId,
         timestamp: Date.now()
       }));
     } else {
@@ -172,6 +175,7 @@ function App() {
             roomCode: parsed.roomCode,
             isHost: parsed.isHost,
             selectedTemplate: parsed.selectedTemplate || "classic",
+            answeredRoundId: parsed.answeredRoundId || null,
             isLobby: true
           }));
         } else {
@@ -245,10 +249,10 @@ function App() {
     if (latestRound.round_number > currentRound || !currentRoundId) {
       let newPhase = Phases.Main;
 
-      if (myPlayer.players_status === 'ready' && currentAnswers.some(a =>
+      if (currentAnswers.some(a =>
         (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
         (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === latestRound.id
-      )) {
+      ) || appState.answeredRoundId === latestRound.id) {
         newPhase = Phases.Waiting;
       } else if (myPlayer.players_status === 'finished') {
         newPhase = Phases.End;
@@ -263,10 +267,10 @@ function App() {
         joinedCount: 0
       }));
     } else if (latestRound.id === currentRoundId) {
-      if (phase === Phases.Main && currentAnswers.some(a =>
+      if (phase === Phases.Main && (currentAnswers.some(a =>
         (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
         (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
-      )) {
+      ) || appState.answeredRoundId === currentRoundId)) {
         setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
       } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
         fetchFinalStoryResult();
@@ -416,6 +420,7 @@ function App() {
                 currentRound: nextRoundNum,
                 roundStartedAt: ts,
                 joinedCount: 0,
+                answeredRoundId: null,
                 phase: Phases.Main
               }));
               setTimeout(() => {
@@ -698,10 +703,10 @@ function App() {
       setAppState(prev => ({ ...prev, joinedCount: curAnswers.length }));
       setAppState(prev => ({ ...prev, totalCount: playerCount > 0 ? playerCount : players.length }));
       setIsTransitioning(false);
-      setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+      setAppState(prev => ({ ...prev, phase: Phases.Waiting, answeredRoundId: currentRoundId }));
     } catch (err: any) {
       setIsTransitioning(false);
-      setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+      setAppState(prev => ({ ...prev, phase: Phases.Waiting, answeredRoundId: currentRoundId }));
     }
   };
 
