@@ -68,17 +68,18 @@ export interface AppState {
   roundStartedAt: string | null;
   allStorySheets: { playerId: string, sheetId: string }[];
   lobbyCreatedAt: number | null;
+  answeredRoundId: string | null;
 }
-function App() {
-  const [appState, setAppState] = useState<AppState>({
+const getInitialState = (): AppState => {
+  const defaultState: AppState = {
     phase: Phases.Main,
     didGameStart: false,
     currentRound: 1,
     userAnswers: [],
     isCreatingLobby: false,
     isLobby: false,
-    nickname: localStorage.getItem('chepuhaUserPrefs') ? JSON.parse(localStorage.getItem('chepuhaUserPrefs')!).nickname || '' : '',
-    roomCode: localStorage.getItem('chepuhaUserPrefs') ? JSON.parse(localStorage.getItem('chepuhaUserPrefs')!).roomCode || '' : '',
+    nickname: '',
+    roomCode: '',
     selectedTemplate: "classic",
     error: "",
     allStories: [],
@@ -94,8 +95,36 @@ function App() {
     playerCount: 0,
     roundStartedAt: null,
     allStorySheets: [],
-    lobbyCreatedAt: null
-  });
+    lobbyCreatedAt: null,
+    answeredRoundId: null
+  };
+
+  try {
+    const prefs = localStorage.getItem('chepuhaUserPrefs');
+    if (prefs) {
+      const p = JSON.parse(prefs);
+      defaultState.nickname = p.nickname || '';
+      defaultState.roomCode = p.roomCode || '';
+    }
+
+    const saved = localStorage.getItem(STATE_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
+        return {
+          ...defaultState,
+          ...parsed,
+          isLobby: parsed.isLobby ?? (parsed.sessionId ? true : false)
+        };
+      }
+    }
+  } catch (e) { }
+
+  return defaultState;
+};
+
+function App() {
+  const [appState, setAppState] = useState<AppState>(getInitialState);
 
   const [serverTimeOffset, setServerTimeOffset] = useState(0);
 
@@ -121,8 +150,8 @@ function App() {
       .catch(() => { });
   }, []);
 
-  const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets, lobbyCreatedAt } = appState;
-  const { session, players, rounds, currentAnswers, activeRoundId: hookActiveRoundId, error: pollError, refreshState } = useGameState(sessionId);
+  const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets, lobbyCreatedAt, answeredRoundId } = appState;
+  const { session, players, rounds, currentAnswers, activeRoundId: hookActiveRoundId, error: pollError, refreshState, dataReady } = useGameState(sessionId);
   const hookMatch = hookActiveRoundId && currentRoundId && hookActiveRoundId === currentRoundId;
   const derivedTotalCount = totalCount > 0 ? totalCount : (players?.length || 0);
   const derivedJoinedCount = Math.min(
@@ -145,41 +174,24 @@ function App() {
         roomCode,
         isHost,
         selectedTemplate,
+        answeredRoundId,
+        currentRoundId,
+        currentRound,
+        didGameStart,
+        phase,
+        roundStartedAt,
         timestamp: Date.now()
       }));
     } else {
       localStorage.removeItem(STATE_STORAGE_KEY);
     }
-  }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate]);
+  }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate, answeredRoundId, currentRoundId, currentRound, didGameStart, phase, roundStartedAt]);
 
   useEffect(() => {
     if (nickname || roomCode) {
       localStorage.setItem('chepuhaUserPrefs', JSON.stringify({ nickname, roomCode }));
     }
   }, [nickname, roomCode]);
-
-  useEffect(() => {
-    const saved = localStorage.getItem(STATE_STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
-          setAppState(prev => ({
-            ...prev,
-            sessionId: parsed.sessionId ? String(parsed.sessionId) : null,
-            playerId: parsed.playerId ? String(parsed.playerId) : null,
-            nickname: parsed.nickname,
-            roomCode: parsed.roomCode,
-            isHost: parsed.isHost,
-            selectedTemplate: parsed.selectedTemplate || "classic",
-            isLobby: true
-          }));
-        } else {
-          localStorage.removeItem(STATE_STORAGE_KEY);
-        }
-      } catch (err) { }
-    }
-  }, []);
 
   useEffect(() => {
     const imagesToPreload = [
@@ -233,6 +245,7 @@ function App() {
 
   useEffect(() => {
     if (!didGameStart || !playerId || !sessionId) return;
+    if (!dataReady) return; // Wait for useGameState to finish first fetch
     if (isTransitioning || transitionLockRef.current) return;
 
     const sorted = [...(rounds || [])].sort((a: any, b: any) => b.round_number - a.round_number);
@@ -247,7 +260,7 @@ function App() {
       if (currentAnswers.some(a =>
         (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
         (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === latestRound.id
-      )) {
+      ) || (answeredRoundId === latestRound.id)) {
         newPhase = Phases.Waiting;
       } else if (myPlayer.players_status === 'finished') {
         newPhase = Phases.End;
@@ -259,27 +272,31 @@ function App() {
         currentRound: latestRound.round_number,
         roundStartedAt: latestRound.started_at || prev.roundStartedAt,
         phase: newPhase,
-        joinedCount: 0
+        joinedCount: 0,
+        answeredRoundId: (latestRound.id === prev.answeredRoundId) ? prev.answeredRoundId : null
       }));
     } else if (latestRound.id === currentRoundId) {
-      if (phase === Phases.Main && currentAnswers.some(a =>
+      if (phase === Phases.Main && (currentAnswers.some(a =>
         (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
         (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
-      )) {
+      ) || answeredRoundId === currentRoundId)) {
         setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
       } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
         fetchFinalStoryResult();
         setAppState(prev => ({ ...prev, phase: Phases.End }));
       }
     }
-  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, currentAnswers, rounds, isTransitioning, fetchFinalStoryResult]);
+  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, currentAnswers, rounds, isTransitioning, fetchFinalStoryResult, dataReady, answeredRoundId]);
   useEffect(() => {
     if (!session || !sessionId || !playerId) return;
+    if (!dataReady) return; // Wait for useGameState to finish first fetch
+
     if (session.session_status === 'active' && isLobby && !didGameStart) {
       // On rejoin: check DB for current round and whether player already answered
       const sorted = [...(rounds || [])].sort((a: any, b: any) => b.round_number - a.round_number);
       const latestRound = sorted[0];
       let initialPhase = Phases.Main;
+      let initAnsweredId: string | null = null;
 
       if (latestRound) {
         const hasAnswered = currentAnswers.some(a =>
@@ -288,6 +305,7 @@ function App() {
         );
         if (hasAnswered) {
           initialPhase = Phases.Waiting;
+          initAnsweredId = latestRound.id;
         }
       }
 
@@ -298,11 +316,12 @@ function App() {
         phase: initialPhase,
         currentRoundId: latestRound?.id || prev.currentRoundId,
         currentRound: latestRound?.round_number || prev.currentRound,
-        roundStartedAt: latestRound?.started_at || prev.roundStartedAt
+        roundStartedAt: latestRound?.started_at || prev.roundStartedAt,
+        answeredRoundId: initAnsweredId
       }));
       refreshState();
     }
-  }, [session?.session_status, isLobby, didGameStart, sessionId, playerId, rounds, currentAnswers, refreshState]);
+  }, [session?.session_status, isLobby, didGameStart, sessionId, playerId, rounds, currentAnswers, dataReady, refreshState]);
   useEffect(() => {
     if (!session || session.session_status !== 'active' || !sessionId || !playerId) return;
 
@@ -719,10 +738,10 @@ function App() {
       setAppState(prev => ({ ...prev, joinedCount: curAnswers.length }));
       setAppState(prev => ({ ...prev, totalCount: playerCount > 0 ? playerCount : players.length }));
       setIsTransitioning(false);
-      setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+      setAppState(prev => ({ ...prev, phase: Phases.Waiting, answeredRoundId: currentRoundId }));
     } catch (err: any) {
       setIsTransitioning(false);
-      setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+      setAppState(prev => ({ ...prev, phase: Phases.Waiting, answeredRoundId: currentRoundId }));
     }
   };
 
