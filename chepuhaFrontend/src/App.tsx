@@ -68,18 +68,17 @@ export interface AppState {
   roundStartedAt: string | null;
   allStorySheets: { playerId: string, sheetId: string }[];
   lobbyCreatedAt: number | null;
-  answeredRoundId: string | null;
 }
-const getInitialState = (): AppState => {
-  const defaultState: AppState = {
+function App() {
+  const [appState, setAppState] = useState<AppState>({
     phase: Phases.Main,
     didGameStart: false,
     currentRound: 1,
     userAnswers: [],
     isCreatingLobby: false,
     isLobby: false,
-    nickname: '',
-    roomCode: '',
+    nickname: localStorage.getItem('chepuhaUserPrefs') ? JSON.parse(localStorage.getItem('chepuhaUserPrefs')!).nickname || '' : '',
+    roomCode: localStorage.getItem('chepuhaUserPrefs') ? JSON.parse(localStorage.getItem('chepuhaUserPrefs')!).roomCode || '' : '',
     selectedTemplate: "classic",
     error: "",
     allStories: [],
@@ -95,55 +94,8 @@ const getInitialState = (): AppState => {
     playerCount: 0,
     roundStartedAt: null,
     allStorySheets: [],
-    lobbyCreatedAt: null,
-    answeredRoundId: null,
-  };
-
-  try {
-    const prefs = localStorage.getItem('chepuhaUserPrefs');
-    if (prefs) {
-      const p = JSON.parse(prefs);
-      defaultState.nickname = p.nickname || '';
-      defaultState.roomCode = p.roomCode || '';
-    }
-
-    const saved = localStorage.getItem(STATE_STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
-        const hasAnswered = !!parsed.answeredRoundId;
-        const sId = parsed.sessionId ? String(parsed.sessionId) : null;
-        const pId = parsed.playerId ? String(parsed.playerId) : null;
-
-        if (sId && pId) {
-          return {
-            ...defaultState,
-            sessionId: sId,
-            playerId: pId,
-            nickname: parsed.nickname || defaultState.nickname,
-            roomCode: parsed.roomCode || defaultState.roomCode,
-            isHost: parsed.isHost || false,
-            selectedTemplate: parsed.selectedTemplate || "classic",
-            answeredRoundId: parsed.answeredRoundId || null,
-            currentRoundId: parsed.currentRoundId || null,
-            currentRound: parsed.currentRound || 1,
-            didGameStart: parsed.didGameStart || false,
-            isLobby: !parsed.didGameStart && sId !== null,
-            phase: parsed.phase || (parsed.didGameStart ? Phases.Main : Phases.Main),
-            roundStartedAt: parsed.roundStartedAt || null
-          };
-        }
-      }
-    }
-  } catch (e) {
-    console.error("Error restoring state:", e);
-  }
-
-  return defaultState;
-};
-
-function App() {
-  const [appState, setAppState] = useState<AppState>(getInitialState());
+    lobbyCreatedAt: null
+  });
 
   const [serverTimeOffset, setServerTimeOffset] = useState(0);
 
@@ -169,8 +121,8 @@ function App() {
       .catch(() => { });
   }, []);
 
-  const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets, lobbyCreatedAt, answeredRoundId } = appState;
-  const { session, players, rounds, currentAnswers, activeRoundId: hookActiveRoundId, error: pollError, refreshState, dataReady } = useGameState(sessionId);
+  const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets, lobbyCreatedAt } = appState;
+  const { session, players, rounds, currentAnswers, activeRoundId: hookActiveRoundId, error: pollError, refreshState } = useGameState(sessionId);
   const hookMatch = hookActiveRoundId && currentRoundId && hookActiveRoundId === currentRoundId;
   const derivedTotalCount = totalCount > 0 ? totalCount : (players?.length || 0);
   const derivedJoinedCount = Math.min(
@@ -185,8 +137,6 @@ function App() {
   const currentRoundRef = useRef(currentRound);
   const { savedGames, saveGameToHistory } = useHistory();
   useEffect(() => {
-    // Only save if we have an active session to persist. 
-    // We don't remove use STATE_STORAGE_KEY here to avoid wiping data on mount race conditions.
     if (sessionId && playerId && nickname) {
       localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify({
         sessionId,
@@ -195,16 +145,12 @@ function App() {
         roomCode,
         isHost,
         selectedTemplate,
-        answeredRoundId,
-        currentRoundId,
-        currentRound,
-        didGameStart,
-        phase,
-        roundStartedAt,
         timestamp: Date.now()
       }));
+    } else {
+      localStorage.removeItem(STATE_STORAGE_KEY);
     }
-  }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate, answeredRoundId, currentRoundId, currentRound, didGameStart, phase, roundStartedAt]);
+  }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate]);
 
   useEffect(() => {
     if (nickname || roomCode) {
@@ -212,9 +158,28 @@ function App() {
     }
   }, [nickname, roomCode]);
 
-
-
-
+  useEffect(() => {
+    const saved = localStorage.getItem(STATE_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
+          setAppState(prev => ({
+            ...prev,
+            sessionId: parsed.sessionId ? String(parsed.sessionId) : null,
+            playerId: parsed.playerId ? String(parsed.playerId) : null,
+            nickname: parsed.nickname,
+            roomCode: parsed.roomCode,
+            isHost: parsed.isHost,
+            selectedTemplate: parsed.selectedTemplate || "classic",
+            isLobby: true
+          }));
+        } else {
+          localStorage.removeItem(STATE_STORAGE_KEY);
+        }
+      } catch (err) { }
+    }
+  }, []);
 
   useEffect(() => {
     const imagesToPreload = [
@@ -268,7 +233,6 @@ function App() {
 
   useEffect(() => {
     if (!didGameStart || !playerId || !sessionId) return;
-    if (!dataReady) return; // Wait for useGameState to finish first fetch
     if (isTransitioning || transitionLockRef.current) return;
 
     const sorted = [...(rounds || [])].sort((a: any, b: any) => b.round_number - a.round_number);
@@ -278,14 +242,12 @@ function App() {
     if (!latestRound || !myPlayer) return;
 
     if (latestRound.round_number > currentRound || !currentRoundId) {
-      // If round number increased, we MUST default to Main unless DB has an answer.
-      // We also clear answeredRoundId since it's a new round.
       let newPhase = Phases.Main;
 
       if (currentAnswers.some(a =>
         (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
         (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === latestRound.id
-      ) || (answeredRoundId === latestRound.id)) {
+      )) {
         newPhase = Phases.Waiting;
       } else if (myPlayer.players_status === 'finished') {
         newPhase = Phases.End;
@@ -297,49 +259,27 @@ function App() {
         currentRound: latestRound.round_number,
         roundStartedAt: latestRound.started_at || prev.roundStartedAt,
         phase: newPhase,
-        joinedCount: 0,
-        answeredRoundId: (latestRound.id === prev.answeredRoundId) ? prev.answeredRoundId : null
+        joinedCount: 0
       }));
     } else if (latestRound.id === currentRoundId) {
-      // Always fix roundStartedAt if it's null (e.g., restored from old localStorage)
-      if (!roundStartedAt && latestRound.started_at) {
-        setAppState(prev => ({ ...prev, roundStartedAt: latestRound.started_at }));
-      }
-      if (phase === Phases.Main && (currentAnswers.some(a =>
+      if (phase === Phases.Main && currentAnswers.some(a =>
         (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
         (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
-      ) || answeredRoundId === currentRoundId)) {
+      )) {
         setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
       } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
         fetchFinalStoryResult();
         setAppState(prev => ({ ...prev, phase: Phases.End }));
       }
     }
-  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, currentAnswers, rounds, isTransitioning, fetchFinalStoryResult, dataReady, answeredRoundId, roundStartedAt]);
+  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, currentAnswers, rounds, isTransitioning, fetchFinalStoryResult]);
   useEffect(() => {
-    if (!session || !sessionId || !playerId) return;
-    if (!dataReady) return; // Wait for useGameState to finish first fetch
-
+    if (!session || !sessionId) return;
     if (session.session_status === 'active' && isLobby && !didGameStart) {
-      const sorted = [...(rounds || [])].sort((a: any, b: any) => b.round_number - a.round_number);
-      const latestRound = sorted[0];
-      let initialPhase = Phases.Main;
-
-      if (latestRound) {
-        const hasAnswered = currentAnswers.some(a =>
-          (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
-          (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === latestRound.id
-        ) || answeredRoundId === latestRound.id;
-
-        if (hasAnswered) {
-          initialPhase = Phases.Waiting;
-        }
-      }
-
-      setAppState(prev => ({ ...prev, didGameStart: true, isLobby: false, phase: initialPhase }));
+      setAppState(prev => ({ ...prev, didGameStart: true, isLobby: false, phase: Phases.Main }));
       refreshState();
     }
-  }, [session?.session_status, isLobby, didGameStart, sessionId, playerId, rounds, currentAnswers, answeredRoundId, dataReady, refreshState]);
+  }, [session?.session_status, isLobby, didGameStart, sessionId, refreshState]);
   useEffect(() => {
     if (!session || session.session_status !== 'active' || !sessionId || !playerId) return;
 
@@ -465,7 +405,7 @@ function App() {
                 rounds_status: 'active',
                 started_at: ts,
               });
-              await updatePlayersBySession(sessionId, { players_status: 'playing' });
+              updatePlayersBySession(sessionId, { players_status: 'playing' }).catch(() => { });
               currentRoundIdRef.current = nextRound.id;
               currentRoundRef.current = nextRoundNum;
               setAppState(prev => ({
@@ -474,7 +414,6 @@ function App() {
                 currentRound: nextRoundNum,
                 roundStartedAt: ts,
                 joinedCount: 0,
-                answeredRoundId: null,
                 phase: Phases.Main
               }));
               setTimeout(() => {
@@ -757,10 +696,10 @@ function App() {
       setAppState(prev => ({ ...prev, joinedCount: curAnswers.length }));
       setAppState(prev => ({ ...prev, totalCount: playerCount > 0 ? playerCount : players.length }));
       setIsTransitioning(false);
-      setAppState(prev => ({ ...prev, phase: Phases.Waiting, answeredRoundId: currentRoundId }));
+      setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
     } catch (err: any) {
       setIsTransitioning(false);
-      setAppState(prev => ({ ...prev, phase: Phases.Waiting, answeredRoundId: currentRoundId }));
+      setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
     }
   };
 
@@ -941,7 +880,7 @@ function App() {
             totalCount={derivedTotalCount}
             message={t('WAITING_ANSWERS')}
           />
-          <HomeIcon className="homeIconPos" onClick={goHome} />
+
         </>
       )}
 
@@ -993,7 +932,6 @@ function App() {
             playerTotal={derivedTotalCount}
             onSubmitAnswer={doAnswerSubmit}
           />
-          <HomeIcon className="homeIconPos" onClick={goHome} />
         </>
       )}
       {phase === Phases.End && (
