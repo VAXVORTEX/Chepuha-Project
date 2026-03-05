@@ -301,6 +301,10 @@ function App() {
         answeredRoundId: (latestRound.id === prev.answeredRoundId) ? prev.answeredRoundId : null
       }));
     } else if (latestRound.id === currentRoundId) {
+      // Always fix roundStartedAt if it's null (e.g., restored from old localStorage)
+      if (!roundStartedAt && latestRound.started_at) {
+        setAppState(prev => ({ ...prev, roundStartedAt: latestRound.started_at }));
+      }
       if (phase === Phases.Main && (currentAnswers.some(a =>
         (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
         (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
@@ -311,7 +315,7 @@ function App() {
         setAppState(prev => ({ ...prev, phase: Phases.End }));
       }
     }
-  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, currentAnswers, rounds, isTransitioning, fetchFinalStoryResult, dataReady, answeredRoundId]);
+  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, currentAnswers, rounds, isTransitioning, fetchFinalStoryResult, dataReady, answeredRoundId, roundStartedAt]);
   useEffect(() => {
     if (!session || !sessionId || !playerId) return;
     if (!dataReady) return; // Wait for useGameState to finish first fetch
@@ -937,7 +941,7 @@ function App() {
             totalCount={derivedTotalCount}
             message={t('WAITING_ANSWERS')}
           />
-
+          <HomeIcon className="homeIconPos" onClick={goHome} />
         </>
       )}
 
@@ -989,6 +993,7 @@ function App() {
             playerTotal={derivedTotalCount}
             onSubmitAnswer={doAnswerSubmit}
           />
+          <HomeIcon className="homeIconPos" onClick={goHome} />
         </>
       )}
       {phase === Phases.End && (
