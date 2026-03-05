@@ -7,8 +7,16 @@
     align-items: center;
     justify-content: center;
     gap: 1px;
-    min-width: 250px;
+    width: 300px;
     text-align: center;
+    position: relative;
+    overflow: visible;
+
+    @media (max-width: 768px) {
+        width: auto;
+        align-items: flex-end;
+        text-align: right;
+    }
 }
 
 .label {
@@ -16,9 +24,16 @@
     color: $gray-dark;
     margin: 0;
     line-height: 1;
+    width: 300px;
+    white-space: nowrap;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 
     @media (max-width: 768px) {
         font-size: 20px;
+        width: 140px;
+        justify-content: flex-end;
     }
 }
 

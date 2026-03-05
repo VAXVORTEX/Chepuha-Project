@@ -18,6 +18,7 @@ import flagUk from "./assets/images/flag_uk.png";
 import flagEn from "./assets/images/flag_en.png";
 import { useHistory, SavedGame } from "./hooks/useHistory";
 import { playSecretMusic, secretAudio } from "./utils/audio";
+import { mathProblems } from "./config/mathProblems";
 const STATE_STORAGE_KEY = "chepuhaActiveGameState";
 import { useGameState } from "./hooks/useGameState";
 import {
@@ -243,7 +244,7 @@ function App() {
     if (latestRound.round_number > currentRound || !currentRoundId) {
       let newPhase = Phases.Main;
 
-      if (myPlayer.players_status === 'ready' && currentAnswers.some(a =>
+      if (currentAnswers.some(a =>
         (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
         (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === latestRound.id
       )) {
@@ -275,11 +276,10 @@ function App() {
   useEffect(() => {
     if (!session || !sessionId) return;
     if (session.session_status === 'active' && isLobby && !didGameStart) {
-      setAppState(prev => ({ ...prev, didGameStart: true }));
-      setAppState(prev => ({ ...prev, isLobby: false }));
-      setAppState(prev => ({ ...prev, phase: Phases.Main }));
+      setAppState(prev => ({ ...prev, didGameStart: true, isLobby: false, phase: Phases.Main }));
+      refreshState();
     }
-  }, [session?.session_status, isLobby, didGameStart, sessionId]);
+  }, [session?.session_status, isLobby, didGameStart, sessionId, refreshState]);
   useEffect(() => {
     if (!session || session.session_status !== 'active' || !sessionId || !playerId) return;
 
@@ -297,22 +297,35 @@ function App() {
       } catch (err) {
       }
     })();
-  }, [session?.session_status, sessionId, playerId, players.length]);
+  }, [session?.session_status, sessionId, playerId, players.length, refreshState]);
   useEffect(() => { currentRoundIdRef.current = currentRoundId; }, [currentRoundId]);
   useEffect(() => { currentRoundRef.current = currentRound; }, [currentRound]);
   const phaseRef = useRef(phase);
   useEffect(() => { phaseRef.current = phase; }, [phase]);
 
+  useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => setAppState(prev => ({ ...prev, error: "" })), 6000);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
   const [lobbyTimeLeft, setLobbyTimeLeft] = useState(25 * 60);
 
   useEffect(() => {
     if (isLobby) {
-      const start = lobbyCreatedAt || Date.now();
-      if (!lobbyCreatedAt) {
+      // Use DB timestamp if available for sync across all users
+      const dbStart = session?.session_created_at ? Date.parse(session.session_created_at) : null;
+      const start = dbStart || lobbyCreatedAt || Date.now();
+
+      if (!lobbyCreatedAt && !dbStart) {
         setAppState(prev => ({ ...prev, lobbyCreatedAt: start }));
       }
+
       const tick = setInterval(() => {
-        const elapsed = Math.floor((Date.now() - start) / 1000);
+        // Use serverTimeOffset to account for local clock drift
+        const now = Date.now() - serverTimeOffset;
+        const elapsed = Math.floor((now - start) / 1000);
         const remaining = Math.max(0, 25 * 60 - elapsed);
         setLobbyTimeLeft(remaining);
         if (remaining <= 0) {
@@ -324,7 +337,7 @@ function App() {
     } else {
       setLobbyTimeLeft(25 * 60);
     }
-  }, [isLobby, lobbyCreatedAt]);
+  }, [isLobby, lobbyCreatedAt, session?.session_created_at, serverTimeOffset]);
 
   useEffect(() => {
     if (!session || !currentRoundId || !sessionId || !didGameStart) return;
@@ -345,8 +358,6 @@ function App() {
         setAppState(prev => ({ ...prev, joinedCount: curAnswers.length, totalCount: total }));
 
         if (phaseRef.current !== Phases.Waiting) return;
-
-        if (total < 2) return;
 
         const now = Date.now();
         const startedAt = roundStartedAt ? Date.parse(roundStartedAt) : now;
@@ -394,7 +405,7 @@ function App() {
                 rounds_status: 'active',
                 started_at: ts,
               });
-              await updatePlayersBySession(sessionId, { players_status: 'playing' });
+              updatePlayersBySession(sessionId, { players_status: 'playing' }).catch(() => { });
               currentRoundIdRef.current = nextRound.id;
               currentRoundRef.current = nextRoundNum;
               setAppState(prev => ({
@@ -600,15 +611,15 @@ function App() {
       // Update local state
       setAppState(prev => ({
         ...prev,
-        playerCount: players.length,
-        currentRoundId: firstRound.id,
-        roundStartedAt: ts,
         didGameStart: true,
         isLobby: false,
         phase: Phases.Main,
         currentRound: 1,
+        currentRoundId: firstRound.id,
+        roundStartedAt: ts,
         userAnswers: [],
-        totalCount: players.length
+        totalCount: players.length,
+        playerCount: players.length,
       }));
     } catch (err: any) {
       setAppState(prev => ({ ...prev, error: String(t('ERR_START' as any)) + err.message }));
@@ -618,6 +629,15 @@ function App() {
     setAppState(prev => ({ ...prev, phase: Phases.History }));
   };
   const doAnswerSubmit = async (answer: string) => {
+    // Prevent double answering rapidly when rejoined
+    if (currentAnswers.some(a =>
+      (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
+      (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
+    )) {
+      setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+      return;
+    }
+
     const isMissing = answer.trim() === "" || answer.trim() === "Час вийшов";
     const fallbackPool = activeTemplate.fallbacks[currentRound - 1] ?? [""];
     const cleanAnswer = isMissing
@@ -682,6 +702,13 @@ function App() {
       setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
     }
   };
+
+  const myPlayer = players.find(p => p.id === playerId);
+  const amIReady = currentAnswers.some(a =>
+    (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
+    (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
+  );
+
   return (
     <div className="app-view">
       {roomCode && !didGameStart && (isCreatingLobby || isLobby) && phase !== Phases.Join && phase !== Phases.History && phase !== Phases.End && (
@@ -734,10 +761,10 @@ function App() {
 
       {!didGameStart && isCreatingLobby && !isLobby && phase !== Phases.Join && (
         <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} />
-          <div className="red-guy-bg" onClick={playSecretMusic} />
-          <div className="create-game-container">
-            <div className="input-wrapper">
+          <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
+          <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
+          <div className="create-game-container" style={{ pointerEvents: 'none' }}>
+            <div className="input-wrapper" style={{ pointerEvents: 'auto' }}>
               <input
                 type="text"
                 className={`nickname-input ${error ? "error" : ""}`}
@@ -746,8 +773,8 @@ function App() {
                 onChange={handleNicknameChange}
               />
             </div>
-            <span className="error-message" style={{ minHeight: '24px', display: 'block' }}>{error || '\u00A0'}</span>
-            <div className="template-selector">
+            <span className="error-message" style={{ minHeight: '24px', display: 'block', pointerEvents: 'auto' }}>{error || '\u00A0'}</span>
+            <div className="template-selector" style={{ pointerEvents: 'auto' }}>
               <h3 className="template-title">{t('CHOOSE_STORY')}</h3>
               <div className="template-cards-container">
                 {Object.values(TEMPLATES).map((tpl) => (
@@ -763,20 +790,22 @@ function App() {
                 ))}
               </div>
             </div>
-            <Button
-              label={t('CREATE_GAME')}
-              variant="primary"
-              phase={phase}
-              onClick={goToLobby}
-            />
+            <div style={{ pointerEvents: 'auto' }}>
+              <Button
+                label={t('CREATE_GAME')}
+                variant="primary"
+                phase={phase}
+                onClick={goToLobby}
+              />
+            </div>
           </div>
           <HomeIcon className="homeIconPos" onClick={goHome} />
         </>
       )}
       {!didGameStart && isLobby && phase !== Phases.Join && (
         <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} />
-          <div className="red-guy-bg" onClick={playSecretMusic} />
+          <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
+          <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
           <div className="lobby-timer-display">
             <span className="timer-title">{t('LOBBY_TIMER_TITLE' as any)}</span>
             <span className="timer-time">
@@ -824,8 +853,8 @@ function App() {
       )}
       {phase === Phases.Join && (
         <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} />
-          <div className="red-guy-bg" onClick={playSecretMusic} />
+          <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
+          <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
           <JoinCard
             initialNick={nickname}
             initialRoom={roomCode}
@@ -867,16 +896,38 @@ function App() {
           <Round currentRound={currentRound} totalRounds={activeTemplate.questions.length} className="roundPos" />
           <RoundCard
             playerName={nickname}
-            phase={phase}
-            question={
-              activeTemplate.id === 'chaos'
+            phase={amIReady ? Phases.Waiting : phase}
+            question={(() => {
+              const baseTemplate = activeTemplate.id === 'chaos'
                 ? TEMPLATES[
-                  ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "adult", "anime", "cyber", "it"][
-                  Math.abs(String((sessionId || "") + (playerId || nickname || "Guest")).split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0) + (currentRound || 0)) % 11
-                  ]
-                ]?.questions[currentRound - 1] || activeTemplate.questions[currentRound - 1]
-                : activeTemplate.questions[currentRound - 1]
-            }
+                ["classic", "new_year", "halloween", "summer", "student", "gaming", "romance", "adult", "anime", "cyber", "it", "movies", "math"][
+                Math.abs(String((sessionId || "") + (playerId || nickname || "Guest")).split("").reduce((a: number, c: string) => a + c.charCodeAt(0), 0) + (currentRound || 0)) % 13
+                ]
+                ] || activeTemplate
+                : activeTemplate;
+
+              let roundQuestions = [...(baseTemplate.questions || [])];
+
+              if (baseTemplate.id === 'math') {
+                const seedStr = String(sessionId || roomCode || "guest");
+                const hash = seedStr.split("").reduce((a, c) => a + (c.charCodeAt(0) * 31), 0);
+                for (let i = roundQuestions.length - 1; i > 0; i--) {
+                  const j = Math.abs(hash + i * 53) % (i + 1);
+                  [roundQuestions[i], roundQuestions[j]] = [roundQuestions[j], roundQuestions[i]];
+                }
+              }
+
+              const rawQuestion = roundQuestions[currentRound - 1];
+
+              if (rawQuestion?.startsWith('MATH_DYN_')) {
+                const indexPart = parseInt(rawQuestion.split('_')[2] || "0", 10);
+                const seedStr = String(sessionId || roomCode || "guest");
+                const hash = seedStr.split("").reduce((a, c) => a + (c.charCodeAt(0) * 17), 0);
+                const offset = hash + indexPart * 73;
+                return mathProblems[offset % mathProblems.length];
+              }
+              return rawQuestion;
+            })()}
             playerReady={derivedJoinedCount}
             playerTotal={derivedTotalCount}
             onSubmitAnswer={doAnswerSubmit}

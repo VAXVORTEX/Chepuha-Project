@@ -41,6 +41,7 @@
   align-items: flex-start;
   margin: 0 auto;
   position: relative;
+  min-height: 120px; // Reserve space for input + error
 }
 
 .input {
@@ -76,12 +77,12 @@
 
 .errorText {
   display: block;
-  min-height: 35px;
+  min-height: 28px; // Always reserve this height
   color: $red;
   -webkit-text-stroke: 1px $black;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-  margin-top: 5px;
-  font-size: 30px;
+  margin-top: 4px;
+  font-size: 20px;
   text-align: left;
   width: 100%;
   max-width: 750px;
@@ -93,7 +94,15 @@
   .container {
     padding: 0 10px;
     max-width: 95vw;
-    margin-top: 60px;
+    margin-top: 10vh; // Moved inputs down slightly as requested, so the overall form is lower
+  }
+
+  .inputWrapper {
+    min-height: 95px; // Reduced from 120px to bring inputs/button instantly closer
+  }
+
+  .form {
+    gap: 0px; // min-height already provides spacing
   }
 
   .input {
@@ -103,5 +112,9 @@
 
   .errorText {
     font-size: 20px;
+  }
+
+  .submitBlock {
+    margin-top: -20px; // Pulled button significantly higher relative to inputs
   }
 }

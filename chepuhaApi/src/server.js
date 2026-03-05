@@ -21,11 +21,10 @@ app.use('/api/rounds', roundRoutes);
 app.use('/api/answers', answerRoutes);
 app.use('/api/story-sheets', storySheetRoutes);
 app.get('/health', (_req, res) => {
-    res.json({ status: 'ok', strapi: process.env.STRAPI_URL });
+    res.json({ status: 'ok' });
 });
 app.get('/', (_req, res) => {
     res.send(`<h1>Chepuha API Server is Running!</h1>
-<p>Proxying to Strapi at: <b>${process.env.STRAPI_URL}</b></p>
 <p>Authorized CORS origin: <b>${ALLOWED_ORIGINS.join(', ')}</b></p>`);
 });
 app.use((err, _req, res, _next) => {
@@ -34,7 +33,6 @@ app.use((err, _req, res, _next) => {
 });
 app.listen(PORT, () => {
     console.log(`✅ Chepuha API Server running on http://localhost:${PORT}`);
-    console.log(`   → Proxying to Strapi: ${process.env.STRAPI_URL}`);
     console.log(`   → CORS allowed for:   ${ALLOWED_ORIGINS.join(', ')}`);
 });
 

@@ -42,8 +42,15 @@
 
   .logo-boy-hitbox {
     position: absolute;
-    cursor: default;
-    z-index: 10;
+    width: 60px;
+    height: 60px;
+    z-index: 50;
+    cursor: default; // Removed pointer to hide easter egg
+    pointer-events: auto;
+
+    &:hover {
+      transform: none; // No hover effect on PC
+    }
   }
 
   .hitbox-1 {
@@ -266,7 +273,7 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  z-index: 20;
+  z-index: 600;
 
   &:hover {
     transform: scale(1.1);
@@ -296,7 +303,7 @@
   bottom: 0;
   background-size: contain;
   background-repeat: no-repeat;
-  z-index: 10;
+  z-index: 5;
   opacity: 0.5;
   cursor: default;
   pointer-events: auto;
@@ -537,22 +544,15 @@
   }
 
   .create-game-container {
-    gap: 30px;
-    margin-top: 5vh; // Moved down as requested
+    gap: 15px; // Reduced from 30px
+    margin-top: -2vh; // Moved lower from -5vh
     height: auto;
-    min-height: 75vh;
-    justify-content: center; // Balanced layout
+    min-height: 70vh;
+    justify-content: center;
     padding-bottom: 30px;
   }
 
-  .menu-buttons {
-    gap: 20px;
-    transform: none; // Removed scale to keep text sharp and large
 
-    .button {
-      font-size: 50px !important; // Enlarge main menu texts
-    }
-  }
 
   .box {
     padding: 15px 5px;
@@ -601,6 +601,14 @@
     font-size: 28px !important;
   }
 
+  .menu-buttons {
+    gap: 50px; // Matching PC gap
+    width: 100%;
+    align-items: center;
+    margin-top: 10px;
+    transform: none;
+  }
+
   .crown-icon {
     width: 35px !important;
     right: 100%;
@@ -608,20 +616,28 @@
   }
 
   .logo-wrapper {
-    margin-top: 5px;
-    margin-bottom: 10px;
+    margin-top: -25px; // Pulled logo even higher
+    margin-bottom: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
   }
 
   .logo-wrapper .logo {
-    max-width: 80vw;
+    max-width: 95vw;
   }
 
   .gameCodePos {
     position: absolute;
     top: 20px;
-    right: 20px;
+    right: 15px; // Added margin from edge
     transform: none;
     z-index: 100;
+  }
+
+  .lobby-container {
+    padding: 0 10px;
+    margin-top: 2vh;
   }
 
   .timerPos {
@@ -641,7 +657,7 @@
     left: 15px;
 
     .timer-title {
-      font-size: 20px;
+      font-size: 11px;
     }
 
     .timer-time {
@@ -680,23 +696,28 @@
 
   .yellow-guy-bg,
   .red-guy-bg {
-    width: 200px !important;
-    height: 200px !important;
     position: absolute !important;
     top: auto !important;
     transform: none !important;
+    opacity: 0.5;
+    z-index: 5 !important; // Below buttons so Create Game is always clickable
+    pointer-events: auto !important;
   }
 
   .yellow-guy-bg {
-    right: 25px !important;
+    width: 130px !important;
+    height: 130px !important;
+    right: -10px !important;
     left: auto !important;
-    bottom: -10px !important;
+    bottom: 60px !important; // Lowered from 80px
   }
 
   .red-guy-bg {
-    left: 25px !important;
+    width: 150px !important;
+    height: 150px !important;
+    left: -10px !important;
     right: auto !important;
-    bottom: 20px !important;
+    bottom: 15px !important; // Raised slightly from -10px
   }
 
 
