@@ -11,6 +11,7 @@ interface JoinCardProps {
   initialNick?: string;
   initialRoom?: string;
   onJoin: (nick: string, room: string) => void;
+  onBack?: () => void;
   loading?: boolean;
   errors?: {
     nick?: string;
@@ -21,6 +22,7 @@ const JoinCard: React.FC<JoinCardProps> = ({
   initialNick = "",
   initialRoom = "",
   onJoin,
+  onBack,
   loading = false,
   errors,
 }) => {
@@ -37,6 +39,8 @@ const JoinCard: React.FC<JoinCardProps> = ({
   };
   return (
     <div className={styles.wrapper}>
+      <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
+      <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
       <div className={styles.container}>
         <div className={styles.form}>
           <div className={styles.inputWrapper}>
@@ -96,6 +100,7 @@ const JoinCard: React.FC<JoinCardProps> = ({
             />
           </div>
         </div>
+        {onBack && <HomeIcon onClick={onBack} className="homeIconPos" />}
       </div>
     </div>
   );

@@ -9,6 +9,7 @@ import Round from "./components/Round/Round";
 import Timer from "./components/Timer/Timer";
 import JoinCard from "./components/JoinCard/JoinCard";
 import WaitCard from "./components/WaitCard/WaitCard";
+import HomeIcon from "./components/HomeIcon/HomeIcon";
 import GameResult from "./components/GameResult/GameResult";
 import logoImage from "./assets/images/Logo.png";
 import logoImageEng from "./assets/images/Chepuha_eng.png";
@@ -906,6 +907,7 @@ function App() {
                 onClick={goToLobby}
               />
             </div>
+            <HomeIcon onClick={goHome} className="homeIconPos" />
           </div>
         </>
       )}
@@ -959,17 +961,14 @@ function App() {
       )}
 
       {phase === Phases.Join && (
-        <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
-          <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
-          <JoinCard
-            initialNick={nickname}
-            initialRoom={roomCode}
-            onJoin={handleJoinGame}
-            errors={error ? { room: error } : undefined}
-            loading={appState.isJoining}
-          />
-        </>
+        <JoinCard
+          initialNick={nickname}
+          initialRoom={roomCode}
+          onJoin={handleJoinGame}
+          onBack={goHome}
+          errors={error ? { room: error } : undefined}
+          loading={appState.isJoining}
+        />
       )}
 
       {didGameStart && phase === Phases.Waiting && (

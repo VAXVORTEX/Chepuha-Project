@@ -94,7 +94,7 @@
   .container {
     padding: 0 10px;
     max-width: 95vw;
-    margin-top: 5vh; // Moved inputs down slightly as requested
+    margin-top: -5vh; // Moved inputs UP as requested (was 5vh)
   }
 
   .inputWrapper {
