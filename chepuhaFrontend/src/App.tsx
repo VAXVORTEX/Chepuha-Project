@@ -70,16 +70,16 @@ export interface AppState {
   lobbyCreatedAt: number | null;
   answeredRoundId: string | null;
 }
-function App() {
-  const [appState, setAppState] = useState<AppState>({
+const getInitialState = (): AppState => {
+  const defaultState: AppState = {
     phase: Phases.Main,
     didGameStart: false,
     currentRound: 1,
     userAnswers: [],
     isCreatingLobby: false,
     isLobby: false,
-    nickname: localStorage.getItem('chepuhaUserPrefs') ? JSON.parse(localStorage.getItem('chepuhaUserPrefs')!).nickname || '' : '',
-    roomCode: localStorage.getItem('chepuhaUserPrefs') ? JSON.parse(localStorage.getItem('chepuhaUserPrefs')!).roomCode || '' : '',
+    nickname: '',
+    roomCode: '',
     selectedTemplate: "classic",
     error: "",
     allStories: [],
@@ -97,7 +97,52 @@ function App() {
     allStorySheets: [],
     lobbyCreatedAt: null,
     answeredRoundId: null,
-  });
+  };
+
+  try {
+    const prefs = localStorage.getItem('chepuhaUserPrefs');
+    if (prefs) {
+      const p = JSON.parse(prefs);
+      defaultState.nickname = p.nickname || '';
+      defaultState.roomCode = p.roomCode || '';
+    }
+
+    const saved = localStorage.getItem(STATE_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
+        const hasAnswered = !!parsed.answeredRoundId;
+        const sId = parsed.sessionId ? String(parsed.sessionId) : null;
+        const pId = parsed.playerId ? String(parsed.playerId) : null;
+
+        if (sId && pId) {
+          return {
+            ...defaultState,
+            sessionId: sId,
+            playerId: pId,
+            nickname: parsed.nickname || defaultState.nickname,
+            roomCode: parsed.roomCode || defaultState.roomCode,
+            isHost: parsed.isHost || false,
+            selectedTemplate: parsed.selectedTemplate || "classic",
+            answeredRoundId: parsed.answeredRoundId || null,
+            currentRoundId: parsed.currentRoundId || null,
+            currentRound: parsed.currentRound || 1,
+            didGameStart: hasAnswered || parsed.didGameStart || false,
+            isLobby: !hasAnswered && !parsed.didGameStart,
+            phase: hasAnswered ? Phases.Waiting : (parsed.didGameStart ? Phases.Main : Phases.Main) // Note: home screen and question screen both use Phases.Main, controlled by didGameStart
+          };
+        }
+      }
+    }
+  } catch (e) {
+    console.error("Error restoring state:", e);
+  }
+
+  return defaultState;
+};
+
+function App() {
+  const [appState, setAppState] = useState<AppState>(getInitialState());
 
   const [serverTimeOffset, setServerTimeOffset] = useState(0);
 
@@ -139,6 +184,8 @@ function App() {
   const currentRoundRef = useRef(currentRound);
   const { savedGames, saveGameToHistory } = useHistory();
   useEffect(() => {
+    // Only save if we have an active session to persist. 
+    // We don't remove use STATE_STORAGE_KEY here to avoid wiping data on mount race conditions.
     if (sessionId && playerId && nickname) {
       localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify({
         sessionId,
@@ -153,8 +200,6 @@ function App() {
         didGameStart,
         timestamp: Date.now()
       }));
-    } else {
-      localStorage.removeItem(STATE_STORAGE_KEY);
     }
   }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate, answeredRoundId, currentRoundId, currentRound, didGameStart]);
 
@@ -164,34 +209,7 @@ function App() {
     }
   }, [nickname, roomCode]);
 
-  useEffect(() => {
-    const saved = localStorage.getItem(STATE_STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
-          const hasAnswered = !!parsed.answeredRoundId;
-          setAppState(prev => ({
-            ...prev,
-            sessionId: parsed.sessionId ? String(parsed.sessionId) : null,
-            playerId: parsed.playerId ? String(parsed.playerId) : null,
-            nickname: parsed.nickname,
-            roomCode: parsed.roomCode,
-            isHost: parsed.isHost,
-            selectedTemplate: parsed.selectedTemplate || "classic",
-            answeredRoundId: parsed.answeredRoundId || null,
-            currentRoundId: parsed.currentRoundId || null,
-            currentRound: parsed.currentRound || 1,
-            didGameStart: hasAnswered || parsed.didGameStart || false,
-            isLobby: !hasAnswered,
-            phase: hasAnswered ? Phases.Waiting : prev.phase
-          }));
-        } else {
-          localStorage.removeItem(STATE_STORAGE_KEY);
-        }
-      } catch (err) { }
-    }
-  }, []);
+
 
   useEffect(() => {
     const imagesToPreload = [
