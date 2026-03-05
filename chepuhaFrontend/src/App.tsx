@@ -255,7 +255,9 @@ function App() {
     if (!latestRound || !myPlayer) return;
 
     if (latestRound.round_number > currentRound || !currentRoundId) {
-      let newPhase = Phases.Main;
+      // Default to current phase to prevent flashing issues from Lobby->Active.
+      // If we are Main or Waiting, stick with it unless conditions force us otherwise.
+      let newPhase = phase === Phases.Lobby ? Phases.Main : phase;
 
       if (currentAnswers.some(a =>
         (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
