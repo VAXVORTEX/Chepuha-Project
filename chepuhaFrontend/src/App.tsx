@@ -255,14 +255,14 @@ function App() {
     if (!latestRound || !myPlayer) return;
 
     if (latestRound.round_number > currentRound || !currentRoundId) {
-      // Default to current phase to prevent flashing issues from Lobby->Active.
-      // If we are Main or Waiting, stick with it unless conditions force us otherwise.
-      let newPhase = phase === Phases.Lobby ? Phases.Main : phase;
+      // If round number increased, we MUST default to Main unless DB has an answer.
+      // We also clear answeredRoundId since it's a new round.
+      let newPhase = Phases.Main;
 
       if (currentAnswers.some(a =>
         (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
         (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === latestRound.id
-      ) || answeredRoundId === latestRound.id) {
+      ) || (answeredRoundId === latestRound.id)) {
         newPhase = Phases.Waiting;
       } else if (myPlayer.players_status === 'finished') {
         newPhase = Phases.End;
@@ -274,7 +274,8 @@ function App() {
         currentRound: latestRound.round_number,
         roundStartedAt: latestRound.started_at || prev.roundStartedAt,
         phase: newPhase,
-        joinedCount: 0
+        joinedCount: 0,
+        answeredRoundId: (latestRound.id === prev.answeredRoundId) ? prev.answeredRoundId : null
       }));
     } else if (latestRound.id === currentRoundId) {
       if (phase === Phases.Main && (currentAnswers.some(a =>
