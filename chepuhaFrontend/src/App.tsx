@@ -12,7 +12,6 @@ import WaitCard from "./components/WaitCard/WaitCard";
 import GameResult from "./components/GameResult/GameResult";
 import logoImage from "./assets/images/Logo.png";
 import logoImageEng from "./assets/images/Chepuha_eng.png";
-import homeImage from "./assets/images/house.png";
 import crownImage from "./assets/images/crown.png";
 import flagUk from "./assets/images/flag_uk.png";
 import flagEn from "./assets/images/flag_en.png";
@@ -41,8 +40,8 @@ import {
 } from "./api";
 import { TEMPLATES } from "./config/templates";
 import { useLanguage } from "./contexts/LanguageContext";
-import HomeIcon from "./components/HomeIcon/HomeIcon";
 import { Player } from "./api/types";
+
 export interface AppState {
   phase: Phases;
   didGameStart: boolean;
@@ -70,6 +69,7 @@ export interface AppState {
   lobbyCreatedAt: number | null;
   answeredRoundId: string | null;
 }
+
 const getInitialState = (): AppState => {
   const defaultState: AppState = {
     phase: Phases.Main,
@@ -111,10 +111,20 @@ const getInitialState = (): AppState => {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
+        // We only restore identifiers, not the game state (phase/didGameStart)
+        // so that refresh always lands on the Home screen.
         return {
           ...defaultState,
-          ...parsed,
-          isLobby: parsed.isLobby ?? (parsed.sessionId ? true : false)
+          sessionId: parsed.sessionId || null,
+          playerId: parsed.playerId || null,
+          nickname: parsed.nickname || defaultState.nickname,
+          roomCode: parsed.roomCode || defaultState.roomCode,
+          isHost: parsed.isHost || false,
+          selectedTemplate: parsed.selectedTemplate || "classic",
+          answeredRoundId: parsed.answeredRoundId || null,
+          currentRoundId: parsed.currentRoundId || null,
+          currentRound: parsed.currentRound || 1,
+          roundStartedAt: parsed.roundStartedAt || null,
         };
       }
     }
@@ -165,6 +175,7 @@ function App() {
   const currentRoundIdRef = useRef(currentRoundId);
   const currentRoundRef = useRef(currentRound);
   const { savedGames, saveGameToHistory } = useHistory();
+
   useEffect(() => {
     if (sessionId && playerId && nickname) {
       localStorage.setItem(STATE_STORAGE_KEY, JSON.stringify({
@@ -195,7 +206,7 @@ function App() {
 
   useEffect(() => {
     const imagesToPreload = [
-      logoImage, logoImageEng, homeImage, crownImage, flagUk, flagEn,
+      logoImage, logoImageEng, crownImage, flagUk, flagEn,
       "/assets/images/yellowGuy.png",
       "/assets/images/RedGuyRemoved.png",
       "/assets/images/gameBackground.jpg"
@@ -209,6 +220,7 @@ function App() {
       if (secretAudio && !secretAudio.paused) secretAudio.pause();
     }, 50);
   }, []);
+
   const fetchFinalStoryResult = useCallback(async () => {
     if (!sessionId) return;
     try {
@@ -245,7 +257,7 @@ function App() {
 
   useEffect(() => {
     if (!didGameStart || !playerId || !sessionId) return;
-    if (!dataReady) return; // Wait for useGameState to finish first fetch
+    if (!dataReady) return;
     if (isTransitioning || transitionLockRef.current) return;
 
     const sorted = [...(rounds || [])].sort((a: any, b: any) => b.round_number - a.round_number);
@@ -287,12 +299,12 @@ function App() {
       }
     }
   }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, currentAnswers, rounds, isTransitioning, fetchFinalStoryResult, dataReady, answeredRoundId]);
+
   useEffect(() => {
     if (!session || !sessionId || !playerId) return;
-    if (!dataReady) return; // Wait for useGameState to finish first fetch
+    if (!dataReady) return;
 
     if (session.session_status === 'active' && isLobby && !didGameStart) {
-      // On rejoin: check DB for current round and whether player already answered
       const sorted = [...(rounds || [])].sort((a: any, b: any) => b.round_number - a.round_number);
       const latestRound = sorted[0];
       let initialPhase = Phases.Main;
@@ -322,6 +334,7 @@ function App() {
       refreshState();
     }
   }, [session?.session_status, isLobby, didGameStart, sessionId, playerId, rounds, currentAnswers, dataReady, refreshState]);
+
   useEffect(() => {
     if (!session || session.session_status !== 'active' || !sessionId || !playerId) return;
 
@@ -340,6 +353,7 @@ function App() {
       }
     })();
   }, [session?.session_status, sessionId, playerId, players.length, refreshState]);
+
   useEffect(() => { currentRoundIdRef.current = currentRoundId; }, [currentRoundId]);
   useEffect(() => { currentRoundRef.current = currentRound; }, [currentRound]);
   const phaseRef = useRef(phase);
@@ -356,7 +370,6 @@ function App() {
 
   useEffect(() => {
     if (isLobby) {
-      // Use DB timestamp if available for sync across all users
       const dbStart = session?.session_created_at ? Date.parse(session.session_created_at) : null;
       const start = dbStart || lobbyCreatedAt || Date.now();
 
@@ -365,7 +378,6 @@ function App() {
       }
 
       const tick = setInterval(() => {
-        // Use serverTimeOffset to account for local clock drift
         const now = Date.now() - serverTimeOffset;
         const elapsed = Math.floor((now - start) / 1000);
         const remaining = Math.max(0, 25 * 60 - elapsed);
@@ -406,7 +418,6 @@ function App() {
         const timePassed = (now - startedAt) / 1000;
 
         if (curAnswers.length >= total || (isHost && timePassed > 130)) {
-          // CRITICAL: Only HOST should trigger round transitions
           if (!isHost) return;
           setIsTransitioning(true);
           transitionLockRef.current = true;
@@ -483,6 +494,7 @@ function App() {
     }, 500);
     return () => clearInterval(interval);
   }, [phase, session?.id, currentRoundId, playerCount, players.length, currentRound, isHost, sessionId, fetchFinalStoryResult, roundStartedAt, activeTemplate, didGameStart, isTransitioning]);
+
   const generateRoomCode = () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let code = "";
@@ -491,6 +503,7 @@ function App() {
     }
     return code;
   };
+
   const goHome = () => {
     setAppState(prev => ({ ...prev, phase: Phases.Main }));
     setAppState(prev => ({ ...prev, didGameStart: false }));
@@ -508,11 +521,13 @@ function App() {
     setAppState(prev => ({ ...prev, lobbyCreatedAt: null }));
     localStorage.removeItem(STATE_STORAGE_KEY);
   };
+
   const doShowCreateScreen = () => {
     setAppState(prev => ({ ...prev, roomCode: generateRoomCode() }));
     setAppState(prev => ({ ...prev, isCreatingLobby: true }));
     setAppState(prev => ({ ...prev, isLobby: false }));
   };
+
   const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (value.length <= 25) {
@@ -521,15 +536,14 @@ function App() {
       setAppState(prev => ({ ...prev, error: String(t('ERR_NICK_LONG' as any)) }));
     }
   };
+
   const goToLobby = async () => {
     if (!nickname.trim()) {
       setAppState(prev => ({ ...prev, error: String(t('ERR_NICKNAME' as any)) }));
       return;
     }
     try {
-
       const newSession = await createGameSession({
-
         session_name: roomCode,
         max_players: 12,
         session_status: 'waiting',
@@ -538,7 +552,6 @@ function App() {
       setAppState(prev => ({ ...prev, sessionId: newSession.id }));
 
       const hostPlayer = await createPlayer({
-
         nickname,
         session_id: newSession.id,
         players_status: 'joined',
@@ -554,11 +567,13 @@ function App() {
       setAppState(prev => ({ ...prev, error: String(t('ERR_CREATE' as any)) + err.message }));
     }
   };
+
   const doShowJoinScreen = () => {
     setAppState(prev => ({ ...prev, phase: Phases.Join }));
     setAppState(prev => ({ ...prev, didGameStart: false }));
     setAppState(prev => ({ ...prev, isCreatingLobby: false }));
   };
+
   const handleJoinGame = async (nick: string, code: string) => {
     try {
       const allSessions = await getGameSessions();
@@ -579,13 +594,46 @@ function App() {
       }
 
       if (existingPlayer) {
+        let rejoinPhase = Phases.Main;
+        let rejoinRoundId: string | null = null;
+        let rejoinAnsweredId: string | null = null;
+        let rejoinStartedAt: string | null = null;
+        let rejoinRound = 1;
+
+        if (targetSession.session_status === 'active') {
+          const sessionRounds = await getRoundsBySession(targetSession.id);
+          const sorted = [...(sessionRounds || [])].sort((a: any, b: any) => b.round_number - a.round_number);
+          const latestRound = sorted[0];
+
+          if (latestRound) {
+            rejoinRoundId = latestRound.id;
+            rejoinRound = latestRound.round_number;
+            rejoinStartedAt = latestRound.started_at;
+
+            const answers = await getAnswersByRound(latestRound.id);
+            const hasAnswered = answers.some((a: any) =>
+              (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === existingPlayer.id
+            );
+
+            rejoinPhase = hasAnswered ? Phases.Waiting : Phases.Main;
+            if (hasAnswered) rejoinAnsweredId = latestRound.id;
+          }
+        }
+
         setAppState(prev => ({
           ...prev,
           playerId: existingPlayer.id,
           isHost: existingPlayer.player_order === 1,
           isLobby: targetSession.session_status === 'waiting',
           didGameStart: targetSession.session_status === 'active',
-          phase: targetSession.session_status === 'active' ? Phases.Waiting : Phases.Main
+          phase: rejoinPhase,
+          currentRoundId: rejoinRoundId,
+          answeredRoundId: rejoinAnsweredId,
+          roundStartedAt: rejoinStartedAt,
+          currentRound: rejoinRound,
+          nickname: nick,
+          roomCode: code,
+          sessionId: targetSession.id
         }));
       } else {
         const guest = await createPlayer({
@@ -593,23 +641,26 @@ function App() {
           session_id: targetSession.id,
           players_status: 'joined',
         });
-        setAppState(prev => ({ ...prev, playerId: guest.id }));
-        setAppState(prev => ({ ...prev, isHost: false }));
-        setAppState(prev => ({ ...prev, isLobby: true }));
-        setAppState(prev => ({ ...prev, didGameStart: false }));
+        setAppState(prev => ({
+          ...prev,
+          playerId: guest.id,
+          isHost: false,
+          isLobby: true,
+          didGameStart: false,
+          phase: Phases.Main,
+          nickname: nick,
+          roomCode: code,
+          sessionId: targetSession.id
+        }));
       }
 
       setAppState(prev => ({ ...prev, isCreatingLobby: false }));
-      if (targetSession.session_status === 'active') {
-        setAppState(prev => ({ ...prev, phase: Phases.Waiting, isLobby: false, didGameStart: true }));
-      } else {
-        setAppState(prev => ({ ...prev, phase: Phases.Main }));
-      }
       await refreshState();
     } catch (err: any) {
       setAppState(prev => ({ ...prev, error: String(t('ERR_JOIN' as any)) + err.message }));
     }
   };
+
   const doGameStart = async () => {
     if (!sessionId) return;
     try {
@@ -643,14 +694,11 @@ function App() {
 
       await updatePlayersBySession(sessionId, { players_status: 'playing' });
 
-      // 4. FINALLY activate the session (Atomic Start)
-      // Guests watching realtime will see everything is ready when this changes
       await updateGameSession(sessionId, {
         session_status: 'active',
         max_players: players.length
       });
 
-      // Update local state
       setAppState(prev => ({
         ...prev,
         didGameStart: true,
@@ -667,11 +715,12 @@ function App() {
       setAppState(prev => ({ ...prev, error: String(t('ERR_START' as any)) + err.message }));
     }
   };
+
   const doShowHistory = () => {
     setAppState(prev => ({ ...prev, phase: Phases.History }));
   };
+
   const doAnswerSubmit = async (answer: string) => {
-    // Prevent double answering rapidly when rejoined
     if (currentAnswers.some(a =>
       (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
       (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
@@ -745,7 +794,6 @@ function App() {
     }
   };
 
-  const myPlayer = players.find(p => p.id === playerId);
   const amIReady = currentAnswers.some(a =>
     (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
     (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
@@ -756,6 +804,7 @@ function App() {
       {roomCode && !didGameStart && (isCreatingLobby || isLobby) && phase !== Phases.Join && phase !== Phases.History && phase !== Phases.End && (
         <GameCode code={roomCode} className="gameCodePos" />
       )}
+
       {!didGameStart && !isCreatingLobby && phase === Phases.Main && !isLobby && (
         <>
           <div className="logo-wrapper">
@@ -832,18 +881,16 @@ function App() {
                 ))}
               </div>
             </div>
-            <div style={{ pointerEvents: 'auto' }}>
-              <Button
-                label={t('CREATE_GAME')}
-                variant="primary"
-                phase={phase}
-                onClick={goToLobby}
-              />
-            </div>
+            <Button
+              label={t('CREATE_GAME')}
+              variant="primary"
+              phase={phase}
+              onClick={goToLobby}
+            />
           </div>
-          <HomeIcon className="homeIconPos" onClick={goHome} />
         </>
       )}
+
       {!didGameStart && isLobby && phase !== Phases.Join && (
         <>
           <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
@@ -881,7 +928,6 @@ function App() {
             <div className="error-message" style={{ color: "red", minHeight: '24px' }}>
               {pollError ? (t(pollError as any) || pollError) : '\u00A0'}
             </div>
-
             <div className="lobby-actions">
               {isHost ? (
                 <Button label={t('START_GAME')} variant="primary" phase={phase} onClick={doGameStart} disabled={players.length < 1} />
@@ -890,9 +936,9 @@ function App() {
               )}
             </div>
           </div>
-          <HomeIcon className="homeIconPos" onClick={goHome} />
         </>
       )}
+
       {phase === Phases.Join && (
         <>
           <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
@@ -903,7 +949,6 @@ function App() {
             onJoin={handleJoinGame}
             errors={error ? { room: error } : undefined}
           />
-          <HomeIcon className="homeIconPos" onClick={goHome} />
         </>
       )}
 
@@ -922,7 +967,6 @@ function App() {
             totalCount={derivedTotalCount}
             message={t('WAITING_ANSWERS')}
           />
-
         </>
       )}
 
@@ -976,6 +1020,7 @@ function App() {
           />
         </>
       )}
+
       {phase === Phases.End && (
         <GameResult
           stories={allStories}
@@ -988,6 +1033,7 @@ function App() {
           onSave={() => { }}
         />
       )}
+
       {phase === Phases.History && !selectedHistoryGame && (
         <HistoryScreen
           games={savedGames}
@@ -999,6 +1045,7 @@ function App() {
           onHome={goHome}
         />
       )}
+
       {phase === Phases.History && selectedHistoryGame && (
         <GameResult
           stories={allStories}
@@ -1013,4 +1060,5 @@ function App() {
     </div>
   );
 }
+
 export default App;
