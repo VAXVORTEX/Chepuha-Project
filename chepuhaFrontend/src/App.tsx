@@ -582,9 +582,9 @@ function App() {
         return setAppState(prev => ({ ...prev, error: String(t('ERR_NOT_FOUND' as any)) }));
       }
 
-      setAppState(prev => ({ ...prev, nickname: nick }));
-      setAppState(prev => ({ ...prev, roomCode: code }));
-      setAppState(prev => ({ ...prev, sessionId: targetSession.id }));
+      // Set nickname, roomCode early for UX but DON'T set sessionId yet to avoid triggering
+      // useGameState refetch before we have the full rejoin state ready
+      setAppState(prev => ({ ...prev, nickname: nick, roomCode: code }));
 
       const existingPlayers = await getPlayersBySession(targetSession.id);
       const existingPlayer = existingPlayers.find((p: Player) => p.nickname.toLowerCase() === nick.toLowerCase());
@@ -620,8 +620,11 @@ function App() {
           }
         }
 
+        // Set all state atomically in a single call — including sessionId — to prevent
+        // the sync useEffect from running mid-update with stale state
         setAppState(prev => ({
           ...prev,
+          sessionId: targetSession.id,
           playerId: existingPlayer.id,
           isHost: existingPlayer.player_order === 1,
           isLobby: targetSession.session_status === 'waiting',
@@ -633,7 +636,7 @@ function App() {
           currentRound: rejoinRound,
           nickname: nick,
           roomCode: code,
-          sessionId: targetSession.id
+          isCreatingLobby: false,
         }));
       } else {
         const guest = await createPlayer({
@@ -643,6 +646,7 @@ function App() {
         });
         setAppState(prev => ({
           ...prev,
+          sessionId: targetSession.id,
           playerId: guest.id,
           isHost: false,
           isLobby: true,
@@ -650,11 +654,10 @@ function App() {
           phase: Phases.Main,
           nickname: nick,
           roomCode: code,
-          sessionId: targetSession.id
+          isCreatingLobby: false,
         }));
       }
 
-      setAppState(prev => ({ ...prev, isCreatingLobby: false }));
       await refreshState();
     } catch (err: any) {
       setAppState(prev => ({ ...prev, error: String(t('ERR_JOIN' as any)) + err.message }));
