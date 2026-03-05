@@ -88,7 +88,7 @@ const JoinCard: React.FC<JoinCardProps> = ({
           </div>
           <div className={styles.submitBlock}>
             <Button
-              label={loading ? t('JOINING' as any) : t('JOIN_GAME')}
+              label={loading ? t('JOINING') : t('JOIN_GAME')}
               variant="primary"
               onClick={doJoinClick}
               phase={Phases.Join}

@@ -238,6 +238,7 @@ export const DICTIONARY = {
         DNS_CHECK: "Втрачено звʼязок. Спробуйте оновити сторінку або вимкнути VPN/DPI.",
         CONNECTION_HELP: "Проблеми зі з'єднанням?",
         TROUBLESHOOT: "Спробуйте змінити вузол VPN (крім Гельсінкі), вимкнути GoodByeDPI або використати мобільний інтернет.",
+        JOINING: "ПРИЄДНАННЯ...",
     },
     en: {
         CREATE_GAME: "CREATE GAME",
@@ -478,6 +479,7 @@ export const DICTIONARY = {
         DNS_CHECK: "Connection lost. Try refreshing or disabling VPN/DPI.",
         CONNECTION_HELP: "Connection problems?",
         TROUBLESHOOT: "Try changing VPN node (avoid Helsinki), disabling GoodByeDPI, or using mobile data.",
+        JOINING: "JOINING...",
     }
 };
 export type Language = 'uk' | 'en';
