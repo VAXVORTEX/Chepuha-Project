@@ -153,7 +153,7 @@ function App() {
     } else {
       localStorage.removeItem(STATE_STORAGE_KEY);
     }
-  }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate]);
+  }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate, appState.answeredRoundId]);
 
   useEffect(() => {
     if (nickname || roomCode) {
