@@ -287,13 +287,29 @@ function App() {
     }
   }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, currentAnswers, rounds, isTransitioning, fetchFinalStoryResult, dataReady, answeredRoundId]);
   useEffect(() => {
-    if (!session || !sessionId) return;
+    if (!session || !sessionId || !playerId) return;
     if (!dataReady) return; // Wait for useGameState to finish first fetch
+
     if (session.session_status === 'active' && isLobby && !didGameStart) {
-      setAppState(prev => ({ ...prev, didGameStart: true, isLobby: false, phase: Phases.Main }));
+      const sorted = [...(rounds || [])].sort((a: any, b: any) => b.round_number - a.round_number);
+      const latestRound = sorted[0];
+      let initialPhase = Phases.Main;
+
+      if (latestRound) {
+        const hasAnswered = currentAnswers.some(a =>
+          (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
+          (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === latestRound.id
+        ) || answeredRoundId === latestRound.id;
+
+        if (hasAnswered) {
+          initialPhase = Phases.Waiting;
+        }
+      }
+
+      setAppState(prev => ({ ...prev, didGameStart: true, isLobby: false, phase: initialPhase }));
       refreshState();
     }
-  }, [session?.session_status, isLobby, didGameStart, sessionId, refreshState]);
+  }, [session?.session_status, isLobby, didGameStart, sessionId, playerId, rounds, currentAnswers, answeredRoundId, dataReady, refreshState]);
   useEffect(() => {
     if (!session || session.session_status !== 'active' || !sessionId || !playerId) return;
 
