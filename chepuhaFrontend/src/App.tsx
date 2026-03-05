@@ -274,12 +274,35 @@ function App() {
     }
   }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, currentAnswers, rounds, isTransitioning, fetchFinalStoryResult]);
   useEffect(() => {
-    if (!session || !sessionId) return;
+    if (!session || !sessionId || !playerId) return;
     if (session.session_status === 'active' && isLobby && !didGameStart) {
-      setAppState(prev => ({ ...prev, didGameStart: true, isLobby: false, phase: Phases.Main }));
+      // On rejoin: check DB for current round and whether player already answered
+      const sorted = [...(rounds || [])].sort((a: any, b: any) => b.round_number - a.round_number);
+      const latestRound = sorted[0];
+      let initialPhase = Phases.Main;
+
+      if (latestRound) {
+        const hasAnswered = currentAnswers.some(a =>
+          (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
+          (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === latestRound.id
+        );
+        if (hasAnswered) {
+          initialPhase = Phases.Waiting;
+        }
+      }
+
+      setAppState(prev => ({
+        ...prev,
+        didGameStart: true,
+        isLobby: false,
+        phase: initialPhase,
+        currentRoundId: latestRound?.id || prev.currentRoundId,
+        currentRound: latestRound?.round_number || prev.currentRound,
+        roundStartedAt: latestRound?.started_at || prev.roundStartedAt
+      }));
       refreshState();
     }
-  }, [session?.session_status, isLobby, didGameStart, sessionId, refreshState]);
+  }, [session?.session_status, isLobby, didGameStart, sessionId, playerId, rounds, currentAnswers, refreshState]);
   useEffect(() => {
     if (!session || session.session_status !== 'active' || !sessionId || !playerId) return;
 
