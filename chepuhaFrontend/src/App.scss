@@ -256,8 +256,8 @@
 
 .homeIconPos {
   position: absolute;
-  bottom: 10px;
-  right: 15px;
+  bottom: 15px; // Precise corner positioning
+  right: 20px;
   width: 120px;
   height: 120px;
   background-color: rgba(255, 255, 255, 0.2);
@@ -267,7 +267,7 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  z-index: 9999;
+  z-index: 10000; // Above characters for clickability
   transition: transform 0.2s ease;
 
   &:hover {
@@ -303,7 +303,7 @@
 }
 
 .yellow-guy-bg {
-  bottom: 150px; // Raised high to avoid overlap with button
+  bottom: 40px; // Lowered but above the corner button
   right: -50px;
   background-image: url("./assets/images/yellowGuy.png");
   display: block;
@@ -661,15 +661,15 @@
     position: absolute !important;
     width: 60px !important;
     height: 60px !important;
-    bottom: 10px !important;
-    right: 15px !important;
+    bottom: 15px !important; // Precise corner positioning
+    right: 20px !important;
     background-color: rgba(255, 255, 255, 0.2) !important;
     border: 3px solid #000000 !important;
     border-radius: 50% !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    z-index: 9999 !important;
+    z-index: 10000 !important;
     pointer-events: auto !important;
     transform: none !important;
 
