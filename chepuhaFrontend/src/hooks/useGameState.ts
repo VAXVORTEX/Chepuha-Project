@@ -76,8 +76,19 @@ export function useGameState(sessionId: string | null) {
     }, [sessionId]);
 
     useEffect(() => {
-        fetchState();
+        // Reset state immediately when sessionId changes to avoid data leaking between sessions
+        setGameState({
+            session: null,
+            players: [],
+            rounds: [],
+            activeRoundId: null,
+            currentAnswers: [],
+            error: null,
+            dataReady: false,
+        });
+
         if (!sessionId) return;
+        fetchState();
 
         try {
             const sessionChannel = supabase

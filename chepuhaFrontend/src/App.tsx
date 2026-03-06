@@ -546,6 +546,7 @@ function App() {
       roomCode: generateRoomCode(),
       isCreatingLobby: true,
       isLobby: false,
+      isJoining: false,
       sessionId: null,
       playerId: null,
       isHost: false,
@@ -554,6 +555,13 @@ function App() {
       currentRound: 1,
       currentRoundId: null,
       answeredRoundId: null,
+      myStorySheetId: null,
+      joinedCount: 0,
+      totalCount: 0,
+      playerCount: 0,
+      allStorySheets: [],
+      allStories: [],
+      error: ""
     }));
   };
 
@@ -598,9 +606,18 @@ function App() {
   };
 
   const doShowJoinScreen = () => {
-    setAppState(prev => ({ ...prev, phase: Phases.Join }));
-    setAppState(prev => ({ ...prev, didGameStart: false }));
-    setAppState(prev => ({ ...prev, isCreatingLobby: false }));
+    localStorage.removeItem(STATE_STORAGE_KEY);
+    setAppState(prev => ({
+      ...prev,
+      phase: Phases.Join,
+      didGameStart: false,
+      sessionId: null,
+      playerId: null,
+      isHost: false,
+      answeredRoundId: null,
+      isCreatingLobby: false,
+      error: ""
+    }));
   };
 
   const handleJoinGame = async (nick: string, code: string) => {
@@ -838,10 +855,18 @@ function App() {
       setAppState(prev => ({ ...prev, joinedCount: curAnswers.length }));
       setAppState(prev => ({ ...prev, totalCount: playerCount > 0 ? playerCount : players.length }));
       setIsTransitioning(false);
-      setAppState(prev => ({ ...prev, phase: Phases.Waiting, answeredRoundId: currentRoundId }));
+      setAppState(prev => ({
+        ...prev,
+        phase: Phases.Waiting,
+        answeredRoundId: currentRoundId,
+        error: ""
+      }));
     } catch (err: any) {
       setIsTransitioning(false);
-      setAppState(prev => ({ ...prev, phase: Phases.Waiting, answeredRoundId: currentRoundId }));
+      setAppState(prev => ({
+        ...prev,
+        error: String(t('ERR_SUBMIT' as any)) + ": " + (err.message || String(err))
+      }));
     }
   };
 
