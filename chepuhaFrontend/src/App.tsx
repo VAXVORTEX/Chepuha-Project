@@ -243,6 +243,8 @@ function App() {
         });
       if (built.length > 0) {
         setAppState(prev => ({ ...prev, allStories: built }));
+        // Mark session as completed in DB to avoid collisions and "tails"
+        updateGameSession(sessionId, { session_status: 'completed' }).catch(() => { });
         const hostPlayer = players.find(p => p.player_order === 1) || players[0];
         const hostName = hostPlayer ? hostPlayer.nickname : 'Невідомо';
         const date = new Date().toLocaleString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -289,7 +291,7 @@ function App() {
         roundStartedAt: latestRound.started_at || prev.roundStartedAt,
         phase: newPhase,
         joinedCount: 0,
-        answeredRoundId: (String(latestRound.id) === String(prev.answeredRoundId)) ? prev.answeredRoundId : null
+        answeredRoundId: null // Crucial: clear and don't carry over
       }));
     } else if (String(latestRound.id) === String(currentRoundId)) {
       if (phase === Phases.Main && (currentAnswers.some(a => {
@@ -538,17 +540,20 @@ function App() {
   };
 
   const doShowCreateScreen = () => {
-    localStorage.removeItem(STATE_STORAGE_KEY); // Explicitly clear old session from storage
+    localStorage.removeItem(STATE_STORAGE_KEY);
     setAppState(prev => ({
       ...prev,
       roomCode: generateRoomCode(),
       isCreatingLobby: true,
       isLobby: false,
-      sessionId: null, // Critical: Clear previous session state
+      sessionId: null,
       playerId: null,
       isHost: false,
       didGameStart: false,
-      phase: Phases.Main
+      phase: Phases.Main,
+      currentRound: 1,
+      currentRoundId: null,
+      answeredRoundId: null,
     }));
   };
 
@@ -750,6 +755,7 @@ function App() {
         phase: Phases.Main,
         currentRound: 1,
         currentRoundId: firstRound.id,
+        answeredRoundId: null,
         roundStartedAt: ts,
         userAnswers: [],
         totalCount: players.length,

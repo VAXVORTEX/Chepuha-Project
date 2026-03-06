@@ -267,8 +267,8 @@
 
 .homeIconPos {
   position: absolute;
-  bottom: 15px !important; // Offset for 1.2x scale lock at 3px
-  right: 15px !important;
+  bottom: 12px !important;
+  right: 12px !important;
   width: 120px;
   height: 120px;
   background-color: rgba(255, 255, 255, 0.2);
@@ -278,8 +278,9 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  z-index: 10000; // Above characters for clickability
+  z-index: 10000;
   transition: transform 0.2s ease;
+  transform-origin: bottom right;
 
   &:hover {
     transform: scale(1.2);
@@ -678,8 +679,8 @@
     position: absolute !important;
     width: 60px !important;
     height: 60px !important;
-    bottom: 10px !important; // Offset for 1.15x scale lock at ~5px
-    right: 10px !important;
+    bottom: 8px !important;
+    right: 8px !important;
     background-color: rgba(255, 255, 255, 0.2) !important;
     border: 3px solid #000000 !important;
     border-radius: 50% !important;
@@ -688,6 +689,7 @@
     justify-content: center !important;
     z-index: 10000 !important;
     pointer-events: auto !important;
+    transform-origin: bottom right !important;
 
     img {
       width: 40px !important;

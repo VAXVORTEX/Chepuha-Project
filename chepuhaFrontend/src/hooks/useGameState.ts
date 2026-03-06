@@ -123,12 +123,25 @@ export function useGameState(sessionId: string | null) {
                 )
                 .on(
                     'postgres_changes',
-                    { event: '*', schema: 'public', table: 'answers' },
+                    { event: 'INSERT', schema: 'public', table: 'answers' },
                     (payload) => {
                         if (payload?.new && payload?.eventType === 'INSERT') {
-                            setGameState(prev => ({ ...prev, currentAnswers: [...prev.currentAnswers, payload.new as any] }));
+                            const newAnswer = payload.new as any;
+                            // Verify if this answer belongs to the active round of our session
+                            // Note: Since we don't have session_id directly in 'answers' table, 
+                            // we cross-reference with activeRoundId
+                            setGameState(prev => {
+                                if (prev.activeRoundId && String(newAnswer.round_id) === String(prev.activeRoundId)) {
+                                    const exists = prev.currentAnswers.some(a => a.id === newAnswer.id);
+                                    return {
+                                        ...prev,
+                                        currentAnswers: exists ? prev.currentAnswers : [...prev.currentAnswers, newAnswer]
+                                    };
+                                }
+                                return prev;
+                            });
                         }
-                        fetchState();
+                        if (Date.now() % 5 === 0) fetchState(); // Throttled re-sync
                     }
                 )
                 .subscribe((status) => {

@@ -76,10 +76,11 @@
 
 .dots {
   display: inline-flex;
-  margin-left: 4px;
+  margin-left: 10px; // More space after text
+  @include font-pangolin(80); // Bigger dots for better visibility
 
   span {
-    animation: dot-blink 1.4s infinite;
+    animation: dot-blink 1.5s infinite both;
     opacity: 0;
 
     &:nth-child(2) {
@@ -98,6 +99,10 @@
   }
 
   20% {
+    opacity: 1;
+  }
+
+  80% {
     opacity: 1;
   }
 
