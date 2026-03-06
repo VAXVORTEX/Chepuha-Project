@@ -1097,16 +1097,17 @@ function App() {
       )}
 
       {/* Global Background Characters & Home Button Sync */}
+      {/* Global Background Characters & Home Button Sync */}
       {/* Boys: Lobby, Create, Join, and Waiting for Answers during game */}
-      {(phase === Phases.Join || isCreatingLobby || isLobby || (didGameStart && phase === Phases.Waiting)) && phase !== Phases.Main && phase !== Phases.End && phase !== Phases.History && (
+      {(isCreatingLobby || isLobby || phase === Phases.Join || (didGameStart && phase === Phases.Waiting)) && phase !== Phases.End && phase !== Phases.History && (
         <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
-          <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
+          <div className="yellow-guy-bg" onClick={playSecretMusic} />
+          <div className="red-guy-bg" onClick={playSecretMusic} />
         </>
       )}
 
-      {/* Home: Lobby, Create, Join ONLY */}
-      {(phase === Phases.Join || isCreatingLobby || isLobby) && phase !== Phases.End && phase !== Phases.History && (
+      {/* Home Button: Lobby, Create, Join ONLY */}
+      {(isCreatingLobby || isLobby || phase === Phases.Join) && phase !== Phases.End && phase !== Phases.History && (
         <HomeIcon onClick={goHome} className="homeIconPos" />
       )}
     </div>

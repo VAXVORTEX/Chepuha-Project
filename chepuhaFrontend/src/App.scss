@@ -267,8 +267,8 @@
 
 .homeIconPos {
   position: absolute;
-  bottom: 5px !important; // Absolute extreme corner
-  right: 5px !important;
+  bottom: 15px !important; // Offset for 1.2x scale lock at 3px
+  right: 15px !important;
   width: 120px;
   height: 120px;
   background-color: rgba(255, 255, 255, 0.2);
@@ -282,7 +282,7 @@
   transition: transform 0.2s ease;
 
   &:hover {
-    transform: scale(1.1);
+    transform: scale(1.2);
   }
 
   img {
@@ -307,7 +307,7 @@
   bottom: 0;
   background-size: contain;
   background-repeat: no-repeat;
-  z-index: 5;
+  z-index: 100; // Above general card backgrounds
   opacity: 0.5;
   cursor: default;
   pointer-events: auto;
@@ -678,8 +678,8 @@
     position: absolute !important;
     width: 60px !important;
     height: 60px !important;
-    bottom: 5px !important; // Extreme corner
-    right: 5px !important;
+    bottom: 10px !important; // Offset for 1.15x scale lock at ~5px
+    right: 10px !important;
     background-color: rgba(255, 255, 255, 0.2) !important;
     border: 3px solid #000000 !important;
     border-radius: 50% !important;
@@ -688,7 +688,6 @@
     justify-content: center !important;
     z-index: 10000 !important;
     pointer-events: auto !important;
-    transform: none !important;
 
     img {
       width: 40px !important;
@@ -726,7 +725,7 @@
     top: auto !important;
     transform: none !important;
     opacity: 0.5;
-    z-index: 5 !important; // Below buttons so Create Game is always clickable
+    z-index: 100 !important; // Above card backgrounds
     pointer-events: auto !important;
   }
 
