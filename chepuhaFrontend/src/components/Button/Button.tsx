@@ -14,6 +14,13 @@ const Button: React.FC<ButtonSet> = ({ label, variant, phase, onClick, disabled,
   return (
     <button className={combClasses} onClick={onClick} disabled={disabled || loading}>
       {label}
+      {loading && (
+        <span className={styles.dots}>
+          <span>.</span>
+          <span>.</span>
+          <span>.</span>
+        </span>
+      )}
     </button>
   );
 };

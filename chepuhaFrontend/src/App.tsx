@@ -538,6 +538,7 @@ function App() {
   };
 
   const doShowCreateScreen = () => {
+    localStorage.removeItem(STATE_STORAGE_KEY); // Explicitly clear old session from storage
     setAppState(prev => ({
       ...prev,
       roomCode: generateRoomCode(),
