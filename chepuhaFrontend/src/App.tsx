@@ -538,9 +538,17 @@ function App() {
   };
 
   const doShowCreateScreen = () => {
-    setAppState(prev => ({ ...prev, roomCode: generateRoomCode() }));
-    setAppState(prev => ({ ...prev, isCreatingLobby: true }));
-    setAppState(prev => ({ ...prev, isLobby: false }));
+    setAppState(prev => ({
+      ...prev,
+      roomCode: generateRoomCode(),
+      isCreatingLobby: true,
+      isLobby: false,
+      sessionId: null, // Critical: Clear previous session state
+      playerId: null,
+      isHost: false,
+      didGameStart: false,
+      phase: Phases.Main
+    }));
   };
 
   const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -597,7 +605,7 @@ function App() {
       const allSessions = await getGameSessions();
       const targetSession = allSessions.find(s => s.session_name === code && s.session_status !== 'completed');
       if (!targetSession) {
-        return setAppState(prev => ({ ...prev, error: String(t('ERR_NOT_FOUND' as any)) }));
+        return setAppState(prev => ({ ...prev, isJoining: false, error: String(t('ERR_NOT_FOUND' as any)) }));
       }
 
       // Set nickname, roomCode early for UX but DON'T set sessionId yet to avoid triggering
@@ -608,7 +616,7 @@ function App() {
       const existingPlayer = existingPlayers.find((p: Player) => p.nickname.toLowerCase() === nick.toLowerCase());
 
       if (targetSession.session_status === 'active' && !existingPlayer) {
-        return setAppState(prev => ({ ...prev, error: String(t('ERR_NOT_FOUND' as any)) }));
+        return setAppState(prev => ({ ...prev, isJoining: false, error: String(t('ERR_NOT_FOUND' as any)) }));
       }
 
       if (existingPlayer) {
@@ -642,27 +650,24 @@ function App() {
         // the sync useEffect from running mid-update with stale state
         // Enforce a minimum duration for the "Joining" message (3 seconds)
         const finishJoin = () => {
-          const elapsed = Date.now() - joinStartTime;
-          const wait = Math.max(0, 3000 - elapsed);
-          setTimeout(() => {
-            setAppState(prev => ({
-              ...prev,
-              sessionId: targetSession.id,
-              playerId: existingPlayer.id,
-              isHost: existingPlayer.player_order === 1,
-              isLobby: targetSession.session_status === 'waiting',
-              didGameStart: targetSession.session_status === 'active',
-              phase: rejoinPhase,
-              currentRoundId: rejoinRoundId,
-              answeredRoundId: rejoinAnsweredId,
-              roundStartedAt: rejoinStartedAt,
-              currentRound: rejoinRound,
-              nickname: nick,
-              roomCode: code,
-              isCreatingLobby: false,
-            }));
-            refreshState();
-          }, wait);
+          setAppState(prev => ({
+            ...prev,
+            sessionId: targetSession.id,
+            playerId: existingPlayer.id,
+            isHost: existingPlayer.player_order === 1,
+            isLobby: targetSession.session_status === 'waiting',
+            didGameStart: targetSession.session_status === 'active',
+            phase: rejoinPhase,
+            currentRoundId: rejoinRoundId,
+            answeredRoundId: rejoinAnsweredId,
+            roundStartedAt: rejoinStartedAt,
+            currentRound: rejoinRound,
+            nickname: nick,
+            roomCode: code,
+            isCreatingLobby: false,
+            isJoining: false,
+          }));
+          refreshState();
         };
         finishJoin();
       } else {
@@ -672,24 +677,20 @@ function App() {
           players_status: 'joined',
         });
         const finishJoinNew = () => {
-          const elapsed = Date.now() - joinStartTime;
-          const wait = Math.max(0, 3000 - elapsed);
-          setTimeout(() => {
-            setAppState(prev => ({
-              ...prev,
-              sessionId: targetSession.id,
-              playerId: guest.id,
-              isHost: false,
-              isLobby: true,
-              didGameStart: false,
-              phase: Phases.Main,
-              nickname: nick,
-              roomCode: code,
-              isCreatingLobby: false,
-              isJoining: false,
-            }));
-            refreshState();
-          }, wait);
+          setAppState(prev => ({
+            ...prev,
+            sessionId: targetSession.id,
+            playerId: guest.id,
+            isHost: false,
+            isLobby: true,
+            didGameStart: false,
+            phase: Phases.Main,
+            nickname: nick,
+            roomCode: code,
+            isCreatingLobby: false,
+            isJoining: false,
+          }));
+          refreshState();
         };
         finishJoinNew();
       }

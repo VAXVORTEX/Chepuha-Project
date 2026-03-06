@@ -7,11 +7,12 @@ interface ButtonSet {
   phase: Phases;
   onClick: () => void;
   disabled?: boolean;
+  loading?: boolean;
 }
-const Button: React.FC<ButtonSet> = ({ label, variant, phase, onClick, disabled }) => {
-  const combClasses = `${styles.button} ${styles[variant]} ${styles[phase]}`;
+const Button: React.FC<ButtonSet> = ({ label, variant, phase, onClick, disabled, loading }) => {
+  const combClasses = `${styles.button} ${styles[variant]} ${styles[phase]} ${loading ? styles.loading : ""}`;
   return (
-    <button className={combClasses} onClick={onClick}  disabled={disabled}>
+    <button className={combClasses} onClick={onClick} disabled={disabled || loading}>
       {label}
     </button>
   );

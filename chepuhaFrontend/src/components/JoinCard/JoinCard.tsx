@@ -95,6 +95,7 @@ const JoinCard: React.FC<JoinCardProps> = ({
               onClick={doJoinClick}
               phase={Phases.Join}
               disabled={loading}
+              loading={loading}
             />
           </div>
         </div>

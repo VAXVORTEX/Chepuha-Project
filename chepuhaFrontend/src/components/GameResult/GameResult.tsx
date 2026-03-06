@@ -89,7 +89,9 @@ const GameResult: React.FC<ResultProps> = ({
           </div>
           {(phase === Phases.End || phase === Phases.History) && (
             <div className={styles.actions}>
-              <HomeIcon onClick={onHome} className="homeIconPos" />
+              <button className={styles.GoBackButton} onClick={onHome}>
+                {t('BACK_TO_MENU')}
+              </button>
               {onSave && (
                 <button
                   className={styles.GoBackButton}

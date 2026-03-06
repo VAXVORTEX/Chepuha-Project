@@ -38,7 +38,9 @@ const HistoryScreen: React.FC<HistoryScreenProps> = ({
                         )}
                     </div>
                     <div className={styles.actions}>
-                        <HomeIcon onClick={onHome} className="homeIconPos" />
+                        <button className={styles.GoBackButton} onClick={onHome}>
+                            {t('BACK_TO_MENU')}
+                        </button>
                     </div>
                 </div>
                 <div className={styles.shadow}></div>

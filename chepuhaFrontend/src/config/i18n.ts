@@ -239,6 +239,7 @@ export const DICTIONARY = {
         CONNECTION_HELP: "Проблеми зі з'єднанням?",
         TROUBLESHOOT: "Спробуйте змінити вузол VPN (крім Гельсінкі), вимкнути GoodByeDPI або використати мобільний інтернет.",
         JOINING: "ПРИЄДНАННЯ...",
+        BACK_TO_MENU: "НА ГОЛОВНИЙ ЕКРАН",
     },
     en: {
         CREATE_GAME: "CREATE GAME",
@@ -480,6 +481,7 @@ export const DICTIONARY = {
         CONNECTION_HELP: "Connection problems?",
         TROUBLESHOOT: "Try changing VPN node (avoid Helsinki), disabling GoodByeDPI, or using mobile data.",
         JOINING: "JOINING...",
+        BACK_TO_MENU: "BACK TO MENU",
     }
 };
 export type Language = 'uk' | 'en';

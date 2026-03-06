@@ -68,3 +68,26 @@
     background-color: $gray-medium;
   }
 }
+
+.loading {
+  animation: pulse 1.5s infinite ease-in-out;
+  cursor: wait;
+  pointer-events: none;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1.0);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(1.0);
+    opacity: 1;
+  }
+}
