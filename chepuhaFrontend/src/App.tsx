@@ -870,8 +870,6 @@ function App() {
 
       {!didGameStart && isCreatingLobby && !isLobby && phase !== Phases.Join && (
         <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
-          <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
           <div className="create-game-container" style={{ pointerEvents: 'none' }}>
             <div className="input-wrapper" style={{ pointerEvents: 'auto' }}>
               <input
@@ -907,15 +905,12 @@ function App() {
                 onClick={goToLobby}
               />
             </div>
-            <HomeIcon onClick={goHome} className="homeIconPos" />
           </div>
         </>
       )}
 
       {!didGameStart && isLobby && phase !== Phases.Join && (
         <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
-          <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
           <div className="lobby-timer-display">
             <span className="timer-title">{t('LOBBY_TIMER_TITLE' as any)}</span>
             <span className="timer-time">
@@ -973,8 +968,6 @@ function App() {
 
       {didGameStart && phase === Phases.Waiting && (
         <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} />
-          <div className="red-guy-bg" onClick={playSecretMusic} />
           <Round
             className="roundPos"
             currentRound={currentRound}
@@ -1075,6 +1068,18 @@ function App() {
           phase={phase}
           onHome={() => setAppState(prev => ({ ...prev, selectedHistoryGame: null }))}
         />
+      )}
+
+      {/* Global Background Characters & Home Button Sync */}
+      {(phase === Phases.Join || isCreatingLobby || isLobby || (didGameStart && phase === Phases.Waiting)) && (
+        <>
+          <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
+          <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
+        </>
+      )}
+
+      {(phase === Phases.Join || isCreatingLobby || isLobby) && (
+        <HomeIcon onClick={goHome} className="homeIconPos" />
       )}
     </div>
   );

@@ -256,8 +256,8 @@
 
 .homeIconPos {
   position: absolute;
-  bottom: 15px; // Precise corner positioning
-  right: 20px;
+  bottom: 5px !important; // Absolute extreme corner
+  right: 5px !important;
   width: 120px;
   height: 120px;
   background-color: rgba(255, 255, 255, 0.2);
@@ -303,7 +303,7 @@
 }
 
 .yellow-guy-bg {
-  bottom: 40px; // Lowered but above the corner button
+  bottom: 60px !important; // Above the corner button globally for sync
   right: -50px;
   background-image: url("./assets/images/yellowGuy.png");
   display: block;
@@ -661,8 +661,8 @@
     position: absolute !important;
     width: 60px !important;
     height: 60px !important;
-    bottom: 15px !important; // Precise corner positioning
-    right: 20px !important;
+    bottom: 5px !important; // Extreme corner
+    right: 5px !important;
     background-color: rgba(255, 255, 255, 0.2) !important;
     border: 3px solid #000000 !important;
     border-radius: 50% !important;
@@ -718,7 +718,7 @@
     height: 130px !important;
     right: -10px !important;
     left: auto !important;
-    bottom: 80px !important; // Raised above House icon
+    bottom: 60px !important; // Sync with global
   }
 
   .red-guy-bg {
