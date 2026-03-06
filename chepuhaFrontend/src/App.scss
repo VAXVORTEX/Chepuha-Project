@@ -248,6 +248,17 @@
   }
 }
 
+.timerPos {
+  position: absolute !important;
+  top: 40px !important;
+  left: 60px !important;
+  z-index: 1000 !important;
+  right: auto !important;
+  width: max-content !important;
+  text-align: left !important;
+  margin: 0 !important;
+}
+
 .roundPos {
   position: absolute;
   top: 40px;
@@ -545,7 +556,7 @@
     padding-bottom: 20px;
 
     .button {
-      margin-top: 10px; // Push button slightly lower relative to options
+      margin-top: 40px !important; // Lower button further on mobile
     }
   }
 
@@ -641,6 +652,12 @@
   .roundPos {
     top: 10px;
     right: 15px;
+    transform: scale(0.7);
+  }
+
+  .timerPos {
+    top: 10px !important;
+    left: 15px !important;
     transform: scale(0.7);
   }
 

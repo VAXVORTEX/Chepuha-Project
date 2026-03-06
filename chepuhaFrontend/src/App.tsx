@@ -510,20 +510,30 @@ function App() {
   };
 
   const goHome = () => {
-    setAppState(prev => ({ ...prev, phase: Phases.Main }));
-    setAppState(prev => ({ ...prev, didGameStart: false }));
-    setAppState(prev => ({ ...prev, isCreatingLobby: false }));
-    setAppState(prev => ({ ...prev, isLobby: false }));
-    setAppState(prev => ({ ...prev, error: "" }));
-    setAppState(prev => ({ ...prev, currentRound: 1 }));
-    setAppState(prev => ({ ...prev, userAnswers: [] }));
-    setAppState(prev => ({ ...prev, sessionId: null }));
-    setAppState(prev => ({ ...prev, playerId: null }));
-    setAppState(prev => ({ ...prev, isHost: false }));
-    setAppState(prev => ({ ...prev, currentRoundId: null }));
-    setAppState(prev => ({ ...prev, myStorySheetId: null }));
-    setAppState(prev => ({ ...prev, selectedHistoryGame: null }));
-    setAppState(prev => ({ ...prev, lobbyCreatedAt: null }));
+    setAppState(prev => ({
+      ...prev,
+      phase: Phases.Main,
+      didGameStart: false,
+      isCreatingLobby: false,
+      isLobby: false,
+      isJoining: false,
+      error: "",
+      currentRound: 1,
+      userAnswers: [],
+      sessionId: null,
+      playerId: null,
+      isHost: false,
+      currentRoundId: null,
+      myStorySheetId: null,
+      selectedHistoryGame: null,
+      lobbyCreatedAt: null,
+      roomCode: "",
+      joinedCount: 0,
+      totalCount: 0,
+      playerCount: 0,
+      allStorySheets: [],
+      allStories: [],
+    }));
     localStorage.removeItem(STATE_STORAGE_KEY);
   };
 
@@ -581,6 +591,7 @@ function App() {
 
   const handleJoinGame = async (nick: string, code: string) => {
     if (appState.isJoining) return;
+    const joinStartTime = Date.now();
     setAppState(prev => ({ ...prev, isJoining: true, error: "" }));
     try {
       const allSessions = await getGameSessions();
@@ -629,45 +640,59 @@ function App() {
 
         // Set all state atomically in a single call — including sessionId — to prevent
         // the sync useEffect from running mid-update with stale state
-        setAppState(prev => ({
-          ...prev,
-          sessionId: targetSession.id,
-          playerId: existingPlayer.id,
-          isHost: existingPlayer.player_order === 1,
-          isLobby: targetSession.session_status === 'waiting',
-          didGameStart: targetSession.session_status === 'active',
-          phase: rejoinPhase,
-          currentRoundId: rejoinRoundId,
-          answeredRoundId: rejoinAnsweredId,
-          roundStartedAt: rejoinStartedAt,
-          currentRound: rejoinRound,
-          nickname: nick,
-          roomCode: code,
-          isCreatingLobby: false,
-          isJoining: false,
-        }));
+        // Enforce a minimum duration for the "Joining" message (3 seconds)
+        const finishJoin = () => {
+          const elapsed = Date.now() - joinStartTime;
+          const wait = Math.max(0, 3000 - elapsed);
+          setTimeout(() => {
+            setAppState(prev => ({
+              ...prev,
+              sessionId: targetSession.id,
+              playerId: existingPlayer.id,
+              isHost: existingPlayer.player_order === 1,
+              isLobby: targetSession.session_status === 'waiting',
+              didGameStart: targetSession.session_status === 'active',
+              phase: rejoinPhase,
+              currentRoundId: rejoinRoundId,
+              answeredRoundId: rejoinAnsweredId,
+              roundStartedAt: rejoinStartedAt,
+              currentRound: rejoinRound,
+              nickname: nick,
+              roomCode: code,
+              isCreatingLobby: false,
+            }));
+            refreshState();
+          }, wait);
+        };
+        finishJoin();
       } else {
         const guest = await createPlayer({
           nickname: nick,
           session_id: targetSession.id,
           players_status: 'joined',
         });
-        setAppState(prev => ({
-          ...prev,
-          sessionId: targetSession.id,
-          playerId: guest.id,
-          isHost: false,
-          isLobby: true,
-          didGameStart: false,
-          phase: Phases.Main,
-          nickname: nick,
-          roomCode: code,
-          isCreatingLobby: false,
-          isJoining: false,
-        }));
+        const finishJoinNew = () => {
+          const elapsed = Date.now() - joinStartTime;
+          const wait = Math.max(0, 3000 - elapsed);
+          setTimeout(() => {
+            setAppState(prev => ({
+              ...prev,
+              sessionId: targetSession.id,
+              playerId: guest.id,
+              isHost: false,
+              isLobby: true,
+              didGameStart: false,
+              phase: Phases.Main,
+              nickname: nick,
+              roomCode: code,
+              isCreatingLobby: false,
+              isJoining: false,
+            }));
+            refreshState();
+          }, wait);
+        };
+        finishJoinNew();
       }
-
-      await refreshState();
     } catch (err: any) {
       setAppState(prev => ({
         ...prev,
@@ -719,6 +744,7 @@ function App() {
         ...prev,
         didGameStart: true,
         isLobby: false,
+        isCreatingLobby: false,
         phase: Phases.Main,
         currentRound: 1,
         currentRoundId: firstRound.id,
@@ -1071,14 +1097,16 @@ function App() {
       )}
 
       {/* Global Background Characters & Home Button Sync */}
-      {(phase === Phases.Join || isCreatingLobby || isLobby || (didGameStart && phase === Phases.Waiting)) && (
+      {/* Boys: Lobby, Create, Join, and Waiting for Answers during game */}
+      {(phase === Phases.Join || isCreatingLobby || isLobby || (didGameStart && phase === Phases.Waiting)) && phase !== Phases.Main && phase !== Phases.End && phase !== Phases.History && (
         <>
           <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
           <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
         </>
       )}
 
-      {(phase === Phases.Join || isCreatingLobby || isLobby) && (
+      {/* Home: Lobby, Create, Join ONLY */}
+      {(phase === Phases.Join || isCreatingLobby || isLobby) && phase !== Phases.End && phase !== Phases.History && (
         <HomeIcon onClick={goHome} className="homeIconPos" />
       )}
     </div>
