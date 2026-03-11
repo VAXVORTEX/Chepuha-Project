@@ -151,6 +151,13 @@ const getInitialState = (): AppState => {
   return defaultState;
 };
 
+export const AVAILABLE_COLORS = [
+  '#e52929', '#2962e5', '#29a62b', '#e5a629', '#9c29e5',
+  '#e529b3', '#29e5d0', '#ffffff', '#ff8c00', '#ff1493',
+  '#00ff00', '#00bfff', '#8a2be2', '#a52a2a', '#ff69b4',
+  '#4682b4', '#d2691e', '#32cd32'
+];
+
 function App() {
   const [appState, setAppState] = useState<AppState>(getInitialState);
 
@@ -210,6 +217,15 @@ function App() {
       localStorage.setItem('chepuhaCarouselIdx', String(next));
       setAppState(ps => ({ ...ps, selectedTemplate: chosen === 'random' ? 'random' : chosen }));
       return next;
+    });
+  };
+
+  const cycleColor = (direction: -1 | 1) => {
+    setAppState(prev => {
+      const idx = AVAILABLE_COLORS.indexOf(prev.playerColor);
+      const currentIdx = idx === -1 ? 0 : idx;
+      const newIdx = (currentIdx + direction + AVAILABLE_COLORS.length) % AVAILABLE_COLORS.length;
+      return { ...prev, playerColor: AVAILABLE_COLORS[newIdx] };
     });
   };
 
@@ -965,6 +981,12 @@ function App() {
               phase={phase}
               onClick={doShowJoinScreen}
             />
+            <Button
+              label={t('HISTORY')}
+              variant="primary"
+              phase={phase}
+              onClick={doShowHistory}
+            />
           </div>
           <div className="language-selector">
             <button
@@ -998,11 +1020,11 @@ function App() {
             <span className="error-message" style={{ minHeight: '24px', display: 'block', pointerEvents: 'auto' }}>{error || '\u00A0'}</span>
 
             {/* ── Row: Carousel + Game Length + Options ── */}
-            <h3 className="template-title" style={{ textAlign: "center", width: "100%", marginBottom: "15px" }}>{t('CHOOSE_STORY')}</h3>
             <div className="create-options-row" style={{ pointerEvents: 'auto' }}>
 
               {/* Carousel */}
               <div className="carousel-section">
+                <h3 className="template-title" style={{ marginBottom: "15px" }}>{t('CHOOSE_STORY')}</h3>
                 <div
                   className="template-carousel"
                   ref={carouselRef}
@@ -1036,50 +1058,52 @@ function App() {
               </div>
 
               {/* Game Length + Extra Options */}
-              <div className="game-settings-section">
+              <div className="game-settings-container">
+                <div className="game-settings-section">
 
-                {/* Game Length */}
-                <div className="game-length-picker">
-                  <h3 className="template-title">{t('GAME_LENGTH_TITLE' as any)}</h3>
-                  {([6, 9, 12] as Array<6 | 9 | 12>).map(len => (
-                    <label key={len} className={`length-option ${gameLength === len ? 'length-option--active' : ''}`}>
-                      <input type="radio" name="gameLength" value={len} checked={gameLength === len}
-                        onChange={() => setAppState(prev => ({ ...prev, gameLength: len }))} />
-                      <span className="length-pill">
-                        {len === 6 ? t('GAME_LENGTH_SHORT' as any) : len === 9 ? t('GAME_LENGTH_NORMAL' as any) : t('GAME_LENGTH_LONG' as any)}
-                      </span>
+                  {/* Game Length */}
+                  <div className="game-length-picker">
+                    <h3 className="template-title">{t('GAME_LENGTH_TITLE' as any)}</h3>
+                    {([6, 9, 12] as Array<6 | 9 | 12>).map(len => (
+                      <label key={len} className={`length-option ${gameLength === len ? 'length-option--active' : ''}`}>
+                        <input type="radio" name="gameLength" value={len} checked={gameLength === len}
+                          onChange={() => setAppState(prev => ({ ...prev, gameLength: len }))} />
+                        <span className="length-pill">
+                          {len === 6 ? t('GAME_LENGTH_SHORT' as any) : len === 9 ? t('GAME_LENGTH_NORMAL' as any) : t('GAME_LENGTH_LONG' as any)}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+
+                  {/* Extra Options */}
+                  <div className="extra-options">
+                    {/* Color Highlight */}
+                    <label className={`toggle-option ${colorHighlight ? 'toggle-option--active' : ''}`}>
+                      <span className="toggle-label">🎨 {t('OPTS_HIGHLIGHTS' as any)}</span>
+                      <div className="toggle-switch" onClick={() => setAppState(prev => ({ ...prev, colorHighlight: !prev.colorHighlight }))}>
+                        <div className={`toggle-knob ${colorHighlight ? 'toggle-knob--on' : ''}`} />
+                      </div>
                     </label>
-                  ))}
+
+                    {/* Hints */}
+                    <label className={`toggle-option ${hintsEnabled ? 'toggle-option--active' : ''}`}>
+                      <span className="toggle-label">💡 {t('OPTS_HINTS' as any)}</span>
+                      <div className="toggle-switch" onClick={() => setAppState(prev => ({ ...prev, hintsEnabled: !prev.hintsEnabled }))}>
+                        <div className={`toggle-knob ${hintsEnabled ? 'toggle-knob--on' : ''}`} />
+                      </div>
+                    </label>
+
+                    {/* Story Mode */}
+                    <label className={`toggle-option ${storyMode ? 'toggle-option--active' : ''}`}>
+                      <span className="toggle-label">🕹 {t('STORY_MODE' as any)}</span>
+                      <div className="toggle-switch" onClick={() => setAppState(prev => ({ ...prev, storyMode: !prev.storyMode }))}>
+                        <div className={`toggle-knob ${storyMode ? 'toggle-knob--on' : ''}`} />
+                      </div>
+                    </label>
+                    {storyMode && <div className="story-mode-desc-container"><p className="story-mode-desc">{t('STORY_MODE_DESC' as any)}</p></div>}
+                  </div>
+
                 </div>
-
-                {/* Extra Options */}
-                <div className="extra-options">
-                  {/* Color Highlight */}
-                  <label className={`toggle-option ${colorHighlight ? 'toggle-option--active' : ''}`}>
-                    <span className="toggle-label">🎨 {t('OPTS_HIGHLIGHTS' as any)}</span>
-                    <div className="toggle-switch" onClick={() => setAppState(prev => ({ ...prev, colorHighlight: !prev.colorHighlight }))}>
-                      <div className={`toggle-knob ${colorHighlight ? 'toggle-knob--on' : ''}`} />
-                    </div>
-                  </label>
-
-                  {/* Hints */}
-                  <label className={`toggle-option ${hintsEnabled ? 'toggle-option--active' : ''}`}>
-                    <span className="toggle-label">💡 {t('OPTS_HINTS' as any)}</span>
-                    <div className="toggle-switch" onClick={() => setAppState(prev => ({ ...prev, hintsEnabled: !prev.hintsEnabled }))}>
-                      <div className={`toggle-knob ${hintsEnabled ? 'toggle-knob--on' : ''}`} />
-                    </div>
-                  </label>
-
-                  {/* Story Mode */}
-                  <label className={`toggle-option ${storyMode ? 'toggle-option--active' : ''}`}>
-                    <span className="toggle-label">🕹 {t('STORY_MODE' as any)}</span>
-                    <div className="toggle-switch" onClick={() => setAppState(prev => ({ ...prev, storyMode: !prev.storyMode }))}>
-                      <div className={`toggle-knob ${storyMode ? 'toggle-knob--on' : ''}`} />
-                    </div>
-                  </label>
-                  {storyMode && <p className="story-mode-desc">{t('STORY_MODE_DESC' as any)}</p>}
-                </div>
-
               </div>
             </div>
 
@@ -1109,35 +1133,39 @@ function App() {
               <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
               <div className="players-list">
                 {players.length > 0 ? (
-                  players.map((p, i) => (
-                    <div key={p.id || String(i)} className="player-item">
-                      <div className="player-name-wrapper">
-                        {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
-                        <span className="player-name">{p.nickname}</span>
+                  players.map((p, i) => {
+                    const isMe = String(p.id) === String(playerId) || (i === 0 && nickname === p.nickname);
+                    return (
+                      <div key={p.id || String(i)} className="player-item">
+                        <div className="player-name-wrapper">
+                          {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
+                          <span className="player-name">{p.nickname}</span>
+                        </div>
+                        {isMe && (
+                          <div className="inline-color-picker">
+                            <span className="inline-color-label">{t('COLOR' as any).toLowerCase()}</span>
+                            <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
+                            <div className="inline-color-swatch" style={{ background: playerColor }} />
+                            <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))
+                    )
+                  })
                 ) : (
                   <div className="player-item">
                     <div className="player-name-wrapper">
                       <img src={crownImage} alt="Host" className="crown-icon" />
                       <span className="player-name">{nickname}</span>
                     </div>
+                    <div className="inline-color-picker">
+                      <span className="inline-color-label">{t('COLOR' as any).toLowerCase()}</span>
+                      <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
+                      <div className="inline-color-swatch" style={{ background: playerColor }} />
+                      <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
+                    </div>
                   </div>
                 )}
-              </div>
-              <div className="lobby-color-picker" style={{ textAlign: 'center', marginTop: '20px' }}>
-                <h3 className="lobby-subtitle" style={{ fontSize: '20px', marginBottom: '10px' }}>{t('CHOOSE_COLOR')}</h3>
-                <div className="color-picker-row" style={{ justifyContent: 'center' }}>
-                  {['#e52929', '#2962e5', '#29a62b', '#e5a629', '#9c29e5', '#e529b3', '#29e5d0', '#fff'].map(c => (
-                    <button
-                      key={c}
-                      className={`color-swatch ${playerColor === c ? 'color-swatch--active' : ''}`}
-                      style={{ background: c }}
-                      onClick={() => setAppState(prev => ({ ...prev, playerColor: c }))}
-                    />
-                  ))}
-                </div>
               </div>
             </div>
             <div className="error-message" style={{ color: "red", minHeight: '24px' }}>

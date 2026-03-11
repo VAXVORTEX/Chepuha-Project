@@ -355,12 +355,19 @@
 .create-options-row {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  justify-content: center;
+  align-items: center;
+  justify-content: space-evenly;
   gap: 36px;
   width: 100%;
   max-width: 1100px;
   margin: 0 auto;
+}
+
+.game-settings-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
 }
 
 // ── Carousel ──────────────────────────────────────────
@@ -590,40 +597,61 @@
   }
 }
 
-// ── Color Swatch Picker ────────────────────────────────
-.color-picker-row {
+// ── Inline Color Picker (Lobby) ──────────────────────
+.inline-color-picker {
   display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  padding: 6px 16px 10px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.4);
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  margin-top: 8px;
 }
 
-.color-swatch {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 3px solid rgba(0, 0, 0, 0.3);
+.inline-color-label {
+  @include font-pangolin(20);
+  color: $black;
+}
+
+.inline-color-arrow {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: $black;
   cursor: pointer;
-  transition: transform 0.2s, border-color 0.2s;
+  padding: 0 4px;
+  transition: transform 0.15s;
 
   &:hover {
-    transform: scale(1.15);
-  }
-
-  &--active {
-    border-color: $black;
     transform: scale(1.2);
-    box-shadow: 0 0 0 2px $red;
   }
+}
+
+.inline-color-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid $black;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
 }
 
 // Story mode desc
+.story-mode-desc-container {
+  height: 0;
+  position: relative;
+  width: 100%;
+}
+
 .story-mode-desc {
-  @include font-pangolin(18);
+  @include font-pangolin(16);
   color: $black;
   opacity: 0.7;
-  margin: -4px 0 0 16px;
-  padding: 0;
+  position: absolute;
+  top: 4px;
+  left: 16px;
+  white-space: nowrap;
 }
 
 // ── MOBILE Responsive ────────────────────────────────
@@ -631,8 +659,11 @@
   .create-options-row {
     flex-direction: column;
     align-items: center;
-    gap: 16px;
-    padding: 0 10px;
+    gap: 12px;
+    padding: 0;
+    transform: scale(0.85);
+    transform-origin: top center;
+    margin-bottom: -50px;
   }
 
   .carousel-section {
