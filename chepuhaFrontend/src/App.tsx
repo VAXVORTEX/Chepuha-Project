@@ -922,8 +922,8 @@ function App() {
       setAppState(prev => ({ ...prev, totalCount: playerCount > 0 ? playerCount : players.length }));
       setIsTransitioning(false);
 
-      // Story Mode: advance immediately to next question without waiting
-      if (storyMode && currentRound < gameLength) {
+      // Story Mode OR Single-player: advance immediately to next question without waiting
+      if ((storyMode || totalCount <= 1) && currentRound < gameLength) {
         setAppState(prev => ({
           ...prev,
           phase: Phases.Main,
