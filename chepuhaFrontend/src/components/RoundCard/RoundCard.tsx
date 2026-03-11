@@ -12,6 +12,7 @@ interface RoundCardProps {
     playerReady?: number;
     playerTotal?: number;
     onSubmitAnswer?: (answer: string) => void;
+    hints?: string[];
 }
 export const RoundCard = ({
     playerName,
@@ -19,9 +20,11 @@ export const RoundCard = ({
     question = '',
     playerReady = 0,
     playerTotal = 0,
-    onSubmitAnswer
+    onSubmitAnswer,
+    hints
 }: RoundCardProps) => {
     const [answer, setAnswer] = useState('');
+    const [showHints, setShowHints] = useState(false);
     const { t } = useLanguage();
     const isWaiting = phase === Phases.Waiting;
     const handleSubmit = () => {
@@ -55,6 +58,24 @@ export const RoundCard = ({
                             onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
                             className={styles.cardInput}
                         />
+                        {hints && hints.length > 0 && (
+                            <div className={styles.hintsSection}>
+                                <button
+                                    className={styles.hintsToggle}
+                                    onClick={() => setShowHints(h => !h)}
+                                    type="button"
+                                >
+                                    {t('HINTS_LABEL' as any)} {showHints ? '▲' : '▼'}
+                                </button>
+                                {showHints && (
+                                    <div className={styles.hintsList}>
+                                        {hints.map((hint, i) => (
+                                            <span key={i} className={styles.hintItem}>{hint}</span>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                         <div className={styles.buttonContainer}>
                             <Button
                                 label={t('SAVE')}

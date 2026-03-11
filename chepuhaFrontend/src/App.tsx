@@ -70,6 +70,11 @@ export interface AppState {
   lobbyCreatedAt: number | null;
   answeredRoundId: string | null;
   isJoining: boolean;
+  gameLength: 6 | 9 | 12;
+  storyMode: boolean;
+  hintsEnabled: boolean;
+  colorHighlight: boolean;
+  playerColor: string;
 }
 
 const getInitialState = (): AppState => {
@@ -99,7 +104,12 @@ const getInitialState = (): AppState => {
     allStorySheets: [],
     lobbyCreatedAt: null,
     answeredRoundId: null,
-    isJoining: false
+    isJoining: false,
+    gameLength: 9,
+    storyMode: false,
+    hintsEnabled: false,
+    colorHighlight: false,
+    playerColor: ''
   };
 
   try {
@@ -128,6 +138,11 @@ const getInitialState = (): AppState => {
           currentRoundId: parsed.currentRoundId || null,
           currentRound: parsed.currentRound || 1,
           roundStartedAt: parsed.roundStartedAt || null,
+          gameLength: parsed.gameLength || 9,
+          storyMode: parsed.storyMode || false,
+          hintsEnabled: parsed.hintsEnabled || false,
+          colorHighlight: parsed.colorHighlight || false,
+          playerColor: parsed.playerColor || '',
         };
       }
     }
@@ -163,7 +178,7 @@ function App() {
       .catch(() => { });
   }, []);
 
-  const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets, lobbyCreatedAt, answeredRoundId } = appState;
+  const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets, lobbyCreatedAt, answeredRoundId, gameLength, storyMode, hintsEnabled, colorHighlight, playerColor } = appState;
   const { session, players, rounds, currentAnswers, activeRoundId: hookActiveRoundId, error: pollError, refreshState, dataReady } = useGameState(sessionId);
   const hookMatch = hookActiveRoundId && currentRoundId && hookActiveRoundId === currentRoundId;
   const derivedTotalCount = totalCount > 0 ? totalCount : (players?.length || 0);
@@ -178,6 +193,39 @@ function App() {
   const currentRoundIdRef = useRef(currentRoundId);
   const currentRoundRef = useRef(currentRound);
   const { savedGames, saveGameToHistory } = useHistory();
+
+  // Carousel state — list starts with 'random', then all templates
+  const CAROUSEL_TEMPLATES = ['random', ...Object.keys(TEMPLATES)];
+  const [carouselIndex, setCarouselIndex] = useState<number>(() => {
+    const savedIdx = localStorage.getItem('chepuhaCarouselIdx');
+    if (savedIdx !== null) return parseInt(savedIdx, 10);
+    return 0; // Default: show 'random' in center
+  });
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  const moveCarousel = (dir: 1 | -1) => {
+    setCarouselIndex(prev => {
+      const next = (prev + dir + CAROUSEL_TEMPLATES.length) % CAROUSEL_TEMPLATES.length;
+      const chosen = CAROUSEL_TEMPLATES[next];
+      localStorage.setItem('chepuhaCarouselIdx', String(next));
+      setAppState(ps => ({ ...ps, selectedTemplate: chosen === 'random' ? 'random' : chosen }));
+      return next;
+    });
+  };
+
+  // Touch/swipe handling for carousel
+  const touchStartY = useRef<number>(0);
+  const handleCarouselTouchStart = (e: React.TouchEvent) => { touchStartY.current = e.touches[0].clientY; };
+  const handleCarouselTouchEnd = (e: React.TouchEvent) => {
+    const delta = touchStartY.current - e.changedTouches[0].clientY;
+    if (Math.abs(delta) > 30) moveCarousel(delta > 0 ? 1 : -1);
+  };
+
+  // Wheel scrolling for carousel
+  const handleCarouselWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    moveCarousel(e.deltaY > 0 ? 1 : -1);
+  };
 
   useEffect(() => {
     if (sessionId && playerId && nickname) {
@@ -194,12 +242,17 @@ function App() {
         didGameStart,
         phase,
         roundStartedAt,
+        gameLength,
+        storyMode,
+        hintsEnabled,
+        colorHighlight,
+        playerColor,
         timestamp: Date.now()
       }));
     } else {
       localStorage.removeItem(STATE_STORAGE_KEY);
     }
-  }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate, answeredRoundId, currentRoundId, currentRound, didGameStart, phase, roundStartedAt]);
+  }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate, answeredRoundId, currentRoundId, currentRound, didGameStart, phase, roundStartedAt, gameLength, storyMode, hintsEnabled, colorHighlight, playerColor]);
 
   useEffect(() => {
     if (nickname || roomCode) {
@@ -454,7 +507,7 @@ function App() {
             }
           }
 
-          if (currentRound < activeTemplate.questions.length) {
+          if (currentRound < gameLength) {
             if (isHost) {
               const ts = new Date().toISOString();
               const nextRoundNum = currentRound + 1;
@@ -806,24 +859,21 @@ function App() {
     setAppState(prev => ({ ...prev, userAnswers: updatedAnswers }));
     if (!currentRoundId || !playerId || !sessionId) {
       setIsTransitioning(false);
-      setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
-      setTimeout(() => {
-        if (currentRound < activeTemplate.questions.length) {
-          setAppState(prev => ({ ...prev, currentRound: prev.currentRound + 1 }));
-          setIsTransitioning(false);
-          setAppState(prev => ({ ...prev, phase: Phases.Main }));
-          setAppState(prev => ({
-            ...prev,
-            allStories: [{
-              playerName: nickname,
-              story: activeTemplate.buildStory(updatedAnswers, language, String(sessionId || 'local'), String(Math.random())),
-              answers: updatedAnswers,
-              templateId: activeTemplate.id
-            }],
-            phase: Phases.End
-          }));
-        }
-      }, 2000);
+      // Solo mode
+      if (currentRound < gameLength) {
+        setAppState(prev => ({ ...prev, phase: Phases.Main, currentRound: prev.currentRound + 1 }));
+      } else {
+        setAppState(prev => ({
+          ...prev,
+          allStories: [{
+            playerName: nickname,
+            story: activeTemplate.buildStory(updatedAnswers, language, String(sessionId || 'local'), String(Math.random())),
+            answers: updatedAnswers,
+            templateId: activeTemplate.id
+          }],
+          phase: Phases.End
+        }));
+      }
       return;
     }
     try {
@@ -855,12 +905,24 @@ function App() {
       setAppState(prev => ({ ...prev, joinedCount: curAnswers.length }));
       setAppState(prev => ({ ...prev, totalCount: playerCount > 0 ? playerCount : players.length }));
       setIsTransitioning(false);
-      setAppState(prev => ({
-        ...prev,
-        phase: Phases.Waiting,
-        answeredRoundId: currentRoundId,
-        error: ""
-      }));
+
+      // Story Mode: advance immediately to next question without waiting
+      if (storyMode && currentRound < gameLength) {
+        setAppState(prev => ({
+          ...prev,
+          phase: Phases.Main,
+          currentRound: prev.currentRound + 1,
+          answeredRoundId: currentRoundId,
+          error: ""
+        }));
+      } else {
+        setAppState(prev => ({
+          ...prev,
+          phase: Phases.Waiting,
+          answeredRoundId: currentRoundId,
+          error: ""
+        }));
+      }
     } catch (err: any) {
       setIsTransitioning(false);
       setAppState(prev => ({
@@ -940,22 +1002,105 @@ function App() {
               />
             </div>
             <span className="error-message" style={{ minHeight: '24px', display: 'block', pointerEvents: 'auto' }}>{error || '\u00A0'}</span>
-            <div className="template-selector" style={{ pointerEvents: 'auto' }}>
-              <h3 className="template-title">{t('CHOOSE_STORY')}</h3>
-              <div className="template-cards-container">
-                {Object.values(TEMPLATES).map((tpl) => (
-                  <div
-                    key={tpl.id}
-                    className={`template-card ${selectedTemplate === tpl.id ? 'active' : ''}`}
-                    onClick={() => setAppState(prev => ({ ...prev, selectedTemplate: tpl.id }))}
-                  >
-                    <div className="template-card-content">
-                      <h4 className="template-name">{t(tpl.id.toUpperCase() as any) || tpl.name}</h4>
-                    </div>
+
+            {/* ── Row: Carousel + Game Length + Options ── */}
+            <div className="create-options-row" style={{ pointerEvents: 'auto' }}>
+
+              {/* Carousel */}
+              <div className="carousel-section">
+                <h3 className="template-title">{t('CHOOSE_STORY')}</h3>
+                <div
+                  className="template-carousel"
+                  ref={carouselRef}
+                  onWheel={handleCarouselWheel}
+                  onTouchStart={handleCarouselTouchStart}
+                  onTouchEnd={handleCarouselTouchEnd}
+                >
+                  <button className="carousel-arrow carousel-arrow-up" onClick={() => moveCarousel(-1)}>▲</button>
+                  <div className="carousel-window">
+                    {[-2, -1, 0, 1, 2].map(offset => {
+                      const idx = (carouselIndex + offset + CAROUSEL_TEMPLATES.length) % CAROUSEL_TEMPLATES.length;
+                      const id = CAROUSEL_TEMPLATES[idx];
+                      const label = id === 'random' ? t('RANDOM' as any) : (t(id.toUpperCase() as any) || id);
+                      const isCenter = offset === 0;
+                      return (
+                        <div
+                          key={idx}
+                          className={`carousel-item ${isCenter ? 'carousel-item--center' : ''} carousel-item--offset-${offset < 0 ? 'neg' : 'pos'}${Math.abs(offset)}`}
+                          onClick={() => {
+                            const steps = offset as 1 | -1 | 0;
+                            if (steps !== 0) moveCarousel(steps > 0 ? 1 : -1);
+                          }}
+                        >
+                          <span className="carousel-item-label">{label}</span>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
+                  <button className="carousel-arrow carousel-arrow-down" onClick={() => moveCarousel(1)}>▼</button>
+                </div>
+              </div>
+
+              {/* Game Length + Extra Options */}
+              <div className="game-settings-section">
+
+                {/* Game Length */}
+                <div className="game-length-picker">
+                  <h3 className="template-title">{t('GAME_LENGTH_TITLE' as any)}</h3>
+                  {([6, 9, 12] as Array<6 | 9 | 12>).map(len => (
+                    <label key={len} className={`length-option ${gameLength === len ? 'length-option--active' : ''}`}>
+                      <input type="radio" name="gameLength" value={len} checked={gameLength === len}
+                        onChange={() => setAppState(prev => ({ ...prev, gameLength: len }))} />
+                      <span className="length-pill">
+                        {len === 6 ? t('GAME_LENGTH_SHORT' as any) : len === 9 ? t('GAME_LENGTH_NORMAL' as any) : t('GAME_LENGTH_LONG' as any)}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+
+                {/* Extra Options */}
+                <div className="extra-options">
+                  {/* Color Highlight */}
+                  <label className={`toggle-option ${colorHighlight ? 'toggle-option--active' : ''}`}>
+                    <span className="toggle-label">🎨 {t('OPTS_HIGHLIGHTS' as any)}</span>
+                    <div className="toggle-switch" onClick={() => setAppState(prev => ({ ...prev, colorHighlight: !prev.colorHighlight }))}>
+                      <div className={`toggle-knob ${colorHighlight ? 'toggle-knob--on' : ''}`} />
+                    </div>
+                  </label>
+                  {colorHighlight && (
+                    <div className="color-picker-row">
+                      {['#e52929', '#2962e5', '#29a62b', '#e5a629', '#9c29e5', '#e529b3', '#29e5d0', '#fff'].map(c => (
+                        <button
+                          key={c}
+                          className={`color-swatch ${playerColor === c ? 'color-swatch--active' : ''}`}
+                          style={{ background: c }}
+                          onClick={() => setAppState(prev => ({ ...prev, playerColor: c }))}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Hints */}
+                  <label className={`toggle-option ${hintsEnabled ? 'toggle-option--active' : ''}`}>
+                    <span className="toggle-label">💡 {t('OPTS_HINTS' as any)}</span>
+                    <div className="toggle-switch" onClick={() => setAppState(prev => ({ ...prev, hintsEnabled: !prev.hintsEnabled }))}>
+                      <div className={`toggle-knob ${hintsEnabled ? 'toggle-knob--on' : ''}`} />
+                    </div>
+                  </label>
+
+                  {/* Story Mode */}
+                  <label className={`toggle-option ${storyMode ? 'toggle-option--active' : ''}`}>
+                    <span className="toggle-label">🕹 {t('STORY_MODE' as any)}</span>
+                    <div className="toggle-switch" onClick={() => setAppState(prev => ({ ...prev, storyMode: !prev.storyMode }))}>
+                      <div className={`toggle-knob ${storyMode ? 'toggle-knob--on' : ''}`} />
+                    </div>
+                  </label>
+                  {storyMode && <p className="story-mode-desc">{t('STORY_MODE_DESC' as any)}</p>}
+                </div>
+
               </div>
             </div>
+
             <div style={{ pointerEvents: 'auto' }}>
               <Button
                 label={t('CREATE_GAME')}
@@ -1050,7 +1195,7 @@ function App() {
             onTimeUp={() => doAnswerSubmit("Час вийшов")}
             className="timerPos"
           />
-          <Round currentRound={currentRound} totalRounds={activeTemplate.questions.length} className="roundPos" />
+          <Round currentRound={currentRound} totalRounds={gameLength} className="roundPos" />
           <RoundCard
             playerName={nickname}
             phase={amIReady ? Phases.Waiting : phase}
@@ -1066,7 +1211,7 @@ function App() {
               let roundQuestions = [...(baseTemplate.questions || [])];
 
               if (baseTemplate.id === 'math') {
-                const seedStr = String(sessionId || roomCode || "guest");
+                const seedStr = String(sessionId || roomCode || "guest") + String(playerId || "");
                 const hash = seedStr.split("").reduce((a, c) => a + (c.charCodeAt(0) * 31), 0);
                 for (let i = roundQuestions.length - 1; i > 0; i--) {
                   const j = Math.abs(hash + i * 53) % (i + 1);
@@ -1078,7 +1223,7 @@ function App() {
 
               if (rawQuestion?.startsWith('MATH_DYN_')) {
                 const indexPart = parseInt(rawQuestion.split('_')[2] || "0", 10);
-                const seedStr = String(sessionId || roomCode || "guest");
+                const seedStr = String(sessionId || roomCode || "guest") + String(playerId || "");
                 const hash = seedStr.split("").reduce((a, c) => a + (c.charCodeAt(0) * 17), 0);
                 const offset = hash + indexPart * 73;
                 return mathProblems[offset % mathProblems.length];
@@ -1088,6 +1233,7 @@ function App() {
             playerReady={derivedJoinedCount}
             playerTotal={derivedTotalCount}
             onSubmitAnswer={doAnswerSubmit}
+            hints={hintsEnabled ? (activeTemplate.fallbacks[currentRound - 1] || []) : undefined}
           />
         </>
       )}
