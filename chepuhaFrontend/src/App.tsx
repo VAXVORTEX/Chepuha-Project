@@ -965,12 +965,6 @@ function App() {
               phase={phase}
               onClick={doShowJoinScreen}
             />
-            <Button
-              label={t('HISTORY')}
-              variant="primary"
-              phase={phase}
-              onClick={doShowHistory}
-            />
           </div>
           <div className="language-selector">
             <button
@@ -1004,11 +998,11 @@ function App() {
             <span className="error-message" style={{ minHeight: '24px', display: 'block', pointerEvents: 'auto' }}>{error || '\u00A0'}</span>
 
             {/* ── Row: Carousel + Game Length + Options ── */}
+            <h3 className="template-title" style={{ textAlign: "center", width: "100%", marginBottom: "15px" }}>{t('CHOOSE_STORY')}</h3>
             <div className="create-options-row" style={{ pointerEvents: 'auto' }}>
 
               {/* Carousel */}
               <div className="carousel-section">
-                <h3 className="template-title">{t('CHOOSE_STORY')}</h3>
                 <div
                   className="template-carousel"
                   ref={carouselRef}
@@ -1067,18 +1061,6 @@ function App() {
                       <div className={`toggle-knob ${colorHighlight ? 'toggle-knob--on' : ''}`} />
                     </div>
                   </label>
-                  {colorHighlight && (
-                    <div className="color-picker-row">
-                      {['#e52929', '#2962e5', '#29a62b', '#e5a629', '#9c29e5', '#e529b3', '#29e5d0', '#fff'].map(c => (
-                        <button
-                          key={c}
-                          className={`color-swatch ${playerColor === c ? 'color-swatch--active' : ''}`}
-                          style={{ background: c }}
-                          onClick={() => setAppState(prev => ({ ...prev, playerColor: c }))}
-                        />
-                      ))}
-                    </div>
-                  )}
 
                   {/* Hints */}
                   <label className={`toggle-option ${hintsEnabled ? 'toggle-option--active' : ''}`}>
@@ -1143,6 +1125,19 @@ function App() {
                     </div>
                   </div>
                 )}
+              </div>
+              <div className="lobby-color-picker" style={{ textAlign: 'center', marginTop: '20px' }}>
+                <h3 className="lobby-subtitle" style={{ fontSize: '20px', marginBottom: '10px' }}>{t('CHOOSE_COLOR')}</h3>
+                <div className="color-picker-row" style={{ justifyContent: 'center' }}>
+                  {['#e52929', '#2962e5', '#29a62b', '#e5a629', '#9c29e5', '#e529b3', '#29e5d0', '#fff'].map(c => (
+                    <button
+                      key={c}
+                      className={`color-swatch ${playerColor === c ? 'color-swatch--active' : ''}`}
+                      style={{ background: c }}
+                      onClick={() => setAppState(prev => ({ ...prev, playerColor: c }))}
+                    />
+                  ))}
+                </div>
               </div>
             </div>
             <div className="error-message" style={{ color: "red", minHeight: '24px' }}>
