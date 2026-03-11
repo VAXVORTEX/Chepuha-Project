@@ -1024,7 +1024,7 @@ function App() {
 
               {/* Carousel */}
               <div className="carousel-section">
-                <h3 className="template-title" style={{ marginBottom: "15px" }}>{t('CHOOSE_STORY')}</h3>
+                <h3 className="template-title" style={{ marginBottom: "15px", whiteSpace: "nowrap", textAlign: "center" }}>{t('CHOOSE_STORY')}</h3>
                 <div
                   className="template-carousel"
                   ref={carouselRef}
@@ -1078,25 +1078,25 @@ function App() {
                   {/* Extra Options */}
                   <div className="extra-options">
                     {/* Color Highlight */}
-                    <label className={`toggle-option ${colorHighlight ? 'toggle-option--active' : ''}`}>
+                    <label className={`toggle-option ${colorHighlight ? 'toggle-option--active' : ''}`} onClick={() => setAppState(prev => ({ ...prev, colorHighlight: !prev.colorHighlight }))}>
                       <span className="toggle-label">🎨 {t('OPTS_HIGHLIGHTS' as any)}</span>
-                      <div className="toggle-switch" onClick={() => setAppState(prev => ({ ...prev, colorHighlight: !prev.colorHighlight }))}>
+                      <div className="toggle-switch">
                         <div className={`toggle-knob ${colorHighlight ? 'toggle-knob--on' : ''}`} />
                       </div>
                     </label>
 
                     {/* Hints */}
-                    <label className={`toggle-option ${hintsEnabled ? 'toggle-option--active' : ''}`}>
+                    <label className={`toggle-option ${hintsEnabled ? 'toggle-option--active' : ''}`} onClick={() => setAppState(prev => ({ ...prev, hintsEnabled: !prev.hintsEnabled }))}>
                       <span className="toggle-label">💡 {t('OPTS_HINTS' as any)}</span>
-                      <div className="toggle-switch" onClick={() => setAppState(prev => ({ ...prev, hintsEnabled: !prev.hintsEnabled }))}>
+                      <div className="toggle-switch">
                         <div className={`toggle-knob ${hintsEnabled ? 'toggle-knob--on' : ''}`} />
                       </div>
                     </label>
 
                     {/* Story Mode */}
-                    <label className={`toggle-option ${storyMode ? 'toggle-option--active' : ''}`}>
+                    <label className={`toggle-option ${storyMode ? 'toggle-option--active' : ''}`} onClick={() => setAppState(prev => ({ ...prev, storyMode: !prev.storyMode }))}>
                       <span className="toggle-label">🕹 {t('STORY_MODE' as any)}</span>
-                      <div className="toggle-switch" onClick={() => setAppState(prev => ({ ...prev, storyMode: !prev.storyMode }))}>
+                      <div className="toggle-switch">
                         <div className={`toggle-knob ${storyMode ? 'toggle-knob--on' : ''}`} />
                       </div>
                     </label>
@@ -1129,7 +1129,7 @@ function App() {
           </div>
           <div className="lobby-container">
             <div className="lobby-info">
-              <h2 className="lobby-text">{t('YOUR_NICK')} {nickname}</h2>
+              <h2 className="lobby-text">{t('YOUR_NICK')} <span style={{ color: playerColor || 'inherit' }}>{nickname}</span></h2>
               <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
               <div className="players-list">
                 {players.length > 0 ? (
@@ -1139,13 +1139,12 @@ function App() {
                       <div key={p.id || String(i)} className="player-item">
                         <div className="player-name-wrapper">
                           {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
-                          <span className="player-name">{p.nickname}</span>
+                          <span className="player-name" style={{ color: isMe && playerColor ? playerColor : 'inherit' }}>{p.nickname}</span>
                         </div>
                         {isMe && (
                           <div className="inline-color-picker">
-                            <span className="inline-color-label">{t('COLOR' as any).toLowerCase()}</span>
                             <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
-                            <div className="inline-color-swatch" style={{ background: playerColor }} />
+                            <div className="inline-color-swatch" style={{ background: playerColor || '#fff' }} />
                             <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
                           </div>
                         )}
@@ -1156,12 +1155,11 @@ function App() {
                   <div className="player-item">
                     <div className="player-name-wrapper">
                       <img src={crownImage} alt="Host" className="crown-icon" />
-                      <span className="player-name">{nickname}</span>
+                      <span className="player-name" style={{ color: playerColor || 'inherit' }}>{nickname}</span>
                     </div>
                     <div className="inline-color-picker">
-                      <span className="inline-color-label">{t('COLOR' as any).toLowerCase()}</span>
                       <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
-                      <div className="inline-color-swatch" style={{ background: playerColor }} />
+                      <div className="inline-color-swatch" style={{ background: playerColor || '#fff' }} />
                       <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
                     </div>
                   </div>
