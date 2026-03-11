@@ -655,118 +655,19 @@
 // ── MOBILE Responsive ────────────────────────────────
 @media (max-width: 768px) {
   .create-options-row {
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 15px;
     padding: 0;
-    transform: scale(0.85);
+    width: 650px;
+    max-width: none;
+    transform: scale(0.54);
     transform-origin: top center;
-    margin-bottom: -50px;
-  }
-
-  .carousel-section {
-    flex: none;
-    width: 100%;
-  }
-
-  .template-carousel {
-    width: 200px;
-  }
-
-  .carousel-window {
-    width: 200px;
-    height: 220px;
-  }
-
-  .carousel-item {
-    min-width: 140px;
-    padding: 8px 16px;
-
-    &--center {
-      min-width: 160px;
-      padding: 10px 20px;
-
-      .carousel-item-label {
-        font-size: 24px !important;
-      }
-    }
-
-    &--offset-neg1 {
-      transform: translateY(-54px) scale(0.82);
-    }
-
-    &--offset-pos1 {
-      transform: translateY(54px) scale(0.82);
-    }
-
-    &--offset-neg2 {
-      transform: translateY(-100px) scale(0.65);
-    }
-
-    &--offset-pos2 {
-      transform: translateY(100px) scale(0.65);
-    }
-  }
-
-  .carousel-item-label {
-    font-size: 18px !important;
-  }
-
-  .game-settings-section {
-    max-width: 100%;
-    width: 100%;
-    align-items: center;
-  }
-
-  .game-length-picker {
-    align-items: center;
-  }
-
-  .template-title {
-    font-size: 28px !important;
-    text-align: center;
-  }
-
-  .length-option .length-pill {
-    font-size: 22px !important;
-    padding: 6px 18px;
-  }
-
-  .toggle-option {
-    padding: 6px 12px;
-  }
-
-  .toggle-label {
-    font-size: 20px !important;
-  }
-
-  .toggle-switch {
-    width: 42px;
-    height: 22px;
-  }
-
-  .toggle-knob {
-    width: 16px;
-    height: 16px;
-
-    &--on {
-      transform: translateX(18px);
-    }
-  }
-
-  .color-swatch {
-    width: 28px;
-    height: 28px;
-  }
-
-  .story-mode-desc {
-    font-size: 16px !important;
-    text-align: center;
-    margin-left: 0;
-  }
-
-  .extra-options {
-    align-items: center;
+    position: relative;
+    left: 50%;
+    margin-left: -325px;
+    margin-bottom: -180px;
   }
 }
 

@@ -152,7 +152,7 @@ const getInitialState = (): AppState => {
 };
 
 export const AVAILABLE_COLORS = [
-  '#e52929', '#2962e5', '#29a62b', '#e5a629', '#9c29e5',
+  '#000000', '#e5a629', '#2962e5', '#e52929', '#29a62b', '#9c29e5',
   '#e529b3', '#29e5d0', '#ffffff', '#ff8c00', '#ff1493',
   '#00ff00', '#00bfff', '#8a2be2', '#a52a2a', '#ff69b4',
   '#4682b4', '#d2691e', '#32cd32'
@@ -604,6 +604,7 @@ function App() {
       playerCount: 0,
       allStorySheets: [],
       allStories: [],
+      playerColor: "",
     }));
     localStorage.removeItem(STATE_STORAGE_KEY);
   };
@@ -630,7 +631,8 @@ function App() {
       playerCount: 0,
       allStorySheets: [],
       allStories: [],
-      error: ""
+      error: "",
+      playerColor: ""
     }));
   };
 
@@ -685,7 +687,8 @@ function App() {
       isHost: false,
       answeredRoundId: null,
       isCreatingLobby: false,
-      error: ""
+      error: "",
+      playerColor: ""
     }));
   };
 
@@ -1135,16 +1138,19 @@ function App() {
                 {players.length > 0 ? (
                   players.map((p, i) => {
                     const isMe = String(p.id) === String(playerId) || (i === 0 && nickname === p.nickname);
+                    const defaultColor = AVAILABLE_COLORS[i % AVAILABLE_COLORS.length];
+                    const activeColor = isMe && playerColor ? playerColor : defaultColor;
+
                     return (
                       <div key={p.id || String(i)} className="player-item">
                         <div className="player-name-wrapper">
                           {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
-                          <span className="player-name" style={{ color: isMe && playerColor ? playerColor : 'inherit' }}>{p.nickname}</span>
+                          <span className="player-name" style={{ color: activeColor }}>{p.nickname}</span>
                         </div>
                         {isMe && (
                           <div className="inline-color-picker">
                             <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
-                            <div className="inline-color-swatch" style={{ background: playerColor || '#fff' }} />
+                            <div className="inline-color-swatch" style={{ background: activeColor }} />
                             <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
                           </div>
                         )}
@@ -1155,11 +1161,11 @@ function App() {
                   <div className="player-item">
                     <div className="player-name-wrapper">
                       <img src={crownImage} alt="Host" className="crown-icon" />
-                      <span className="player-name" style={{ color: playerColor || 'inherit' }}>{nickname}</span>
+                      <span className="player-name" style={{ color: playerColor || '#000000' }}>{nickname}</span>
                     </div>
                     <div className="inline-color-picker">
                       <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
-                      <div className="inline-color-swatch" style={{ background: playerColor || '#fff' }} />
+                      <div className="inline-color-swatch" style={{ background: playerColor || '#000000' }} />
                       <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
                     </div>
                   </div>
