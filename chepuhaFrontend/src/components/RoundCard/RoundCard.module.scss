@@ -98,6 +98,53 @@
   }
 }
 
+.hintsSection {
+  width: 100%;
+  max-width: 850px;
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.hintsToggle {
+  @include font-pangolin(28);
+  background: rgba(255, 255, 255, 0.4);
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 8px 20px;
+  cursor: pointer;
+  color: #555;
+  transition: background 0.2s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.7);
+  }
+}
+
+.hintsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  padding: 12px 0;
+}
+
+.hintItem {
+  @include font-pangolin(22);
+  background: rgba(255, 255, 255, 0.5);
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  border-radius: 20px;
+  padding: 6px 16px;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.85);
+  }
+}
+
 @media (max-width: 768px) {
   .roundCard {
     width: 95%;

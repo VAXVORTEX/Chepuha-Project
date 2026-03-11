@@ -9,6 +9,7 @@ import Round from "./components/Round/Round";
 import Timer from "./components/Timer/Timer";
 import JoinCard from "./components/JoinCard/JoinCard";
 import WaitCard from "./components/WaitCard/WaitCard";
+import HomeIcon from "./components/HomeIcon/HomeIcon";
 import GameResult from "./components/GameResult/GameResult";
 import logoImage from "./assets/images/Logo.png";
 import logoImageEng from "./assets/images/Chepuha_eng.png";
@@ -68,6 +69,12 @@ export interface AppState {
   allStorySheets: { playerId: string, sheetId: string }[];
   lobbyCreatedAt: number | null;
   answeredRoundId: string | null;
+  isJoining: boolean;
+  gameLength: 6 | 9 | 12;
+  storyMode: boolean;
+  hintsEnabled: boolean;
+  colorHighlight: boolean;
+  playerColor: string;
 }
 
 const getInitialState = (): AppState => {
@@ -96,7 +103,13 @@ const getInitialState = (): AppState => {
     roundStartedAt: null,
     allStorySheets: [],
     lobbyCreatedAt: null,
-    answeredRoundId: null
+    answeredRoundId: null,
+    isJoining: false,
+    gameLength: 9,
+    storyMode: false,
+    hintsEnabled: false,
+    colorHighlight: false,
+    playerColor: ''
   };
 
   try {
@@ -125,6 +138,11 @@ const getInitialState = (): AppState => {
           currentRoundId: parsed.currentRoundId || null,
           currentRound: parsed.currentRound || 1,
           roundStartedAt: parsed.roundStartedAt || null,
+          gameLength: parsed.gameLength || 9,
+          storyMode: parsed.storyMode || false,
+          hintsEnabled: parsed.hintsEnabled || false,
+          colorHighlight: parsed.colorHighlight || false,
+          playerColor: parsed.playerColor || '',
         };
       }
     }
@@ -160,7 +178,7 @@ function App() {
       .catch(() => { });
   }, []);
 
-  const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets, lobbyCreatedAt, answeredRoundId } = appState;
+  const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets, lobbyCreatedAt, answeredRoundId, gameLength, storyMode, hintsEnabled, colorHighlight, playerColor } = appState;
   const { session, players, rounds, currentAnswers, activeRoundId: hookActiveRoundId, error: pollError, refreshState, dataReady } = useGameState(sessionId);
   const hookMatch = hookActiveRoundId && currentRoundId && hookActiveRoundId === currentRoundId;
   const derivedTotalCount = totalCount > 0 ? totalCount : (players?.length || 0);
@@ -175,6 +193,39 @@ function App() {
   const currentRoundIdRef = useRef(currentRoundId);
   const currentRoundRef = useRef(currentRound);
   const { savedGames, saveGameToHistory } = useHistory();
+
+  // Carousel state — list starts with 'random', then all templates
+  const CAROUSEL_TEMPLATES = ['random', ...Object.keys(TEMPLATES)];
+  const [carouselIndex, setCarouselIndex] = useState<number>(() => {
+    const savedIdx = localStorage.getItem('chepuhaCarouselIdx');
+    if (savedIdx !== null) return parseInt(savedIdx, 10);
+    return 0; // Default: show 'random' in center
+  });
+  const carouselRef = useRef<HTMLDivElement>(null);
+
+  const moveCarousel = (dir: 1 | -1) => {
+    setCarouselIndex(prev => {
+      const next = (prev + dir + CAROUSEL_TEMPLATES.length) % CAROUSEL_TEMPLATES.length;
+      const chosen = CAROUSEL_TEMPLATES[next];
+      localStorage.setItem('chepuhaCarouselIdx', String(next));
+      setAppState(ps => ({ ...ps, selectedTemplate: chosen === 'random' ? 'random' : chosen }));
+      return next;
+    });
+  };
+
+  // Touch/swipe handling for carousel
+  const touchStartY = useRef<number>(0);
+  const handleCarouselTouchStart = (e: React.TouchEvent) => { touchStartY.current = e.touches[0].clientY; };
+  const handleCarouselTouchEnd = (e: React.TouchEvent) => {
+    const delta = touchStartY.current - e.changedTouches[0].clientY;
+    if (Math.abs(delta) > 30) moveCarousel(delta > 0 ? 1 : -1);
+  };
+
+  // Wheel scrolling for carousel
+  const handleCarouselWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+    moveCarousel(e.deltaY > 0 ? 1 : -1);
+  };
 
   useEffect(() => {
     if (sessionId && playerId && nickname) {
@@ -191,12 +242,17 @@ function App() {
         didGameStart,
         phase,
         roundStartedAt,
+        gameLength,
+        storyMode,
+        hintsEnabled,
+        colorHighlight,
+        playerColor,
         timestamp: Date.now()
       }));
     } else {
       localStorage.removeItem(STATE_STORAGE_KEY);
     }
-  }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate, answeredRoundId, currentRoundId, currentRound, didGameStart, phase, roundStartedAt]);
+  }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate, answeredRoundId, currentRoundId, currentRound, didGameStart, phase, roundStartedAt, gameLength, storyMode, hintsEnabled, colorHighlight, playerColor]);
 
   useEffect(() => {
     if (nickname || roomCode) {
@@ -240,6 +296,8 @@ function App() {
         });
       if (built.length > 0) {
         setAppState(prev => ({ ...prev, allStories: built }));
+        // Mark session as completed in DB to avoid collisions and "tails"
+        updateGameSession(sessionId, { session_status: 'completed' }).catch(() => { });
         const hostPlayer = players.find(p => p.player_order === 1) || players[0];
         const hostName = hostPlayer ? hostPlayer.nickname : 'Невідомо';
         const date = new Date().toLocaleString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -269,10 +327,11 @@ function App() {
     if (latestRound.round_number > currentRound || !currentRoundId) {
       let newPhase = Phases.Main;
 
-      if (currentAnswers.some(a =>
-        (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
-        (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === latestRound.id
-      ) || (answeredRoundId === latestRound.id)) {
+      if (currentAnswers.some(a => {
+        const aPlayerId = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : a.player_id;
+        const aRoundId = typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : a.round_id;
+        return String(aPlayerId) === String(playerId) && String(aRoundId) === String(latestRound.id);
+      }) || (String(answeredRoundId) === String(latestRound.id))) {
         newPhase = Phases.Waiting;
       } else if (myPlayer.players_status === 'finished') {
         newPhase = Phases.End;
@@ -285,13 +344,14 @@ function App() {
         roundStartedAt: latestRound.started_at || prev.roundStartedAt,
         phase: newPhase,
         joinedCount: 0,
-        answeredRoundId: (latestRound.id === prev.answeredRoundId) ? prev.answeredRoundId : null
+        answeredRoundId: null // Crucial: clear and don't carry over
       }));
-    } else if (latestRound.id === currentRoundId) {
-      if (phase === Phases.Main && (currentAnswers.some(a =>
-        (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
-        (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
-      ) || answeredRoundId === currentRoundId)) {
+    } else if (String(latestRound.id) === String(currentRoundId)) {
+      if (phase === Phases.Main && (currentAnswers.some(a => {
+        const aPlayerId = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : a.player_id;
+        const aRoundId = typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : a.round_id;
+        return String(aPlayerId) === String(playerId) && String(aRoundId) === String(currentRoundId);
+      }) || String(answeredRoundId) === String(currentRoundId))) {
         setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
       } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
         fetchFinalStoryResult();
@@ -447,7 +507,7 @@ function App() {
             }
           }
 
-          if (currentRound < activeTemplate.questions.length) {
+          if (currentRound < gameLength) {
             if (isHost) {
               const ts = new Date().toISOString();
               const nextRoundNum = currentRound + 1;
@@ -505,27 +565,57 @@ function App() {
   };
 
   const goHome = () => {
-    setAppState(prev => ({ ...prev, phase: Phases.Main }));
-    setAppState(prev => ({ ...prev, didGameStart: false }));
-    setAppState(prev => ({ ...prev, isCreatingLobby: false }));
-    setAppState(prev => ({ ...prev, isLobby: false }));
-    setAppState(prev => ({ ...prev, error: "" }));
-    setAppState(prev => ({ ...prev, currentRound: 1 }));
-    setAppState(prev => ({ ...prev, userAnswers: [] }));
-    setAppState(prev => ({ ...prev, sessionId: null }));
-    setAppState(prev => ({ ...prev, playerId: null }));
-    setAppState(prev => ({ ...prev, isHost: false }));
-    setAppState(prev => ({ ...prev, currentRoundId: null }));
-    setAppState(prev => ({ ...prev, myStorySheetId: null }));
-    setAppState(prev => ({ ...prev, selectedHistoryGame: null }));
-    setAppState(prev => ({ ...prev, lobbyCreatedAt: null }));
+    setAppState(prev => ({
+      ...prev,
+      phase: Phases.Main,
+      didGameStart: false,
+      isCreatingLobby: false,
+      isLobby: false,
+      isJoining: false,
+      error: "",
+      currentRound: 1,
+      userAnswers: [],
+      sessionId: null,
+      playerId: null,
+      isHost: false,
+      currentRoundId: null,
+      myStorySheetId: null,
+      selectedHistoryGame: null,
+      lobbyCreatedAt: null,
+      roomCode: "",
+      joinedCount: 0,
+      totalCount: 0,
+      playerCount: 0,
+      allStorySheets: [],
+      allStories: [],
+    }));
     localStorage.removeItem(STATE_STORAGE_KEY);
   };
 
   const doShowCreateScreen = () => {
-    setAppState(prev => ({ ...prev, roomCode: generateRoomCode() }));
-    setAppState(prev => ({ ...prev, isCreatingLobby: true }));
-    setAppState(prev => ({ ...prev, isLobby: false }));
+    localStorage.removeItem(STATE_STORAGE_KEY);
+    setAppState(prev => ({
+      ...prev,
+      roomCode: generateRoomCode(),
+      isCreatingLobby: true,
+      isLobby: false,
+      isJoining: false,
+      sessionId: null,
+      playerId: null,
+      isHost: false,
+      didGameStart: false,
+      phase: Phases.Main,
+      currentRound: 1,
+      currentRoundId: null,
+      answeredRoundId: null,
+      myStorySheetId: null,
+      joinedCount: 0,
+      totalCount: 0,
+      playerCount: 0,
+      allStorySheets: [],
+      allStories: [],
+      error: ""
+    }));
   };
 
   const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -569,28 +659,40 @@ function App() {
   };
 
   const doShowJoinScreen = () => {
-    setAppState(prev => ({ ...prev, phase: Phases.Join }));
-    setAppState(prev => ({ ...prev, didGameStart: false }));
-    setAppState(prev => ({ ...prev, isCreatingLobby: false }));
+    localStorage.removeItem(STATE_STORAGE_KEY);
+    setAppState(prev => ({
+      ...prev,
+      phase: Phases.Join,
+      didGameStart: false,
+      sessionId: null,
+      playerId: null,
+      isHost: false,
+      answeredRoundId: null,
+      isCreatingLobby: false,
+      error: ""
+    }));
   };
 
   const handleJoinGame = async (nick: string, code: string) => {
+    if (appState.isJoining) return;
+    const joinStartTime = Date.now();
+    setAppState(prev => ({ ...prev, isJoining: true, error: "" }));
     try {
       const allSessions = await getGameSessions();
       const targetSession = allSessions.find(s => s.session_name === code && s.session_status !== 'completed');
       if (!targetSession) {
-        return setAppState(prev => ({ ...prev, error: String(t('ERR_NOT_FOUND' as any)) }));
+        return setAppState(prev => ({ ...prev, isJoining: false, error: String(t('ERR_NOT_FOUND' as any)) }));
       }
 
-      setAppState(prev => ({ ...prev, nickname: nick }));
-      setAppState(prev => ({ ...prev, roomCode: code }));
-      setAppState(prev => ({ ...prev, sessionId: targetSession.id }));
+      // Set nickname, roomCode early for UX but DON'T set sessionId yet to avoid triggering
+      // useGameState refetch before we have the full rejoin state ready
+      setAppState(prev => ({ ...prev, nickname: nick, roomCode: code }));
 
       const existingPlayers = await getPlayersBySession(targetSession.id);
       const existingPlayer = existingPlayers.find((p: Player) => p.nickname.toLowerCase() === nick.toLowerCase());
 
       if (targetSession.session_status === 'active' && !existingPlayer) {
-        return setAppState(prev => ({ ...prev, error: String(t('ERR_NOT_FOUND' as any)) }));
+        return setAppState(prev => ({ ...prev, isJoining: false, error: String(t('ERR_NOT_FOUND' as any)) }));
       }
 
       if (existingPlayer) {
@@ -612,7 +714,7 @@ function App() {
 
             const answers = await getAnswersByRound(latestRound.id);
             const hasAnswered = answers.some((a: any) =>
-              (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === existingPlayer.id
+              String(a.player_id?.id || a.player_id) === String(existingPlayer.id)
             );
 
             rejoinPhase = hasAnswered ? Phases.Waiting : Phases.Main;
@@ -620,44 +722,60 @@ function App() {
           }
         }
 
-        setAppState(prev => ({
-          ...prev,
-          playerId: existingPlayer.id,
-          isHost: existingPlayer.player_order === 1,
-          isLobby: targetSession.session_status === 'waiting',
-          didGameStart: targetSession.session_status === 'active',
-          phase: rejoinPhase,
-          currentRoundId: rejoinRoundId,
-          answeredRoundId: rejoinAnsweredId,
-          roundStartedAt: rejoinStartedAt,
-          currentRound: rejoinRound,
-          nickname: nick,
-          roomCode: code,
-          sessionId: targetSession.id
-        }));
+        // Set all state atomically in a single call — including sessionId — to prevent
+        // the sync useEffect from running mid-update with stale state
+        // Enforce a minimum duration for the "Joining" message (3 seconds)
+        const finishJoin = () => {
+          setAppState(prev => ({
+            ...prev,
+            sessionId: targetSession.id,
+            playerId: existingPlayer.id,
+            isHost: existingPlayer.player_order === 1,
+            isLobby: targetSession.session_status === 'waiting',
+            didGameStart: targetSession.session_status === 'active',
+            phase: rejoinPhase,
+            currentRoundId: rejoinRoundId,
+            answeredRoundId: rejoinAnsweredId,
+            roundStartedAt: rejoinStartedAt,
+            currentRound: rejoinRound,
+            nickname: nick,
+            roomCode: code,
+            isCreatingLobby: false,
+            isJoining: false,
+          }));
+          refreshState();
+        };
+        finishJoin();
       } else {
         const guest = await createPlayer({
           nickname: nick,
           session_id: targetSession.id,
           players_status: 'joined',
         });
-        setAppState(prev => ({
-          ...prev,
-          playerId: guest.id,
-          isHost: false,
-          isLobby: true,
-          didGameStart: false,
-          phase: Phases.Main,
-          nickname: nick,
-          roomCode: code,
-          sessionId: targetSession.id
-        }));
+        const finishJoinNew = () => {
+          setAppState(prev => ({
+            ...prev,
+            sessionId: targetSession.id,
+            playerId: guest.id,
+            isHost: false,
+            isLobby: true,
+            didGameStart: false,
+            phase: Phases.Main,
+            nickname: nick,
+            roomCode: code,
+            isCreatingLobby: false,
+            isJoining: false,
+          }));
+          refreshState();
+        };
+        finishJoinNew();
       }
-
-      setAppState(prev => ({ ...prev, isCreatingLobby: false }));
-      await refreshState();
     } catch (err: any) {
-      setAppState(prev => ({ ...prev, error: String(t('ERR_JOIN' as any)) + err.message }));
+      setAppState(prev => ({
+        ...prev,
+        isJoining: false,
+        error: String(t('ERR_JOIN' as any)) + err.message
+      }));
     }
   };
 
@@ -703,9 +821,11 @@ function App() {
         ...prev,
         didGameStart: true,
         isLobby: false,
+        isCreatingLobby: false,
         phase: Phases.Main,
         currentRound: 1,
         currentRoundId: firstRound.id,
+        answeredRoundId: null,
         roundStartedAt: ts,
         userAnswers: [],
         totalCount: players.length,
@@ -721,10 +841,11 @@ function App() {
   };
 
   const doAnswerSubmit = async (answer: string) => {
-    if (currentAnswers.some(a =>
-      (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
-      (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
-    )) {
+    if (currentAnswers.some(a => {
+      const aPlayerId = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : a.player_id;
+      const aRoundId = typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : a.round_id;
+      return String(aPlayerId) === String(playerId) && String(aRoundId) === String(currentRoundId);
+    })) {
       setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
       return;
     }
@@ -738,24 +859,21 @@ function App() {
     setAppState(prev => ({ ...prev, userAnswers: updatedAnswers }));
     if (!currentRoundId || !playerId || !sessionId) {
       setIsTransitioning(false);
-      setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
-      setTimeout(() => {
-        if (currentRound < activeTemplate.questions.length) {
-          setAppState(prev => ({ ...prev, currentRound: prev.currentRound + 1 }));
-          setIsTransitioning(false);
-          setAppState(prev => ({ ...prev, phase: Phases.Main }));
-          setAppState(prev => ({
-            ...prev,
-            allStories: [{
-              playerName: nickname,
-              story: activeTemplate.buildStory(updatedAnswers, language, String(sessionId || 'local'), String(Math.random())),
-              answers: updatedAnswers,
-              templateId: activeTemplate.id
-            }],
-            phase: Phases.End
-          }));
-        }
-      }, 2000);
+      // Solo mode
+      if (currentRound < gameLength) {
+        setAppState(prev => ({ ...prev, phase: Phases.Main, currentRound: prev.currentRound + 1 }));
+      } else {
+        setAppState(prev => ({
+          ...prev,
+          allStories: [{
+            playerName: nickname,
+            story: activeTemplate.buildStory(updatedAnswers, language, String(sessionId || 'local'), String(Math.random())),
+            answers: updatedAnswers,
+            templateId: activeTemplate.id
+          }],
+          phase: Phases.End
+        }));
+      }
       return;
     }
     try {
@@ -787,17 +905,38 @@ function App() {
       setAppState(prev => ({ ...prev, joinedCount: curAnswers.length }));
       setAppState(prev => ({ ...prev, totalCount: playerCount > 0 ? playerCount : players.length }));
       setIsTransitioning(false);
-      setAppState(prev => ({ ...prev, phase: Phases.Waiting, answeredRoundId: currentRoundId }));
+
+      // Story Mode: advance immediately to next question without waiting
+      if (storyMode && currentRound < gameLength) {
+        setAppState(prev => ({
+          ...prev,
+          phase: Phases.Main,
+          currentRound: prev.currentRound + 1,
+          answeredRoundId: currentRoundId,
+          error: ""
+        }));
+      } else {
+        setAppState(prev => ({
+          ...prev,
+          phase: Phases.Waiting,
+          answeredRoundId: currentRoundId,
+          error: ""
+        }));
+      }
     } catch (err: any) {
       setIsTransitioning(false);
-      setAppState(prev => ({ ...prev, phase: Phases.Waiting, answeredRoundId: currentRoundId }));
+      setAppState(prev => ({
+        ...prev,
+        error: String(t('ERR_SUBMIT' as any)) + ": " + (err.message || String(err))
+      }));
     }
   };
 
-  const amIReady = currentAnswers.some(a =>
-    (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId &&
-    (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === currentRoundId
-  );
+  const amIReady = currentAnswers.some(a => {
+    const aPlayerId = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : a.player_id;
+    const aRoundId = typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : a.round_id;
+    return String(aPlayerId) === String(playerId) && String(aRoundId) === String(currentRoundId);
+  });
 
   return (
     <div className="app-view">
@@ -852,8 +991,6 @@ function App() {
 
       {!didGameStart && isCreatingLobby && !isLobby && phase !== Phases.Join && (
         <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
-          <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
           <div className="create-game-container" style={{ pointerEvents: 'none' }}>
             <div className="input-wrapper" style={{ pointerEvents: 'auto' }}>
               <input
@@ -865,22 +1002,105 @@ function App() {
               />
             </div>
             <span className="error-message" style={{ minHeight: '24px', display: 'block', pointerEvents: 'auto' }}>{error || '\u00A0'}</span>
-            <div className="template-selector" style={{ pointerEvents: 'auto' }}>
-              <h3 className="template-title">{t('CHOOSE_STORY')}</h3>
-              <div className="template-cards-container">
-                {Object.values(TEMPLATES).map((tpl) => (
-                  <div
-                    key={tpl.id}
-                    className={`template-card ${selectedTemplate === tpl.id ? 'active' : ''}`}
-                    onClick={() => setAppState(prev => ({ ...prev, selectedTemplate: tpl.id }))}
-                  >
-                    <div className="template-card-content">
-                      <h4 className="template-name">{t(tpl.id.toUpperCase() as any) || tpl.name}</h4>
-                    </div>
+
+            {/* ── Row: Carousel + Game Length + Options ── */}
+            <div className="create-options-row" style={{ pointerEvents: 'auto' }}>
+
+              {/* Carousel */}
+              <div className="carousel-section">
+                <h3 className="template-title">{t('CHOOSE_STORY')}</h3>
+                <div
+                  className="template-carousel"
+                  ref={carouselRef}
+                  onWheel={handleCarouselWheel}
+                  onTouchStart={handleCarouselTouchStart}
+                  onTouchEnd={handleCarouselTouchEnd}
+                >
+                  <button className="carousel-arrow carousel-arrow-up" onClick={() => moveCarousel(-1)}>▲</button>
+                  <div className="carousel-window">
+                    {[-2, -1, 0, 1, 2].map(offset => {
+                      const idx = (carouselIndex + offset + CAROUSEL_TEMPLATES.length) % CAROUSEL_TEMPLATES.length;
+                      const id = CAROUSEL_TEMPLATES[idx];
+                      const label = id === 'random' ? t('RANDOM' as any) : (t(id.toUpperCase() as any) || id);
+                      const isCenter = offset === 0;
+                      return (
+                        <div
+                          key={idx}
+                          className={`carousel-item ${isCenter ? 'carousel-item--center' : ''} carousel-item--offset-${offset < 0 ? 'neg' : 'pos'}${Math.abs(offset)}`}
+                          onClick={() => {
+                            const steps = offset as 1 | -1 | 0;
+                            if (steps !== 0) moveCarousel(steps > 0 ? 1 : -1);
+                          }}
+                        >
+                          <span className="carousel-item-label">{label}</span>
+                        </div>
+                      );
+                    })}
                   </div>
-                ))}
+                  <button className="carousel-arrow carousel-arrow-down" onClick={() => moveCarousel(1)}>▼</button>
+                </div>
+              </div>
+
+              {/* Game Length + Extra Options */}
+              <div className="game-settings-section">
+
+                {/* Game Length */}
+                <div className="game-length-picker">
+                  <h3 className="template-title">{t('GAME_LENGTH_TITLE' as any)}</h3>
+                  {([6, 9, 12] as Array<6 | 9 | 12>).map(len => (
+                    <label key={len} className={`length-option ${gameLength === len ? 'length-option--active' : ''}`}>
+                      <input type="radio" name="gameLength" value={len} checked={gameLength === len}
+                        onChange={() => setAppState(prev => ({ ...prev, gameLength: len }))} />
+                      <span className="length-pill">
+                        {len === 6 ? t('GAME_LENGTH_SHORT' as any) : len === 9 ? t('GAME_LENGTH_NORMAL' as any) : t('GAME_LENGTH_LONG' as any)}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+
+                {/* Extra Options */}
+                <div className="extra-options">
+                  {/* Color Highlight */}
+                  <label className={`toggle-option ${colorHighlight ? 'toggle-option--active' : ''}`}>
+                    <span className="toggle-label">🎨 {t('OPTS_HIGHLIGHTS' as any)}</span>
+                    <div className="toggle-switch" onClick={() => setAppState(prev => ({ ...prev, colorHighlight: !prev.colorHighlight }))}>
+                      <div className={`toggle-knob ${colorHighlight ? 'toggle-knob--on' : ''}`} />
+                    </div>
+                  </label>
+                  {colorHighlight && (
+                    <div className="color-picker-row">
+                      {['#e52929', '#2962e5', '#29a62b', '#e5a629', '#9c29e5', '#e529b3', '#29e5d0', '#fff'].map(c => (
+                        <button
+                          key={c}
+                          className={`color-swatch ${playerColor === c ? 'color-swatch--active' : ''}`}
+                          style={{ background: c }}
+                          onClick={() => setAppState(prev => ({ ...prev, playerColor: c }))}
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Hints */}
+                  <label className={`toggle-option ${hintsEnabled ? 'toggle-option--active' : ''}`}>
+                    <span className="toggle-label">💡 {t('OPTS_HINTS' as any)}</span>
+                    <div className="toggle-switch" onClick={() => setAppState(prev => ({ ...prev, hintsEnabled: !prev.hintsEnabled }))}>
+                      <div className={`toggle-knob ${hintsEnabled ? 'toggle-knob--on' : ''}`} />
+                    </div>
+                  </label>
+
+                  {/* Story Mode */}
+                  <label className={`toggle-option ${storyMode ? 'toggle-option--active' : ''}`}>
+                    <span className="toggle-label">🕹 {t('STORY_MODE' as any)}</span>
+                    <div className="toggle-switch" onClick={() => setAppState(prev => ({ ...prev, storyMode: !prev.storyMode }))}>
+                      <div className={`toggle-knob ${storyMode ? 'toggle-knob--on' : ''}`} />
+                    </div>
+                  </label>
+                  {storyMode && <p className="story-mode-desc">{t('STORY_MODE_DESC' as any)}</p>}
+                </div>
+
               </div>
             </div>
+
             <div style={{ pointerEvents: 'auto' }}>
               <Button
                 label={t('CREATE_GAME')}
@@ -895,8 +1115,6 @@ function App() {
 
       {!didGameStart && isLobby && phase !== Phases.Join && (
         <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
-          <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
           <div className="lobby-timer-display">
             <span className="timer-title">{t('LOBBY_TIMER_TITLE' as any)}</span>
             <span className="timer-time">
@@ -942,22 +1160,18 @@ function App() {
       )}
 
       {phase === Phases.Join && (
-        <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
-          <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: 5, pointerEvents: 'auto' }} />
-          <JoinCard
-            initialNick={nickname}
-            initialRoom={roomCode}
-            onJoin={handleJoinGame}
-            errors={error ? { room: error } : undefined}
-          />
-        </>
+        <JoinCard
+          initialNick={nickname}
+          initialRoom={roomCode}
+          onJoin={handleJoinGame}
+          onBack={goHome}
+          errors={error ? { room: error } : undefined}
+          loading={appState.isJoining}
+        />
       )}
 
       {didGameStart && phase === Phases.Waiting && (
         <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} />
-          <div className="red-guy-bg" onClick={playSecretMusic} />
           <Round
             className="roundPos"
             currentRound={currentRound}
@@ -981,7 +1195,7 @@ function App() {
             onTimeUp={() => doAnswerSubmit("Час вийшов")}
             className="timerPos"
           />
-          <Round currentRound={currentRound} totalRounds={activeTemplate.questions.length} className="roundPos" />
+          <Round currentRound={currentRound} totalRounds={gameLength} className="roundPos" />
           <RoundCard
             playerName={nickname}
             phase={amIReady ? Phases.Waiting : phase}
@@ -997,7 +1211,7 @@ function App() {
               let roundQuestions = [...(baseTemplate.questions || [])];
 
               if (baseTemplate.id === 'math') {
-                const seedStr = String(sessionId || roomCode || "guest");
+                const seedStr = String(sessionId || roomCode || "guest") + String(playerId || "");
                 const hash = seedStr.split("").reduce((a, c) => a + (c.charCodeAt(0) * 31), 0);
                 for (let i = roundQuestions.length - 1; i > 0; i--) {
                   const j = Math.abs(hash + i * 53) % (i + 1);
@@ -1009,7 +1223,7 @@ function App() {
 
               if (rawQuestion?.startsWith('MATH_DYN_')) {
                 const indexPart = parseInt(rawQuestion.split('_')[2] || "0", 10);
-                const seedStr = String(sessionId || roomCode || "guest");
+                const seedStr = String(sessionId || roomCode || "guest") + String(playerId || "");
                 const hash = seedStr.split("").reduce((a, c) => a + (c.charCodeAt(0) * 17), 0);
                 const offset = hash + indexPart * 73;
                 return mathProblems[offset % mathProblems.length];
@@ -1019,6 +1233,7 @@ function App() {
             playerReady={derivedJoinedCount}
             playerTotal={derivedTotalCount}
             onSubmitAnswer={doAnswerSubmit}
+            hints={hintsEnabled ? (activeTemplate.fallbacks[currentRound - 1] || []) : undefined}
           />
         </>
       )}
@@ -1058,6 +1273,21 @@ function App() {
           phase={phase}
           onHome={() => setAppState(prev => ({ ...prev, selectedHistoryGame: null }))}
         />
+      )}
+
+      {/* Global Background Characters & Home Button Sync */}
+      {/* Global Background Characters & Home Button Sync */}
+      {/* Boys: Lobby, Create, Join, and Waiting for Answers during game */}
+      {(isCreatingLobby || isLobby || phase === Phases.Join || (didGameStart && phase === Phases.Waiting)) && phase !== Phases.End && phase !== Phases.History && (
+        <>
+          <div className="yellow-guy-bg" onClick={playSecretMusic} />
+          <div className="red-guy-bg" onClick={playSecretMusic} />
+        </>
+      )}
+
+      {/* Home Button: Lobby, Create, Join ONLY */}
+      {(isCreatingLobby || isLobby || phase === Phases.Join) && phase !== Phases.End && phase !== Phases.History && (
+        <HomeIcon onClick={goHome} className="homeIconPos" />
       )}
     </div>
   );

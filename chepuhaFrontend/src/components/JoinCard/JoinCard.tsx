@@ -11,6 +11,8 @@ interface JoinCardProps {
   initialNick?: string;
   initialRoom?: string;
   onJoin: (nick: string, room: string) => void;
+  onBack?: () => void;
+  loading?: boolean;
   errors?: {
     nick?: string;
     room?: string;
@@ -20,6 +22,8 @@ const JoinCard: React.FC<JoinCardProps> = ({
   initialNick = "",
   initialRoom = "",
   onJoin,
+  onBack,
+  loading = false,
   errors,
 }) => {
   const { t } = useLanguage();
@@ -86,10 +90,12 @@ const JoinCard: React.FC<JoinCardProps> = ({
           </div>
           <div className={styles.submitBlock}>
             <Button
-              label={t('JOIN_GAME')}
+              label={loading ? t('JOINING') : t('JOIN_GAME')}
               variant="primary"
               onClick={doJoinClick}
               phase={Phases.Join}
+              disabled={loading}
+              loading={loading}
             />
           </div>
         </div>
