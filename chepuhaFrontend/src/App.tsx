@@ -158,6 +158,12 @@ export const AVAILABLE_COLORS = [
   '#4682b4', '#d2691e', '#32cd32'
 ];
 
+const GAME_LENGTH_INDICES: Record<number, number[]> = {
+  6: [0, 1, 2, 4, 6, 11],
+  9: [0, 1, 2, 3, 4, 6, 7, 9, 11],
+  12: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+};
+
 function App() {
   const [appState, setAppState] = useState<AppState>(getInitialState);
 
@@ -239,7 +245,6 @@ function App() {
 
   // Wheel scrolling for carousel
   const handleCarouselWheel = (e: React.WheelEvent) => {
-    e.preventDefault();
     moveCarousel(e.deltaY > 0 ? 1 : -1);
   };
 
@@ -303,10 +308,24 @@ function App() {
           const sorted = [...(s.answers || [])].sort((a, b) => a.position_in_sheet - b.position_in_sheet);
           const p = s.player_id as any;
           const nick = p?.nickname || 'Гравець';
+          const pAnswers = sorted.map(a => a.answer_text);
+
+          const indices = GAME_LENGTH_INDICES[gameLength] || GAME_LENGTH_INDICES[12];
+          const fullAnswers = Array(12).fill("");
+          indices.forEach((qIndex, i) => {
+            fullAnswers[qIndex] = pAnswers[i];
+          });
+          for (let i = 0; i < 12; i++) {
+            if (!fullAnswers[i]) {
+              const pool = activeTemplate.fallbacks[i] || ["..."];
+              fullAnswers[i] = pool[Math.floor(Math.random() * pool.length)];
+            }
+          }
+
           return {
             playerName: nick,
-            story: activeTemplate.buildStory(sorted.map(a => a.answer_text), language, String(sessionId || 'local'), String(s.id || Math.random())),
-            answers: sorted.map(a => a.answer_text),
+            story: activeTemplate.buildStory(fullAnswers, language, String(sessionId || 'local'), String(s.id || Math.random())),
+            answers: pAnswers,
             templateId: activeTemplate.id
           };
         });
@@ -530,7 +549,7 @@ function App() {
               const nextRound = await createRound({
                 session_id: sessionId,
                 round_number: nextRoundNum,
-                question_type: activeTemplate.questionTypes[nextRoundNum - 1],
+                question_type: activeTemplate.questionTypes[GAME_LENGTH_INDICES[gameLength]?.[nextRoundNum - 1] ?? (nextRoundNum - 1)],
                 rounds_status: 'active',
                 started_at: ts,
               });
@@ -824,7 +843,7 @@ function App() {
       const firstRound = await createRound({
         session_id: sessionId,
         round_number: 1,
-        question_type: activeTemplate.questionTypes[0],
+        question_type: activeTemplate.questionTypes[GAME_LENGTH_INDICES[gameLength]?.[0] ?? 0],
         rounds_status: 'active',
         started_at: ts,
       });
@@ -882,11 +901,21 @@ function App() {
       if (currentRound < gameLength) {
         setAppState(prev => ({ ...prev, phase: Phases.Main, currentRound: prev.currentRound + 1 }));
       } else {
+        const indices = GAME_LENGTH_INDICES[gameLength] || GAME_LENGTH_INDICES[12];
+        const fullAnswers = Array(12).fill("");
+        indices.forEach((qIndex, i) => { fullAnswers[qIndex] = updatedAnswers[i]; });
+        for (let i = 0; i < 12; i++) {
+          if (!fullAnswers[i]) {
+            const pool = activeTemplate.fallbacks[i] || ["..."];
+            fullAnswers[i] = pool[Math.floor(Math.random() * pool.length)];
+          }
+        }
+
         setAppState(prev => ({
           ...prev,
           allStories: [{
             playerName: nickname,
-            story: activeTemplate.buildStory(updatedAnswers, language, String(sessionId || 'local'), String(Math.random())),
+            story: activeTemplate.buildStory(fullAnswers, language, String(sessionId || 'local'), String(Math.random())),
             answers: updatedAnswers,
             templateId: activeTemplate.id
           }],
@@ -965,12 +994,6 @@ function App() {
 
       {!didGameStart && !isCreatingLobby && phase === Phases.Main && !isLobby && (
         <>
-          <div className="logo-wrapper">
-            <img src={language === 'en' ? logoImageEng : logoImage} alt="Чепуха Лого" className="logo" />
-            <div className="logo-boy-hitbox hitbox-1" onClick={playSecretMusic} />
-            <div className="logo-boy-hitbox hitbox-2" onClick={playSecretMusic} />
-            <div className="logo-boy-hitbox hitbox-3" onClick={playSecretMusic} />
-          </div>
           <div className="menu-buttons">
             <Button
               label={t('CREATE_GAME')}
@@ -990,6 +1013,12 @@ function App() {
               phase={phase}
               onClick={doShowHistory}
             />
+          </div>
+          <div className="logo-wrapper">
+            <img src={language === 'en' ? logoImageEng : logoImage} alt="Чепуха Лого" className="logo" />
+            <div className="logo-boy-hitbox hitbox-1" onClick={playSecretMusic} />
+            <div className="logo-boy-hitbox hitbox-2" onClick={playSecretMusic} />
+            <div className="logo-boy-hitbox hitbox-3" onClick={playSecretMusic} />
           </div>
           <div className="language-selector">
             <button
