@@ -199,12 +199,20 @@ function App() {
     hookMatch ? Math.max(joinedCount, currentAnswers.length) : joinedCount,
     derivedTotalCount > 0 ? derivedTotalCount : Infinity
   );
-  const activeTemplate = TEMPLATES[session?.template || selectedTemplate] || TEMPLATES.classic;
+  // Parse packed template string "theme|length|storyMode"
+  const rawTemplateConfig = session?.template || selectedTemplate;
+  const tParts = rawTemplateConfig.split('|');
+  const actualTemplateKey = tParts[0] || 'classic';
+  const parsedGameLength = tParts[1] ? (parseInt(tParts[1], 10) as 6 | 9 | 12) : gameLength;
+  const parsedStoryMode = tParts[2] ? tParts[2] === '1' : storyMode;
+
   const { t, language, setLanguage } = useLanguage();
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transitionLockRef = useRef(false);
   const currentRoundIdRef = useRef(currentRoundId);
   const currentRoundRef = useRef(currentRound);
+
+  const activeTemplate = TEMPLATES[actualTemplateKey] || TEMPLATES.classic;
   const { savedGames, saveGameToHistory } = useHistory();
 
   // Carousel state — list starts with 'random', then all templates
@@ -322,10 +330,18 @@ function App() {
             }
           }
 
+          const coloredAnswers = fullAnswers.map((ans, idx) => {
+            // Let's check who submitted this answer for this particular sheet at this position.
+            const originalAnswer = (s.answers || []).find((a: any) => a.position_in_sheet === (idx + 1));
+            const ansOwnerId = originalAnswer ? (typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id.id : originalAnswer.player_id) : null;
+            const isMine = String(ansOwnerId) === String(playerId);
+            return `<span class="${isMine ? 'my-answer-text' : 'other-answer-text'}">${ans}</span>`;
+          });
+
           return {
             playerName: nick,
-            story: activeTemplate.buildStory(fullAnswers, language, String(sessionId || 'local'), String(s.id || Math.random())),
-            answers: pAnswers,
+            story: activeTemplate.buildStory(coloredAnswers, language, String(sessionId || 'local'), String(s.id || Math.random())),
+            answers: fullAnswers,
             templateId: activeTemplate.id
           };
         });
@@ -367,7 +383,7 @@ function App() {
         const aRoundId = typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : a.round_id;
         return String(aPlayerId) === String(playerId) && String(aRoundId) === String(latestRound.id);
       }) || (String(answeredRoundId) === String(latestRound.id))) {
-        newPhase = Phases.Waiting;
+        newPhase = storyMode ? Phases.Main : Phases.Waiting;
       } else if (myPlayer.players_status === 'finished') {
         newPhase = Phases.End;
       }
@@ -387,7 +403,7 @@ function App() {
         const aRoundId = typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : a.round_id;
         return String(aPlayerId) === String(playerId) && String(aRoundId) === String(currentRoundId);
       }) || String(answeredRoundId) === String(currentRoundId))) {
-        setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+        if (!storyMode) setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
       } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
         fetchFinalStoryResult();
         setAppState(prev => ({ ...prev, phase: Phases.End }));
@@ -411,7 +427,7 @@ function App() {
           (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === latestRound.id
         );
         if (hasAnswered) {
-          initialPhase = Phases.Waiting;
+          initialPhase = storyMode ? Phases.Main : Phases.Waiting;
           initAnsweredId = latestRound.id;
         }
       }
@@ -512,7 +528,14 @@ function App() {
         const startedAt = roundStartedAt ? Date.parse(roundStartedAt) : now;
         const timePassed = (now - startedAt) / 1000;
 
-        if (curAnswers.length >= total || (isHost && timePassed > 130)) {
+        let maxTime = 130;
+        if (storyMode) {
+          if (gameLength === 6) maxTime = 480;      // 8 mins
+          else if (gameLength === 9) maxTime = 720; // 12 mins
+          else if (gameLength === 12) maxTime = 900; // 15 mins
+        }
+
+        if (curAnswers.length >= total || (isHost && timePassed > maxTime)) {
           if (!isHost) return;
           setIsTransitioning(true);
           transitionLockRef.current = true;
@@ -676,11 +699,13 @@ function App() {
         templateToSave = tKeys[Math.floor(Math.random() * tKeys.length)];
       }
 
+      const packedTemplate = `${templateToSave}|${gameLength}|${storyMode ? '1' : '0'}`;
+
       const newSession = await createGameSession({
         session_name: roomCode,
         max_players: 12,
         session_status: 'waiting',
-        template: templateToSave,
+        template: packedTemplate,
       });
       setAppState(prev => ({ ...prev, sessionId: newSession.id, selectedTemplate: templateToSave }));
 
@@ -786,6 +811,8 @@ function App() {
             roomCode: code,
             isCreatingLobby: false,
             isJoining: false,
+            gameLength: targetSession.template ? (parseInt(targetSession.template.split('|')[1]) as 6 | 9 | 12) : 9,
+            storyMode: targetSession.template ? targetSession.template.split('|')[2] === '1' : false,
           }));
           refreshState();
         };
@@ -809,6 +836,8 @@ function App() {
             roomCode: code,
             isCreatingLobby: false,
             isJoining: false,
+            gameLength: targetSession.template ? (parseInt(targetSession.template.split('|')[1]) as 6 | 9 | 12) : 9,
+            storyMode: targetSession.template ? targetSession.template.split('|')[2] === '1' : false,
           }));
           refreshState();
         };
@@ -846,10 +875,13 @@ function App() {
       setAppState(prev => ({ ...prev, allStorySheets: newSheets }));
 
       const ts = new Date().toISOString();
+      // Need to use the correctly parsed length rather than the pre-sync gameLength
+      const targetGameLength = session?.template ? (parseInt(session.template.split('|')[1]) as 6 | 9 | 12) : gameLength;
+
       const firstRound = await createRound({
         session_id: sessionId,
         round_number: 1,
-        question_type: activeTemplate.questionTypes[GAME_LENGTH_INDICES[gameLength]?.[0] ?? 0],
+        question_type: activeTemplate.questionTypes[GAME_LENGTH_INDICES[targetGameLength]?.[0] ?? 0],
         rounds_status: 'active',
         started_at: ts,
       });
@@ -1000,6 +1032,12 @@ function App() {
 
       {!didGameStart && !isCreatingLobby && phase === Phases.Main && !isLobby && (
         <>
+          <div className="logo-wrapper">
+            <img src={language === 'en' ? logoImageEng : logoImage} alt="Чепуха Лого" className="logo" />
+            <div className="logo-boy-hitbox hitbox-1" onClick={playSecretMusic} />
+            <div className="logo-boy-hitbox hitbox-2" onClick={playSecretMusic} />
+            <div className="logo-boy-hitbox hitbox-3" onClick={playSecretMusic} />
+          </div>
           <div className="menu-buttons">
             <Button
               label={t('CREATE_GAME')}
@@ -1019,12 +1057,6 @@ function App() {
               phase={phase}
               onClick={doShowHistory}
             />
-          </div>
-          <div className="logo-wrapper">
-            <img src={language === 'en' ? logoImageEng : logoImage} alt="Чепуха Лого" className="logo" />
-            <div className="logo-boy-hitbox hitbox-1" onClick={playSecretMusic} />
-            <div className="logo-boy-hitbox hitbox-2" onClick={playSecretMusic} />
-            <div className="logo-boy-hitbox hitbox-3" onClick={playSecretMusic} />
           </div>
           <div className="language-selector">
             <button
@@ -1256,6 +1288,7 @@ function App() {
             key={`${currentRound}-${roundStartedAt}`}
             roundStartedAt={roundStartedAt}
             serverTimeOffset={serverTimeOffset}
+            duration={storyMode ? (gameLength === 6 ? 480 : gameLength === 9 ? 720 : 900) : 120}
             onTimeUp={() => doAnswerSubmit("Час вийшов")}
             className="timerPos"
           />

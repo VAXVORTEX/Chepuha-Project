@@ -5,9 +5,10 @@ interface TimerProps {
     serverTimeOffset: number;
     onTimeUp: () => void;
     className?: string;
+    duration?: number;
 }
-const Timer: React.FC<TimerProps> = ({ roundStartedAt, serverTimeOffset, onTimeUp, className }) => {
-    const [timeLeft, setTimeLeft] = useState(120);
+const Timer: React.FC<TimerProps> = ({ roundStartedAt, serverTimeOffset, onTimeUp, className, duration = 120 }) => {
+    const [timeLeft, setTimeLeft] = useState(duration);
     const onTimeUpRef = useRef(onTimeUp);
 
     useEffect(() => {
@@ -21,7 +22,7 @@ const Timer: React.FC<TimerProps> = ({ roundStartedAt, serverTimeOffset, onTimeU
             const startMs = new Date(roundStartedAt).getTime();
             const nowMs = Date.now() - serverTimeOffset;
             const elapsed = Math.floor((nowMs - startMs) / 1000);
-            return Math.max(0, 120 - elapsed);
+            return Math.max(0, duration - elapsed);
         };
 
         const initialTime = calcTime();

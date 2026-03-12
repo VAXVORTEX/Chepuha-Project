@@ -19,7 +19,7 @@ const Story: React.FC<Story> = ({
         <div className={`${styles.box} ${styles[phase] || ''}`}>
           <h2 className={styles.title}> {title}</h2>
           <div className={styles.part}>
-            <p className={styles.text}> {content}</p>
+            <p className={styles.text} dangerouslySetInnerHTML={{ __html: content }}></p>
           </div>
           {(phase === Phases.Waiting || phase === Phases.End) && (
             <button className={styles.GoBackButton} onClick={onHome}>
