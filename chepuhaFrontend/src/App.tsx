@@ -670,13 +670,19 @@ function App() {
       return;
     }
     try {
+      let templateToSave = selectedTemplate;
+      if (templateToSave === 'random') {
+        const tKeys = Object.keys(TEMPLATES);
+        templateToSave = tKeys[Math.floor(Math.random() * tKeys.length)];
+      }
+
       const newSession = await createGameSession({
         session_name: roomCode,
         max_players: 12,
         session_status: 'waiting',
-        template: selectedTemplate,
+        template: templateToSave,
       });
-      setAppState(prev => ({ ...prev, sessionId: newSession.id }));
+      setAppState(prev => ({ ...prev, sessionId: newSession.id, selectedTemplate: templateToSave }));
 
       const hostPlayer = await createPlayer({
         nickname,
@@ -1126,13 +1132,15 @@ function App() {
                     </label>
 
                     {/* Story Mode */}
-                    <label className={`toggle-option ${storyMode ? 'toggle-option--active' : ''}`} onClick={() => setAppState(prev => ({ ...prev, storyMode: !prev.storyMode }))}>
-                      <span className="toggle-label">🕹 {t('STORY_MODE' as any)}</span>
-                      <div className="toggle-switch">
-                        <div className={`toggle-knob ${storyMode ? 'toggle-knob--on' : ''}`} />
-                      </div>
-                    </label>
-                    {storyMode && <div className="story-mode-desc-container"><p className="story-mode-desc">{t('STORY_MODE_DESC' as any)}</p></div>}
+                    <div style={{ position: 'relative', width: '100%' }}>
+                      <label className={`toggle-option ${storyMode ? 'toggle-option--active' : ''}`} onClick={() => setAppState(prev => ({ ...prev, storyMode: !prev.storyMode }))}>
+                        <span className="toggle-label">🕹 {t('STORY_MODE' as any)}</span>
+                        <div className="toggle-switch">
+                          <div className={`toggle-knob ${storyMode ? 'toggle-knob--on' : ''}`} />
+                        </div>
+                      </label>
+                      {storyMode && <div className="story-mode-desc-container"><p className="story-mode-desc">{t('STORY_MODE_DESC' as any)}</p></div>}
+                    </div>
                   </div>
 
                 </div>

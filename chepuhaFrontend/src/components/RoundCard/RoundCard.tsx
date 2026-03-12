@@ -25,7 +25,18 @@ export const RoundCard = ({
 }: RoundCardProps) => {
     const [answer, setAnswer] = useState('');
     const [showHints, setShowHints] = useState(false);
+    const [selectedHints, setSelectedHints] = useState<string[]>([]);
     const { t } = useLanguage();
+
+    React.useEffect(() => {
+        if (hints && hints.length > 0) {
+            const shuffled = [...hints].sort(() => 0.5 - Math.random());
+            setSelectedHints(shuffled.slice(0, 3));
+        } else {
+            setSelectedHints([]);
+        }
+    }, [hints]);
+
     const isWaiting = phase === Phases.Waiting;
     const handleSubmit = () => {
         if (onSubmitAnswer && answer.trim() !== '') {
@@ -69,8 +80,8 @@ export const RoundCard = ({
                                 </button>
                                 {showHints && (
                                     <div className={styles.hintsList}>
-                                        {hints.map((hint, i) => (
-                                            <span key={i} className={styles.hintItem}>{hint}</span>
+                                        {selectedHints.map((hint, i) => (
+                                            <span key={i} className={styles.hintItem} onClick={() => setAnswer(hint)}>{hint}</span>
                                         ))}
                                     </div>
                                 )}
