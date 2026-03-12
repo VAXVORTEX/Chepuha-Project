@@ -236,10 +236,23 @@ function App() {
 
   const cycleColor = (direction: -1 | 1) => {
     setAppState(prev => {
-      const idx = AVAILABLE_COLORS.indexOf(prev.playerColor);
+      const idx = AVAILABLE_COLORS.indexOf(prev.playerColor || '#000000');
       const currentIdx = idx === -1 ? 0 : idx;
-      const newIdx = (currentIdx + direction + AVAILABLE_COLORS.length) % AVAILABLE_COLORS.length;
-      return { ...prev, playerColor: AVAILABLE_COLORS[newIdx] };
+      let nextIdx = (currentIdx + direction + AVAILABLE_COLORS.length) % AVAILABLE_COLORS.length;
+
+      // Locking: prevent picking a color that another player already has
+      const takenColors = (players || []).map(p => p.color).filter(c => c && c !== prev.playerColor);
+      let attempts = 0;
+      while (takenColors.includes(AVAILABLE_COLORS[nextIdx]) && attempts < AVAILABLE_COLORS.length) {
+        nextIdx = (nextIdx + direction + AVAILABLE_COLORS.length) % AVAILABLE_COLORS.length;
+        attempts++;
+      }
+
+      const newColor = AVAILABLE_COLORS[nextIdx];
+      if (playerId) {
+        updatePlayer(playerId, { color: newColor }).catch(() => { });
+      }
+      return { ...prev, playerColor: newColor };
     });
   };
 
@@ -1208,7 +1221,7 @@ function App() {
                   players.map((p, i) => {
                     const isMe = String(p.id) === String(playerId) || (i === 0 && nickname === p.nickname);
                     const defaultColor = AVAILABLE_COLORS[i % AVAILABLE_COLORS.length];
-                    const activeColor = isMe && playerColor ? playerColor : defaultColor;
+                    const activeColor = isMe && playerColor ? playerColor : (p.color || defaultColor);
 
                     return (
                       <div key={p.id || String(i)} className="player-item">
@@ -1271,7 +1284,7 @@ function App() {
           <Round
             className="roundPos"
             currentRound={currentRound}
-            totalRounds={activeTemplate.questions.length}
+            totalRounds={gameLength}
           />
           <WaitCard
             nick={nickname}

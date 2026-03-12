@@ -26,6 +26,7 @@ export interface Player {
     players_status: PlayerStatus;
     joined_at: string | null;
     session_id?: string | GameSession;
+    color?: string | null;
 }
 
 export interface Round {

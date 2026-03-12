@@ -672,25 +672,48 @@
   }
 
   .inline-color-picker {
-    transform: scale(0.8);
-    position: relative;
-    top: 5px;
+    transform: scale(0.65);
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%) scale(0.65);
   }
 
-  .nickname-input {
-    width: 260px;
-    font-size: 1.1rem;
-    height: 40px;
+  .player-item {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 50px;
+  }
+
+  .player-name-wrapper {
+    display: flex;
+    justify-content: center;
+    width: 100%;
   }
 
   .logo-wrapper {
-    order: 2;
-    margin-top: 10px;
+    order: 0;
+    margin-top: 0;
     margin-bottom: 20px;
   }
 
   .menu-buttons {
     order: 1;
+    margin-top: 0;
+  }
+
+  .nickname-input {
+    width: 90% !important;
+    max-width: 400px;
+    font-size: 1.2rem;
+    height: 50px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 12px;
+    text-align: center;
   }
 
   .create-options-row {
@@ -707,7 +730,7 @@
     left: 50%;
     margin-left: -325px;
     margin-top: 10px;
-    margin-bottom: -320px;
+    margin-bottom: -180px; // Adjusted to prevent button overlap
   }
 
   .template-title {
@@ -945,7 +968,7 @@
     padding-bottom: 20px;
 
     .button {
-      margin-top: 40px !important; // Lower button further on mobile
+      margin-top: 60px !important; // Lowered button even more on mobile
     }
   }
 

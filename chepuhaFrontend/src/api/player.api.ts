@@ -6,6 +6,7 @@ export interface CreatePlayerPayload {
     session_id?: string;
     players_status?: PlayerStatus;
     player_order?: number;
+    color?: string;
 }
 
 export async function createPlayer(payload: CreatePlayerPayload): Promise<Player> {
