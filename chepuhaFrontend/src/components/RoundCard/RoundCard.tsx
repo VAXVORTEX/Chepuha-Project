@@ -48,8 +48,8 @@ export const RoundCard = ({
     };
     return (
         <div className={`${styles.roundCard} ${isWaiting ? styles.waiting : ''}`}>
-            <div className={styles.header} style={playerColor ? { backgroundColor: playerColor } : {}}>
-                <h2 className={styles.playerName}>{playerName}</h2>
+            <div className={styles.header}>
+                <h2 className={styles.playerName} style={playerColor ? { color: playerColor } : {}}>{playerName}</h2>
             </div>
             <div className={styles.body}>
                 {isWaiting ? (

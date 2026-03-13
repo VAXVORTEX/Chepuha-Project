@@ -76,14 +76,10 @@ const GameResult: React.FC<ResultProps> = ({
               ◀
             </button>
             <div className={styles.part}>
-              {phase === Phases.History ? (
-                <p className={styles.text}>{content}</p>
-              ) : (
-                <p
-                  className={styles.text}
-                  dangerouslySetInnerHTML={{ __html: content }}
-                />
-              )}
+              <p
+                className={styles.text}
+                dangerouslySetInnerHTML={{ __html: content }}
+              />
             </div>
             <button
               className={styles.arrowBtn}
