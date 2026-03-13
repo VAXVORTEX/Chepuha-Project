@@ -164,6 +164,38 @@ const GAME_LENGTH_INDICES: Record<number, number[]> = {
   12: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 };
 
+const PlayerItem = ({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, crownImage }: any) => {
+  const [pulse, setPulse] = useState(false);
+  const defaultColor = AVAILABLE_COLORS[i % AVAILABLE_COLORS.length];
+  const activeColor = isMe && playerColor ? playerColor : (p.color || defaultColor);
+  const prevColor = useRef(activeColor);
+
+  useEffect(() => {
+    if (prevColor.current !== activeColor) {
+      setPulse(true);
+      const timer = setTimeout(() => setPulse(false), 1000);
+      prevColor.current = activeColor;
+      return () => clearTimeout(timer);
+    }
+  }, [activeColor]);
+
+  return (
+    <div key={p.id || String(i)} className={`player-item ${pulse ? 'color-updated' : ''}`}>
+      <div className="player-name-wrapper">
+        {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
+        <span className="player-name" style={{ color: activeColor }}>{p.nickname}</span>
+      </div>
+      {isMe && (
+        <div className="inline-color-picker">
+          <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
+          <div className="inline-color-swatch" style={{ background: activeColor }} />
+          <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
+        </div>
+      )}
+    </div>
+  );
+};
+
 function App() {
   const [appState, setAppState] = useState<AppState>(getInitialState);
 
@@ -194,17 +226,20 @@ function App() {
   const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets, lobbyCreatedAt, answeredRoundId, gameLength, storyMode, hintsEnabled, colorHighlight, playerColor } = appState;
   const { session, players, rounds, currentAnswers, activeRoundId: hookActiveRoundId, error: pollError, refreshState, dataReady } = useGameState(sessionId);
   const hookMatch = hookActiveRoundId && currentRoundId && hookActiveRoundId === currentRoundId;
-  const derivedTotalCount = totalCount > 0 ? totalCount : (players?.length || 0);
-  const derivedJoinedCount = Math.min(
-    hookMatch ? Math.max(joinedCount, currentAnswers.length) : joinedCount,
-    derivedTotalCount > 0 ? derivedTotalCount : Infinity
-  );
-  // Parse packed template string "theme|length|storyMode"
-  const rawTemplateConfig = session?.template || selectedTemplate;
+  const rawTemplateConfig = session?.template || selectedTemplate || "";
   const tParts = rawTemplateConfig.split('|');
   const actualTemplateKey = tParts[0] || 'classic';
   const parsedGameLength = tParts[1] ? (parseInt(tParts[1], 10) as 6 | 9 | 12) : gameLength;
   const parsedStoryMode = tParts[2] ? tParts[2] === '1' : storyMode;
+
+  const derivedTotalCount = totalCount > 0 ? totalCount : (players?.length || 0);
+  const finishedCount = (players || []).filter(p => p.players_status === 'finished').length;
+  const derivedJoinedCount = parsedStoryMode
+    ? finishedCount
+    : Math.min(
+      hookMatch ? Math.max(joinedCount, currentAnswers.length) : joinedCount,
+      derivedTotalCount > 0 ? derivedTotalCount : Infinity
+    );
 
   const { t, language, setLanguage } = useLanguage();
   const [isTransitioning, setIsTransitioning] = useState(false);
@@ -388,7 +423,9 @@ function App() {
 
     if (!latestRound || !myPlayer) return;
 
-    if (latestRound.round_number > currentRound || !currentRoundId) {
+    const isStory = !!(session?.template?.split('|')[2] === '1' || storyMode);
+
+    if ((latestRound.round_number > currentRound || !currentRoundId) && !isStory) {
       let newPhase = Phases.Main;
 
       if (currentAnswers.some(a => {
@@ -396,7 +433,7 @@ function App() {
         const aRoundId = typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : a.round_id;
         return String(aPlayerId) === String(playerId) && String(aRoundId) === String(latestRound.id);
       }) || (String(answeredRoundId) === String(latestRound.id))) {
-        newPhase = storyMode ? Phases.Main : Phases.Waiting;
+        newPhase = Phases.Waiting;
       } else if (myPlayer.players_status === 'finished') {
         newPhase = Phases.End;
       }
@@ -408,17 +445,20 @@ function App() {
         roundStartedAt: latestRound.started_at || prev.roundStartedAt,
         phase: newPhase,
         joinedCount: 0,
-        answeredRoundId: null // Crucial: clear and don't carry over
+        answeredRoundId: null
       }));
-    } else if (String(latestRound.id) === String(currentRoundId)) {
-      if (phase === Phases.Main && (currentAnswers.some(a => {
+    } else if (String(latestRound.id) === String(currentRoundId) || isStory) {
+      if (session?.session_status === 'completed' && phase !== Phases.End && phase !== Phases.History) {
+        fetchFinalStoryResult();
+        setAppState(prev => ({ ...prev, phase: Phases.End }));
+      } else if (phase === Phases.Main && !isStory && (currentAnswers.some(a => {
         const aPlayerId = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : a.player_id;
         const aRoundId = typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : a.round_id;
         return String(aPlayerId) === String(playerId) && String(aRoundId) === String(currentRoundId);
       }) || String(answeredRoundId) === String(currentRoundId))) {
-        if (!storyMode) setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
+        setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
       } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
-        fetchFinalStoryResult();
+        if (!isStory) fetchFinalStoryResult();
         setAppState(prev => ({ ...prev, phase: Phases.End }));
       }
     }
@@ -445,14 +485,34 @@ function App() {
         }
       }
 
+      // In Story Mode, we might want to start at the round we are actually on
+      let targetRound = latestRound;
+      let targetRoundNumber = latestRound?.round_number || 1;
+      if (storyMode && (rounds || []).length > 0) {
+        // Find the first round the player hasn't answered yet
+        const playerAnswers = (currentAnswers || []).filter(a =>
+          (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId
+        );
+        const answeredRoundNumbers = new Set(playerAnswers.map(a => {
+          const r = (rounds || []).find(r => r.id === (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)));
+          return r?.round_number;
+        }).filter(Boolean));
+
+        const firstUnanswered = [...(rounds || [])].sort((a, b) => a.round_number - b.round_number).find(r => !answeredRoundNumbers.has(r.round_number));
+        if (firstUnanswered) {
+          targetRound = firstUnanswered;
+          targetRoundNumber = firstUnanswered.round_number;
+        }
+      }
+
       setAppState(prev => ({
         ...prev,
         didGameStart: true,
         isLobby: false,
         phase: initialPhase,
-        currentRoundId: latestRound?.id || prev.currentRoundId,
-        currentRound: latestRound?.round_number || prev.currentRound,
-        roundStartedAt: latestRound?.started_at || prev.roundStartedAt,
+        currentRoundId: targetRound?.id || prev.currentRoundId,
+        currentRound: targetRoundNumber,
+        roundStartedAt: targetRound?.started_at || prev.roundStartedAt,
         answeredRoundId: initAnsweredId
       }));
       refreshState();
@@ -548,7 +608,10 @@ function App() {
           else if (gameLength === 12) maxTime = 900; // 15 mins
         }
 
-        if (curAnswers.length >= total || (isHost && timePassed > maxTime)) {
+        const isStory = !!(session?.template?.split('|')[2] === '1' || storyMode);
+        const allFinished = isStory && freshPlayers.every(p => p.players_status === 'finished');
+
+        if ((curAnswers.length >= total && !isStory) || allFinished || (isHost && timePassed > maxTime)) {
           if (!isHost) return;
           setIsTransitioning(true);
           transitionLockRef.current = true;
@@ -578,7 +641,7 @@ function App() {
             }
           }
 
-          if (currentRound < gameLength) {
+          if (currentRound < gameLength && !isStory) {
             if (isHost) {
               const ts = new Date().toISOString();
               const nextRoundNum = currentRound + 1;
@@ -722,16 +785,22 @@ function App() {
       });
       setAppState(prev => ({ ...prev, sessionId: newSession.id, selectedTemplate: templateToSave }));
 
+      const hostColor = AVAILABLE_COLORS[0];
       const hostPlayer = await createPlayer({
         nickname,
         session_id: newSession.id,
         players_status: 'joined',
         player_order: 1,
+        color: hostColor,
       });
-      setAppState(prev => ({ ...prev, playerId: hostPlayer.id }));
-      setAppState(prev => ({ ...prev, isHost: true }));
-      setAppState(prev => ({ ...prev, isLobby: true }));
-      setAppState(prev => ({ ...prev, lobbyCreatedAt: Date.now() }));
+      setAppState(prev => ({
+        ...prev,
+        playerId: hostPlayer.id,
+        playerColor: hostColor,
+        isHost: true,
+        isLobby: true,
+        lobbyCreatedAt: Date.now()
+      }));
       localStorage.setItem('chepuhaUserPrefs', JSON.stringify({ nickname, roomCode }));
       await refreshState();
     } catch (err: any) {
@@ -831,10 +900,17 @@ function App() {
         };
         finishJoin();
       } else {
+        const takenColors = existingPlayers.map((p: Player) => p.color).filter(Boolean);
+        const availableUnique = AVAILABLE_COLORS.filter(c => !takenColors.includes(c));
+        const guestColor = availableUnique.length > 0
+          ? availableUnique[0]
+          : AVAILABLE_COLORS[existingPlayers.length % AVAILABLE_COLORS.length];
+
         const guest = await createPlayer({
           nickname: nick,
           session_id: targetSession.id,
           players_status: 'joined',
+          color: guestColor,
         });
         const finishJoinNew = () => {
           setAppState(prev => ({
@@ -891,13 +967,30 @@ function App() {
       // Need to use the correctly parsed length rather than the pre-sync gameLength
       const targetGameLength = session?.template ? (parseInt(session.template.split('|')[1]) as 6 | 9 | 12) : gameLength;
 
-      const firstRound = await createRound({
-        session_id: sessionId,
-        round_number: 1,
-        question_type: activeTemplate.questionTypes[GAME_LENGTH_INDICES[targetGameLength]?.[0] ?? 0],
-        rounds_status: 'active',
-        started_at: ts,
-      });
+      let firstRoundId = "";
+      if (storyMode) {
+        // Create all rounds upfront for story mode to allow async progress
+        const targetIndices = GAME_LENGTH_INDICES[targetGameLength] || GAME_LENGTH_INDICES[12];
+        for (let i = 0; i < targetGameLength; i++) {
+          const created = await createRound({
+            session_id: sessionId,
+            round_number: i + 1,
+            question_type: activeTemplate.questionTypes[targetIndices[i] ?? i],
+            rounds_status: 'active',
+            started_at: ts,
+          });
+          if (i === 0) firstRoundId = created.id;
+        }
+      } else {
+        const firstRound = await createRound({
+          session_id: sessionId,
+          round_number: 1,
+          question_type: activeTemplate.questionTypes[GAME_LENGTH_INDICES[targetGameLength]?.[0] ?? 0],
+          rounds_status: 'active',
+          started_at: ts,
+        });
+        firstRoundId = firstRound.id;
+      }
 
       await updatePlayersBySession(sessionId, { players_status: 'playing' });
 
@@ -913,7 +1006,7 @@ function App() {
         isCreatingLobby: false,
         phase: Phases.Main,
         currentRound: 1,
-        currentRoundId: firstRound.id,
+        currentRoundId: firstRoundId,
         answeredRoundId: null,
         roundStartedAt: ts,
         userAnswers: [],
@@ -998,7 +1091,11 @@ function App() {
         round_id: currentRoundId,
         story_sheet_id: targetSheet,
       });
-      await updatePlayer(playerId, { players_status: 'ready' });
+
+      const isStory = !!(session?.template?.split('|')[2] === '1' || storyMode);
+      const isLastRound = currentRound === gameLength;
+
+      await updatePlayer(playerId, { players_status: isLastRound ? 'finished' : 'playing' });
       refreshState();
       const curAnswers = await getAnswersByRound(currentRoundId);
       setAppState(prev => ({ ...prev, joinedCount: curAnswers.length }));
@@ -1007,10 +1104,15 @@ function App() {
 
       // Story Mode OR Single-player: advance immediately to next question without waiting
       if ((storyMode || totalCount <= 1) && currentRound < gameLength) {
+        const nextRoundNum = currentRound + 1;
+        // Find the next round that should have been pre-created
+        const nextRound = (rounds || []).find(r => r.round_number === nextRoundNum);
+
         setAppState(prev => ({
           ...prev,
           phase: Phases.Main,
-          currentRound: prev.currentRound + 1,
+          currentRound: nextRoundNum,
+          currentRoundId: nextRound?.id || prev.currentRoundId, // Fallback to current if not found yet (refresh will fix)
           answeredRoundId: currentRoundId,
           error: ""
         }));
@@ -1218,39 +1320,28 @@ function App() {
               <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
               <div className="players-list">
                 {players.length > 0 ? (
-                  players.map((p, i) => {
-                    const isMe = String(p.id) === String(playerId) || (i === 0 && nickname === p.nickname);
-                    const defaultColor = AVAILABLE_COLORS[i % AVAILABLE_COLORS.length];
-                    const activeColor = isMe && playerColor ? playerColor : (p.color || defaultColor);
-
-                    return (
-                      <div key={p.id || String(i)} className="player-item">
-                        <div className="player-name-wrapper">
-                          {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
-                          <span className="player-name" style={{ color: activeColor }}>{p.nickname}</span>
-                        </div>
-                        {isMe && (
-                          <div className="inline-color-picker">
-                            <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
-                            <div className="inline-color-swatch" style={{ background: activeColor }} />
-                            <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })
+                  players.map((p, i) => (
+                    <PlayerItem
+                      key={p.id || String(i)}
+                      p={p}
+                      i={i}
+                      isMe={String(p.id) === String(playerId) || (i === 0 && nickname === p.nickname)}
+                      playerColor={playerColor}
+                      cycleColor={cycleColor}
+                      AVAILABLE_COLORS={AVAILABLE_COLORS}
+                      crownImage={crownImage}
+                    />
+                  ))
                 ) : (
-                  <div className="player-item">
-                    <div className="player-name-wrapper">
-                      <img src={crownImage} alt="Host" className="crown-icon" />
-                      <span className="player-name" style={{ color: playerColor || '#000000' }}>{nickname}</span>
-                    </div>
-                    <div className="inline-color-picker">
-                      <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
-                      <div className="inline-color-swatch" style={{ background: playerColor || '#000000' }} />
-                      <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
-                    </div>
-                  </div>
+                  <PlayerItem
+                    p={{ id: 'temp', nickname }}
+                    i={0}
+                    isMe={true}
+                    playerColor={playerColor}
+                    cycleColor={cycleColor}
+                    AVAILABLE_COLORS={AVAILABLE_COLORS}
+                    crownImage={crownImage}
+                  />
                 )}
               </div>
             </div>
@@ -1284,7 +1375,7 @@ function App() {
           <Round
             className="roundPos"
             currentRound={currentRound}
-            totalRounds={gameLength}
+            totalRounds={parsedGameLength}
           />
           <WaitCard
             nick={nickname}
@@ -1301,11 +1392,11 @@ function App() {
             key={`${currentRound}-${roundStartedAt}`}
             roundStartedAt={roundStartedAt}
             serverTimeOffset={serverTimeOffset}
-            duration={storyMode ? (gameLength === 6 ? 480 : gameLength === 9 ? 720 : 900) : 120}
+            duration={parsedStoryMode ? (parsedGameLength === 6 ? 480 : parsedGameLength === 9 ? 720 : 900) : 120}
             onTimeUp={() => doAnswerSubmit("Час вийшов")}
             className="timerPos"
           />
-          <Round currentRound={currentRound} totalRounds={gameLength} className="roundPos" />
+          <Round currentRound={currentRound} totalRounds={parsedGameLength} className="roundPos" />
           <RoundCard
             playerName={nickname}
             phase={amIReady ? Phases.Waiting : phase}
