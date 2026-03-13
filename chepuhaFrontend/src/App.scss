@@ -163,15 +163,6 @@
   color: $black;
   margin: 0;
   text-align: center;
-
-  span {
-    text-shadow:
-      -2px -2px 0 #000,
-      2px -2px 0 #000,
-      -2px 2px 0 #000,
-      2px 2px 0 #000,
-      0 4px 8px rgba(0, 0, 0, 0.3);
-  }
 }
 
 .lobby-subtitle {
