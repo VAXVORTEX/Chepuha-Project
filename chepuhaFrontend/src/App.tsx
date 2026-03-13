@@ -164,7 +164,7 @@ const GAME_LENGTH_INDICES: Record<number, number[]> = {
   12: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 };
 
-const PlayerItem = ({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, crownImage }: any) => {
+const PlayerItem = ({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, crownImage, showColorPicker }: any) => {
   const [pulse, setPulse] = useState(false);
   const defaultColor = AVAILABLE_COLORS[i % AVAILABLE_COLORS.length];
   const activeColor = isMe && playerColor ? playerColor : (p.color || defaultColor);
@@ -183,9 +183,9 @@ const PlayerItem = ({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, cro
     <div key={p.id || String(i)} className={`player-item ${pulse ? 'color-updated' : ''}`}>
       <div className="player-name-wrapper">
         {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
-        <span className="player-name" style={{ color: activeColor }}>{p.nickname}</span>
+        <span className="player-name" style={{ color: showColorPicker ? activeColor : 'inherit' }}>{p.nickname}</span>
       </div>
-      {isMe && (
+      {isMe && showColorPicker && (
         <div className="inline-color-picker">
           <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
           <div className="inline-color-swatch" style={{ background: activeColor }} />
@@ -425,7 +425,7 @@ function App() {
             const ansOwnerId = originalAnswer ? (typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id.id : originalAnswer.player_id) : null;
             const owner = players.find(p => String(p.id) === String(ansOwnerId));
             const color = owner?.color || (String(ansOwnerId) === String(playerId) ? playerColor : '#fff');
-            return `<span style="color: ${color}; font-weight: bold;">${ans}</span>`;
+            return `<span style="color: ${color}; font-weight: bold; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.5);">${ans}</span>`;
           });
 
           return {
@@ -452,7 +452,7 @@ function App() {
         });
       }
     } catch (err) { }
-  }, [sessionId, players, session, roomCode, language, activeTemplate]);
+  }, [sessionId, players, session, roomCode, language, activeTemplate, parsedColorHighlight, playerId, playerColor, gameLength]);
 
   useEffect(() => {
     if (!didGameStart || !playerId || !sessionId) return;
@@ -712,15 +712,18 @@ function App() {
             }
           } else {
             if (isHost) {
+              // Ensure all players are marked as finished and session is completed
               await updatePlayersBySession(sessionId, { players_status: 'finished' });
               await updateGameSession(sessionId, { session_status: 'completed' });
-            }
-            fetchFinalStoryResult();
-            setTimeout(() => {
+
+              // Give Supabase a moment to propagate
+              await new Promise(r => setTimeout(r, 500));
+              await fetchFinalStoryResult();
+
+              setAppState(prev => ({ ...prev, phase: Phases.End }));
               setIsTransitioning(false);
               transitionLockRef.current = false;
-              setAppState(prev => ({ ...prev, phase: Phases.End }));
-            }, 1000);
+            }
           }
         }
       } catch (err) {
@@ -1376,6 +1379,7 @@ function App() {
                       cycleColor={cycleColor}
                       AVAILABLE_COLORS={AVAILABLE_COLORS}
                       crownImage={crownImage}
+                      showColorPicker={parsedColorHighlight}
                     />
                   ))
                 ) : (
@@ -1387,6 +1391,7 @@ function App() {
                     cycleColor={cycleColor}
                     AVAILABLE_COLORS={AVAILABLE_COLORS}
                     crownImage={crownImage}
+                    showColorPicker={parsedColorHighlight}
                   />
                 )}
               </div>

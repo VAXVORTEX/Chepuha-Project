@@ -163,6 +163,15 @@
   color: $black;
   margin: 0;
   text-align: center;
+
+  span {
+    text-shadow:
+      -2px -2px 0 #000,
+      2px -2px 0 #000,
+      -2px 2px 0 #000,
+      2px 2px 0 #000,
+      0 4px 8px rgba(0, 0, 0, 0.3);
+  }
 }
 
 .lobby-subtitle {
@@ -213,6 +222,13 @@
   text-align: center;
   white-space: nowrap;
   transition: color 0.5s ease;
+
+  // Base outline for visibility
+  text-shadow:
+    -1px -1px 0 #000,
+    1px -1px 0 #000,
+    -1px 1px 0 #000,
+    1px 1px 0 #000;
 }
 
 @keyframes color-pulse {
