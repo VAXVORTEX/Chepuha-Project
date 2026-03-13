@@ -196,6 +196,21 @@ const PlayerItem = ({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, cro
   );
 };
 
+// Helper to safely call API functions that might fail due to missing columns (like 'color')
+const safeApiCall = async (apiFunc: any, payload: any) => {
+  try {
+    return await apiFunc(payload);
+  } catch (err: any) {
+    // If it's a "column not found" error, try again without the 'color' property
+    if (err && (String(err.message).includes('column') || String(err.message).includes('schema cache'))) {
+      const { color, ...fallbackPayload } = payload;
+      console.warn("Retrying API call without 'color' column due to DB error:", err.message);
+      return await apiFunc(fallbackPayload);
+    }
+    throw err;
+  }
+};
+
 function App() {
   const [appState, setAppState] = useState<AppState>(getInitialState);
 
@@ -287,7 +302,12 @@ function App() {
 
       const newColor = AVAILABLE_COLORS[nextIdx];
       if (playerId) {
-        updatePlayer(playerId, { color: newColor }).catch(() => { });
+        // Use a background call to update the player in DB
+        updatePlayer(playerId, { color: newColor }).catch((err) => {
+          if (String(err.message).includes('column') || String(err.message).includes('schema cache')) {
+            console.warn("DB 'color' column missing, skipping sync.");
+          }
+        });
       }
       return { ...prev, playerColor: newColor };
     });
@@ -344,7 +364,11 @@ function App() {
   // Sync player color to DB
   useEffect(() => {
     if (sessionId && playerId && playerColor) {
-      updatePlayer(playerId, { color: playerColor }).catch(() => { });
+      updatePlayer(playerId, { color: playerColor }).catch((err) => {
+        if (String(err.message).includes('column') || String(err.message).includes('schema cache')) {
+          // Robustness: if column is missing, stop trying to sync to DB but keep local color
+        }
+      });
     }
   }, [sessionId, playerId, playerColor]);
 
@@ -804,7 +828,7 @@ function App() {
       setAppState(prev => ({ ...prev, sessionId: newSession.id, selectedTemplate: templateToSave }));
 
       const hostColor = AVAILABLE_COLORS[0];
-      const hostPlayer = await createPlayer({
+      const hostPlayer = await safeApiCall(createPlayer, {
         nickname,
         session_id: newSession.id,
         players_status: 'joined',
@@ -926,7 +950,7 @@ function App() {
           ? availableUnique[0]
           : AVAILABLE_COLORS[existingPlayers.length % AVAILABLE_COLORS.length];
 
-        const guest = await createPlayer({
+        const guest = await safeApiCall(createPlayer, {
           nickname: nick,
           session_id: targetSession.id,
           players_status: 'joined',
