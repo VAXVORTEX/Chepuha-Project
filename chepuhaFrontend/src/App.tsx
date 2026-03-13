@@ -231,6 +231,8 @@ function App() {
   const actualTemplateKey = tParts[0] || 'classic';
   const parsedGameLength = tParts[1] ? (parseInt(tParts[1], 10) as 6 | 9 | 12) : gameLength;
   const parsedStoryMode = tParts[2] ? tParts[2] === '1' : storyMode;
+  const parsedHintsEnabled = tParts[3] ? tParts[3] === '1' : hintsEnabled;
+  const parsedColorHighlight = tParts[4] ? tParts[4] === '1' : colorHighlight;
 
   const derivedTotalCount = totalCount > 0 ? totalCount : (players?.length || 0);
   const finishedCount = (players || []).filter(p => p.players_status === 'finished').length;
@@ -331,6 +333,21 @@ function App() {
     }
   }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate, answeredRoundId, currentRoundId, currentRound, didGameStart, phase, roundStartedAt, gameLength, storyMode, hintsEnabled, colorHighlight, playerColor]);
 
+  // Sync settings to DB (Host only)
+  useEffect(() => {
+    if (isHost && sessionId && isLobby) {
+      const packedTemplate = `${selectedTemplate}|${gameLength}|${storyMode ? '1' : '0'}|${hintsEnabled ? '1' : '0'}|${colorHighlight ? '1' : '0'}`;
+      updateGameSession(sessionId, { template: packedTemplate }).catch(() => { });
+    }
+  }, [isHost, sessionId, isLobby, selectedTemplate, gameLength, storyMode, hintsEnabled, colorHighlight]);
+
+  // Sync player color to DB
+  useEffect(() => {
+    if (sessionId && playerId && playerColor) {
+      updatePlayer(playerId, { color: playerColor }).catch(() => { });
+    }
+  }, [sessionId, playerId, playerColor]);
+
   useEffect(() => {
     if (nickname || roomCode) {
       localStorage.setItem('chepuhaUserPrefs', JSON.stringify({ nickname, roomCode }));
@@ -379,11 +396,12 @@ function App() {
           }
 
           const coloredAnswers = fullAnswers.map((ans, idx) => {
-            // Let's check who submitted this answer for this particular sheet at this position.
+            if (!parsedColorHighlight) return ans;
             const originalAnswer = (s.answers || []).find((a: any) => a.position_in_sheet === (idx + 1));
             const ansOwnerId = originalAnswer ? (typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id.id : originalAnswer.player_id) : null;
-            const isMine = String(ansOwnerId) === String(playerId);
-            return `<span class="${isMine ? 'my-answer-text' : 'other-answer-text'}">${ans}</span>`;
+            const owner = players.find(p => String(p.id) === String(ansOwnerId));
+            const color = owner?.color || (String(ansOwnerId) === String(playerId) ? playerColor : '#fff');
+            return `<span style="color: ${color}; font-weight: bold;">${ans}</span>`;
           });
 
           return {
@@ -775,7 +793,7 @@ function App() {
         templateToSave = tKeys[Math.floor(Math.random() * tKeys.length)];
       }
 
-      const packedTemplate = `${templateToSave}|${gameLength}|${storyMode ? '1' : '0'}`;
+      const packedTemplate = `${templateToSave}|${gameLength}|${storyMode ? '1' : '0'}|${hintsEnabled ? '1' : '0'}|${colorHighlight ? '1' : '0'}`;
 
       const newSession = await createGameSession({
         session_name: roomCode,
@@ -895,6 +913,8 @@ function App() {
             isJoining: false,
             gameLength: targetSession.template ? (parseInt(targetSession.template.split('|')[1]) as 6 | 9 | 12) : 9,
             storyMode: targetSession.template ? targetSession.template.split('|')[2] === '1' : false,
+            hintsEnabled: targetSession.template ? targetSession.template.split('|')[3] === '1' : true,
+            colorHighlight: targetSession.template ? targetSession.template.split('|')[4] === '1' : true,
           }));
           refreshState();
         };
@@ -927,6 +947,8 @@ function App() {
             isJoining: false,
             gameLength: targetSession.template ? (parseInt(targetSession.template.split('|')[1]) as 6 | 9 | 12) : 9,
             storyMode: targetSession.template ? targetSession.template.split('|')[2] === '1' : false,
+            hintsEnabled: targetSession.template ? targetSession.template.split('|')[3] === '1' : true,
+            colorHighlight: targetSession.template ? targetSession.template.split('|')[4] === '1' : true,
           }));
           refreshState();
         };
@@ -1399,7 +1421,7 @@ function App() {
           <Round currentRound={currentRound} totalRounds={parsedGameLength} className="roundPos" />
           <RoundCard
             playerName={nickname}
-            phase={amIReady ? Phases.Waiting : phase}
+            phase={(amIReady && !parsedStoryMode) ? Phases.Waiting : phase}
             question={(() => {
               const baseTemplate = activeTemplate.id === 'chaos'
                 ? TEMPLATES[
@@ -1434,7 +1456,7 @@ function App() {
             playerReady={derivedJoinedCount}
             playerTotal={derivedTotalCount}
             onSubmitAnswer={doAnswerSubmit}
-            hints={hintsEnabled ? (activeTemplate.fallbacks[currentRound - 1] || []) : undefined}
+            hints={parsedHintsEnabled ? (activeTemplate.fallbacks[currentRound - 1] || []) : undefined}
           />
         </>
       )}

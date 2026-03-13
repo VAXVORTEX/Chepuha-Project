@@ -17,10 +17,10 @@ computing gzip size...
 [2mdist/[22m[32massets/Chepuha_eng-i3W4BAsr.png     [39m[1m[2m  188.00 kB[22m[1m[22m
 [2mdist/[22m[32massets/favicon-Y-ajsUL4.png         [39m[1m[2m8,661.78 kB[22m[1m[22m
 [2mdist/[22m[35massets/index-DRGTn_VD.css           [39m[1m[2m   39.10 kB[22m[1m[22m[2m │ gzip:   6.89 kB[22m
-[2mdist/[22m[36massets/index-DoJziozY.js            [39m[1m[33m  705.59 kB[39m[22m[2m │ gzip: 219.60 kB[22m
+[2mdist/[22m[36massets/index-BCHi6gMo.js            [39m[1m[33m  706.16 kB[39m[22m[2m │ gzip: 219.72 kB[22m
 [33m
 (!) Some chunks are larger than 500 kB after minification. Consider:
 - Using dynamic import() to code-split the application
 - Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
 - Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.[39m
-[32m✓ built in 3.47s[39m
+[32m✓ built in 3.90s[39m
