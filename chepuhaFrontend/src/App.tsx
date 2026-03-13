@@ -109,7 +109,7 @@ const getInitialState = (): AppState => {
     storyMode: false,
     hintsEnabled: false,
     colorHighlight: false,
-    playerColor: ''
+    playerColor: AVAILABLE_COLORS[0]
   };
 
   try {
@@ -142,7 +142,7 @@ const getInitialState = (): AppState => {
           storyMode: parsed.storyMode || false,
           hintsEnabled: parsed.hintsEnabled || false,
           colorHighlight: parsed.colorHighlight || false,
-          playerColor: parsed.playerColor || '',
+          playerColor: parsed.playerColor || AVAILABLE_COLORS[0],
         };
       }
     }
@@ -179,11 +179,15 @@ const PlayerItem = ({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, cro
     }
   }, [activeColor]);
 
+  const shadowStyle = (activeColor === '#000000' || activeColor === '#000')
+    ? { color: activeColor }
+    : { color: activeColor, textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' };
+
   return (
     <div key={p.id || String(i)} className={`player-item ${pulse ? 'color-updated' : ''}`}>
       <div className="player-name-wrapper">
         {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
-        <span className="player-name" style={{ color: showColorPicker ? activeColor : 'inherit' }}>{p.nickname}</span>
+        <span className="player-name" style={showColorPicker ? shadowStyle : {}}>{p.nickname}</span>
       </div>
       {isMe && showColorPicker && (
         <div className="inline-color-picker">
@@ -1373,7 +1377,12 @@ function App() {
           </div>
           <div className="lobby-container">
             <div className="lobby-info">
-              <h2 className="lobby-text">{t('YOUR_NICK')} <span style={{ color: playerColor || 'inherit' }}>{nickname}</span></h2>
+              <h2 className="lobby-text">
+                {t('YOUR_NICK')} <span style={{
+                  color: playerColor || 'inherit',
+                  textShadow: (playerColor === '#000000' || playerColor === '#000') ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
+                }}>{nickname}</span>
+              </h2>
               <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
               <div className="players-list">
                 {players.length > 0 ? (
