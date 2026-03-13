@@ -7,6 +7,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { TranslationKey } from '../../config/i18n';
 interface RoundCardProps {
     playerName: string;
+    playerColor?: string;
     phase: Phases;
     question?: string;
     playerReady?: number;
@@ -16,6 +17,7 @@ interface RoundCardProps {
 }
 export const RoundCard = ({
     playerName,
+    playerColor,
     phase,
     question = '',
     playerReady = 0,
@@ -46,7 +48,7 @@ export const RoundCard = ({
     };
     return (
         <div className={`${styles.roundCard} ${isWaiting ? styles.waiting : ''}`}>
-            <div className={styles.header}>
+            <div className={styles.header} style={playerColor ? { backgroundColor: playerColor } : {}}>
                 <h2 className={styles.playerName}>{playerName}</h2>
             </div>
             <div className={styles.body}>

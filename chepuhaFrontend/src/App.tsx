@@ -436,6 +436,13 @@ function App() {
           };
         });
       if (built.length > 0) {
+        // Validation: verify that at least one story has at least one answer if it's not a single-player game
+        const hasAnyAnswers = built.some(s => s.answers && s.answers.some(a => a !== "..."));
+        if (!hasAnyAnswers && players.length > 1) {
+          console.warn("No real answers found yet, delaying final result.");
+          return;
+        }
+
         setAppState(prev => ({ ...prev, allStories: built }));
         // Mark session as completed in DB to avoid collisions and "tails"
         updateGameSession(sessionId, { session_status: 'completed' }).catch(() => { });
@@ -500,7 +507,7 @@ function App() {
       }) || String(answeredRoundId) === String(currentRoundId))) {
         setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
       } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
-        if (!isStory) fetchFinalStoryResult();
+        fetchFinalStoryResult();
         setAppState(prev => ({ ...prev, phase: Phases.End }));
       }
     }
@@ -1423,11 +1430,6 @@ function App() {
 
       {didGameStart && phase === Phases.Waiting && (
         <>
-          <Round
-            className="roundPos"
-            currentRound={currentRound}
-            totalRounds={parsedGameLength}
-          />
           <WaitCard
             nick={nickname}
             joinedCount={derivedJoinedCount}
@@ -1450,6 +1452,7 @@ function App() {
           <Round currentRound={currentRound} totalRounds={parsedGameLength} className="roundPos" />
           <RoundCard
             playerName={nickname}
+            playerColor={playerColor}
             phase={(amIReady && !parsedStoryMode) ? Phases.Waiting : phase}
             question={(() => {
               const baseTemplate = activeTemplate.id === 'chaos'
