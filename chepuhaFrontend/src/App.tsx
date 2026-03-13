@@ -1432,6 +1432,7 @@ function App() {
         <>
           <WaitCard
             nick={nickname}
+            playerColor={playerColor}
             joinedCount={derivedJoinedCount}
             totalCount={derivedTotalCount}
             message={t('WAITING_ANSWERS')}

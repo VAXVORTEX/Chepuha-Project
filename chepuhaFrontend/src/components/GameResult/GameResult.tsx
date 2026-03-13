@@ -55,7 +55,7 @@ const GameResult: React.FC<ResultProps> = ({
       finalTemplateId = legacyParsed.templateId;
     }
   }
-  if (finalAnswers && finalTemplateId) {
+  if (finalAnswers && finalTemplateId && !content.includes('</span>')) {
     const tmpl = TEMPLATES[finalTemplateId];
     if (tmpl) {
       content = tmpl.buildStory(finalAnswers, language);

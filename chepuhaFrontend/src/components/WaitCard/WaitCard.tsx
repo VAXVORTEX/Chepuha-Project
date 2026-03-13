@@ -5,6 +5,7 @@ import { playSecretMusic } from "../../utils/audio";
 import { useLanguage } from "../../contexts/LanguageContext";
 interface WaitCardProps {
   nick: string;
+  playerColor?: string;
   joinedCount: number;
   totalCount: number;
   currentRound?: number;
@@ -13,6 +14,7 @@ interface WaitCardProps {
 }
 const WaitCard: React.FC<WaitCardProps> = ({
   nick,
+  playerColor,
   joinedCount,
   totalCount,
   message,
@@ -21,7 +23,7 @@ const WaitCard: React.FC<WaitCardProps> = ({
   return (
     <div className={styles.wrapper}>
       <div className={styles.container}>
-        <h2 className={styles.nickText}>{t('YOUR_NICK')} {nick}</h2>
+        <h2 className={styles.nickText}>{t('YOUR_NICK')} <span style={{ color: playerColor || 'inherit' }}>{nick}</span></h2>
         <p className={styles.countText}>
           {joinedCount} / {totalCount} {t('PLAYERS_READY')}
         </p>
