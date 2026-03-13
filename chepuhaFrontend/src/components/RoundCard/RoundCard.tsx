@@ -7,6 +7,7 @@ import { useLanguage } from '../../contexts/LanguageContext';
 import { TranslationKey } from '../../config/i18n';
 interface RoundCardProps {
     playerName: string;
+    playerColor?: string;
     phase: Phases;
     question?: string;
     playerReady?: number;
@@ -16,6 +17,7 @@ interface RoundCardProps {
 }
 export const RoundCard = ({
     playerName,
+    playerColor,
     phase,
     question = '',
     playerReady = 0,
@@ -25,7 +27,18 @@ export const RoundCard = ({
 }: RoundCardProps) => {
     const [answer, setAnswer] = useState('');
     const [showHints, setShowHints] = useState(false);
+    const [selectedHints, setSelectedHints] = useState<string[]>([]);
     const { t } = useLanguage();
+
+    React.useEffect(() => {
+        if (hints && hints.length > 0) {
+            const shuffled = [...hints].sort(() => 0.5 - Math.random());
+            setSelectedHints(shuffled.slice(0, 3));
+        } else {
+            setSelectedHints([]);
+        }
+    }, [hints]);
+
     const isWaiting = phase === Phases.Waiting;
     const handleSubmit = () => {
         if (onSubmitAnswer && answer.trim() !== '') {
@@ -36,7 +49,10 @@ export const RoundCard = ({
     return (
         <div className={`${styles.roundCard} ${isWaiting ? styles.waiting : ''}`}>
             <div className={styles.header}>
-                <h2 className={styles.playerName}>{playerName}</h2>
+                <h2 className={styles.playerName} style={{
+                    color: playerColor || 'white',
+                    textShadow: (playerColor === '#000000' || playerColor === '#000') ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
+                }}>{playerName}</h2>
             </div>
             <div className={styles.body}>
                 {isWaiting ? (
@@ -69,8 +85,8 @@ export const RoundCard = ({
                                 </button>
                                 {showHints && (
                                     <div className={styles.hintsList}>
-                                        {hints.map((hint, i) => (
-                                            <span key={i} className={styles.hintItem}>{hint}</span>
+                                        {selectedHints.map((hint, i) => (
+                                            <span key={i} className={styles.hintItem} onClick={() => setAnswer(hint)}>{hint}</span>
                                         ))}
                                     </div>
                                 )}

@@ -55,11 +55,16 @@ const GameResult: React.FC<ResultProps> = ({
       finalTemplateId = legacyParsed.templateId;
     }
   }
-  if (finalAnswers && finalTemplateId) {
+  if (finalAnswers && finalTemplateId && !content.includes('</span>')) {
     const tmpl = TEMPLATES[finalTemplateId];
     if (tmpl) {
       content = tmpl.buildStory(finalAnswers, language);
     }
+  }
+
+  // Strip colors if in History view
+  if (phase === Phases.History) {
+    content = content.replace(/<\/?[^>]+(>|$)/g, "");
   }
   return (
     <div className={classNames(styles.wrapper, styles[phase])}>
@@ -76,7 +81,10 @@ const GameResult: React.FC<ResultProps> = ({
               ◀
             </button>
             <div className={styles.part}>
-              <p className={styles.text}>{content}</p>
+              <p
+                className={styles.text}
+                dangerouslySetInnerHTML={{ __html: content }}
+              />
             </div>
             <button
               className={styles.arrowBtn}
