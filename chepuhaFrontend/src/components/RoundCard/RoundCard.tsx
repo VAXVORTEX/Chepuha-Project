@@ -50,8 +50,8 @@ export const RoundCard = ({
         <div className={`${styles.roundCard} ${isWaiting ? styles.waiting : ''}`}>
             <div className={styles.header}>
                 <h2 className={styles.playerName} style={{
-                    color: playerColor || 'white',
-                    textShadow: (playerColor === '#000000' || playerColor === '#000') ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
+                    color: playerColor || '#000000',
+                    textShadow: (!playerColor || playerColor === '#000000' || playerColor === '#000') ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
                 }}>{playerName}</h2>
             </div>
             <div className={styles.body}>

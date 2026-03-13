@@ -24,8 +24,8 @@ const WaitCard: React.FC<WaitCardProps> = ({
     <div className={styles.wrapper}>
       <div className={styles.container}>
         <h2 className={styles.nickText}>{t('YOUR_NICK')} <span style={{
-          color: playerColor || 'inherit',
-          textShadow: (playerColor === '#000000' || playerColor === '#000') ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
+          color: playerColor || '#000000',
+          textShadow: (!playerColor || playerColor === '#000000' || playerColor === '#000') ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
         }}>{nick}</span></h2>
         <p className={styles.countText}>
           {joinedCount} / {totalCount} {t('PLAYERS_READY')}

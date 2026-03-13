@@ -164,6 +164,14 @@ const GAME_LENGTH_INDICES: Record<number, number[]> = {
   12: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 };
 
+const getNicknameStyle = (color: string) => {
+  const isBlack = !color || color === '#000000' || color === '#000';
+  return {
+    color: color || '#000000',
+    textShadow: isBlack ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
+  };
+};
+
 const PlayerItem = ({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, crownImage, showColorPicker }: any) => {
   const [pulse, setPulse] = useState(false);
   const defaultColor = AVAILABLE_COLORS[i % AVAILABLE_COLORS.length];
@@ -179,15 +187,11 @@ const PlayerItem = ({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, cro
     }
   }, [activeColor]);
 
-  const shadowStyle = (activeColor === '#000000' || activeColor === '#000')
-    ? { color: activeColor }
-    : { color: activeColor, textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000' };
-
   return (
     <div key={p.id || String(i)} className={`player-item ${pulse ? 'color-updated' : ''}`}>
       <div className="player-name-wrapper">
         {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
-        <span className="player-name" style={showColorPicker ? shadowStyle : {}}>{p.nickname}</span>
+        <span className="player-name" style={getNicknameStyle(activeColor)}>{p.nickname}</span>
       </div>
       {isMe && showColorPicker && (
         <div className="inline-color-picker">
@@ -1378,10 +1382,7 @@ function App() {
           <div className="lobby-container">
             <div className="lobby-info">
               <h2 className="lobby-text">
-                {t('YOUR_NICK')} <span style={{
-                  color: playerColor || 'inherit',
-                  textShadow: (playerColor === '#000000' || playerColor === '#000') ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
-                }}>{nickname}</span>
+                {t('YOUR_NICK')} <span style={getNicknameStyle(playerColor)}>{nickname}</span>
               </h2>
               <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
               <div className="players-list">
