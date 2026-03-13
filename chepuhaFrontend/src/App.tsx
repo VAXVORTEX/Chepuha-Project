@@ -425,7 +425,8 @@ function App() {
             const ansOwnerId = originalAnswer ? (typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id.id : originalAnswer.player_id) : null;
             const owner = players.find(p => String(p.id) === String(ansOwnerId));
             const color = owner?.color || (String(ansOwnerId) === String(playerId) ? playerColor : '#fff');
-            return `<span style="color: ${color}; font-weight: bold; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.5);">${ans}</span>`;
+            const shadow = (color === '#000000' || color === '#000') ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)';
+            return `<span style="color: ${color}; font-weight: bold; text-shadow: ${shadow};">${ans}</span>`;
           });
 
           return {
@@ -472,7 +473,7 @@ function App() {
 
     if (!latestRound || !myPlayer) return;
 
-    const isStory = !!(session?.template?.split('|')[2] === '1' || storyMode);
+    const isStory = parsedStoryMode;
 
     if ((latestRound.round_number > currentRound || !currentRoundId) && !isStory) {
       let newPhase = Phases.Main;
@@ -529,7 +530,7 @@ function App() {
           (typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : String(a.round_id)) === latestRound.id
         );
         if (hasAnswered) {
-          initialPhase = storyMode ? Phases.Main : Phases.Waiting;
+          initialPhase = parsedStoryMode ? Phases.Main : Phases.Waiting;
           initAnsweredId = latestRound.id;
         }
       }
@@ -537,7 +538,7 @@ function App() {
       // In Story Mode, we might want to start at the round we are actually on
       let targetRound = latestRound;
       let targetRoundNumber = latestRound?.round_number || 1;
-      if (storyMode && (rounds || []).length > 0) {
+      if (parsedStoryMode && (rounds || []).length > 0) {
         // Find the first round the player hasn't answered yet
         const playerAnswers = (currentAnswers || []).filter(a =>
           (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId
@@ -1148,7 +1149,7 @@ function App() {
         story_sheet_id: targetSheet,
       });
 
-      const isStory = !!(session?.template?.split('|')[2] === '1' || storyMode);
+      const isStory = parsedStoryMode;
       const isLastRound = currentRound === gameLength;
 
       await updatePlayer(playerId, { players_status: isLastRound ? 'finished' : 'playing' });
@@ -1159,7 +1160,7 @@ function App() {
       setIsTransitioning(false);
 
       // Story Mode OR Single-player: advance immediately to next question without waiting
-      if ((storyMode || totalCount <= 1) && currentRound < gameLength) {
+      if ((parsedStoryMode || totalCount <= 1) && currentRound < gameLength) {
         const nextRoundNum = currentRound + 1;
         // Find the next round that should have been pre-created
         const nextRound = (rounds || []).find(r => r.round_number === nextRoundNum);

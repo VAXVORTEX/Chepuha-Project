@@ -61,6 +61,11 @@ const GameResult: React.FC<ResultProps> = ({
       content = tmpl.buildStory(finalAnswers, language);
     }
   }
+
+  // Strip colors if in History view
+  if (phase === Phases.History) {
+    content = content.replace(/<\/?[^>]+(>|$)/g, "");
+  }
   return (
     <div className={classNames(styles.wrapper, styles[phase])}>
       <div className={styles.container}>
