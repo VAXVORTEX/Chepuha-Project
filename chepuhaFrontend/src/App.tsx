@@ -217,7 +217,12 @@ const PlayerItem = ({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, cro
     <div key={p.id || String(i)} className={`player-item ${pulse ? 'color-updated' : ''}`}>
       <div className="player-name-wrapper">
         {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
-        <span className={getNicknameClassName(activeColor)} style={getNicknameStyle(activeColor)}>{p.nickname}</span>
+        <span
+          className={`${getNicknameClassName(activeColor)} ${!showColorPicker ? 'no-highlight' : ''}`}
+          style={showColorPicker ? getNicknameStyle(activeColor) : { color: '#000000', textShadow: 'none' }}
+        >
+          {p.nickname}
+        </span>
       </div>
       {isMe && showColorPicker && (
         <div className="inline-color-picker">
@@ -1321,8 +1326,10 @@ function App() {
 
       {!didGameStart && isCreatingLobby && !isLobby && phase !== Phases.Join && (
         <>
-          <div className="create-game-container" style={{ pointerEvents: 'none' }}>
+          <div className="create-game-pc-code-wrapper">
             {roomCode && <GameCode code={roomCode} className="gameCodePos create-code-mobile" />}
+          </div>
+          <div className="create-game-container" style={{ pointerEvents: 'none' }}>
             <div className="input-wrapper" style={{ pointerEvents: 'auto' }}>
               <input
                 type="text"
@@ -1447,7 +1454,12 @@ function App() {
           <div className="lobby-container">
             <div className="lobby-info">
               <h2 className="lobby-text">
-                {t('YOUR_NICK')} <span className={getNicknameClassName(playerColor)} style={getNicknameStyle(playerColor)}>{nickname}</span>
+                {t('YOUR_NICK')} <span
+                  className={`${getNicknameClassName(playerColor)} ${!parsedColorHighlight ? 'no-highlight' : ''}`}
+                  style={parsedColorHighlight ? getNicknameStyle(playerColor) : { color: '#000000', textShadow: 'none' }}
+                >
+                  {nickname}
+                </span>
               </h2>
               <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
               <div className="players-list">

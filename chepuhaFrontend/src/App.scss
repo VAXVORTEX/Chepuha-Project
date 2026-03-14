@@ -212,6 +212,12 @@
   text-align: center;
   white-space: nowrap;
   transition: color 0.5s ease;
+
+  &.no-highlight {
+    color: #000000 !important;
+    text-shadow: none !important;
+    -webkit-text-stroke: 0 !important;
+  }
 }
 
 @keyframes color-pulse {
@@ -374,6 +380,26 @@
 }
 
 // ── Create Screen Layout ──────────────────────────────
+.create-game-pc-code-wrapper {
+  position: absolute;
+  top: 40px;
+  right: 60px;
+  width: 1200px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: flex-end;
+  pointer-events: none;
+  z-index: 500;
+
+  .gameCodePos {
+    position: relative !important;
+    top: 0 !important;
+    right: 0 !important;
+    pointer-events: auto;
+  }
+}
+
 .create-options-row {
   display: flex;
   flex-direction: row;
@@ -1116,8 +1142,8 @@
   }
 
   .logo-wrapper {
-    margin-top: -80px; // Pulled logo way higher
-    margin-bottom: 20px;
+    margin-top: -40px; // Less aggressive negative margin to keep distance from buttons
+    margin-bottom: 30px;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -1138,13 +1164,21 @@
 
     &.create-code-mobile {
       position: absolute !important;
-      top: -100px !important; // Way higher to give room for nick
-      right: 15px !important; // Top-right as requested
+      top: -20px !important; // Slightly higher relative to container
+      right: 15px !important;
       left: auto !important;
       transform: scale(0.9) !important;
       text-align: right !important;
       width: auto !important;
     }
+  }
+
+  .create-game-pc-code-wrapper {
+    position: static;
+    transform: none;
+    width: 100%;
+    margin-top: 10px;
+    display: block; // Show in flow on mobile
   }
 
   .timerPos {
