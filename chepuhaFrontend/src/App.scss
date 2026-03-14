@@ -1060,15 +1060,16 @@
   }
 
   .nickname-input {
-    height: 60px;
-    font-size: 20px;
+    height: 60px !important;
+    font-size: 20px !important;
+    border-radius: 45px !important; // Pill shape as requested
   }
 
   .create-game-container {
     gap: 15px;
-    margin-top: -2vh;
+    margin-top: 25vh; // Lowered significantly from 15vh to avoid any overlap
     height: auto;
-    min-height: 70vh;
+    min-height: 55vh;
     justify-content: center;
     padding-bottom: 20px;
 
@@ -1144,7 +1145,7 @@
   }
 
   .logo-wrapper {
-    margin-top: 5px; // No more negative margin for home
+    margin-top: 10vh; // Lowered from 5px to move everything down
     margin-bottom: 25px;
     width: 100%;
     display: flex;
@@ -1177,7 +1178,7 @@
 
   .create-game-pc-code-wrapper {
     position: absolute;
-    top: 25px !important; // Shift down slightly from top: 10px
+    top: 12vh !important; // Lowered from 25px/10vh to be below logo
     right: 15px !important;
     width: auto;
     left: auto;
@@ -1232,7 +1233,7 @@
     position: absolute !important;
     width: 60px !important;
     height: 60px !important;
-    bottom: 60px !important; // Raised further from 45px
+    bottom: 140px !important; // Raised further from 100px to avoid clipping
     right: 20px !important;
     background-color: rgba(255, 255, 255, 0.2) !important;
     border: 3px solid #000000 !important;
@@ -1289,7 +1290,7 @@
     height: 130px !important;
     right: -10px !important;
     left: auto !important;
-    bottom: 140px !important; // Raised further from 110px
+    bottom: 220px !important; // Raised further from 180px
   }
 
   .red-guy-bg {
@@ -1297,7 +1298,7 @@
     height: 150px !important;
     left: -10px !important;
     right: auto !important;
-    bottom: 85px !important; // Raised further from 55px
+    bottom: 160px !important; // Raised further from 120px
   }
 
 
