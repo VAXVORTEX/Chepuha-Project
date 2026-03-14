@@ -382,13 +382,8 @@
 // ── Create Screen Layout ──────────────────────────────
 .create-game-pc-code-wrapper {
   position: absolute;
-  top: 30px;
-  right: 40px;
-  width: 1400px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  justify-content: flex-end;
+  top: 20px;
+  right: 20px;
   pointer-events: none;
   z-index: 500;
 

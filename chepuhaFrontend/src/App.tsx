@@ -1326,12 +1326,6 @@ function App() {
 
       {!didGameStart && isCreatingLobby && !isLobby && phase !== Phases.Join && (
         <>
-          <div className="logo-wrapper">
-            <img src={language === 'en' ? logoImageEng : logoImage} alt="Чепуха Лого" className="logo" />
-            <div className="logo-boy-hitbox hitbox-1" onClick={playSecretMusic} />
-            <div className="logo-boy-hitbox hitbox-2" onClick={playSecretMusic} />
-            <div className="logo-boy-hitbox hitbox-3" onClick={playSecretMusic} />
-          </div>
           <div className="create-game-pc-code-wrapper">
             {roomCode && <GameCode code={roomCode} className="gameCodePos create-code-mobile" />}
           </div>
