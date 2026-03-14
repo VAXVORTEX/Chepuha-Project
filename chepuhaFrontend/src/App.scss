@@ -135,7 +135,7 @@
   -webkit-text-stroke: 1px $black;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
   align-self: center;
-  margin-top: -15px; // Tighter on mobile
+  margin-top: 0 !important; // Remove extra gap
 }
 
 .lobby-container {
@@ -202,6 +202,7 @@
   height: auto;
   object-fit: contain;
   margin-right: -2px; // Closer pairing
+  margin-top: -3px; // Align better with text
   flex-shrink: 0;
 }
 
@@ -732,8 +733,21 @@
   }
 
   .menu-buttons {
-    order: 1;
-    margin-top: 0;
+    flex-direction: row !important;
+    justify-content: center !important;
+    gap: 15px !important;
+    margin-top: 20px !important;
+
+    .button {
+      width: 180px !important;
+      font-size: 20px !important;
+      margin: 0 !important;
+    }
+  }
+
+  .create-game-container {
+    margin-top: 5vh !important; // Push down
+    gap: 30px !important;
   }
 
   .nickname-input {
@@ -748,23 +762,25 @@
   }
 
   .create-options-row {
-    flex-direction: column !important;
+    flex-direction: row !important;
     align-items: center !important;
-    justify-content: flex-start !important;
-    gap: 30px !important;
-    padding: 0 10px !important;
-    width: 100% !important;
-    transform: none !important;
-    position: static !important;
-    margin: 0 auto !important;
+    justify-content: center !important;
+    gap: 15px !important;
+    padding: 0 !important;
+    width: 650px !important;
+    max-width: none !important;
+    transform: scale(0.55) !important;
+    transform-origin: top center !important;
+    position: relative !important;
+    left: 50% !important;
+    margin-left: -325px !important;
+    margin-top: 40px !important; // Pushed down as requested
+    margin-bottom: -110px !important;
   }
 
   .carousel-section {
-    width: 100%;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    width: auto !important;
+    // ... existing ...
   }
 
   .game-settings-container {
@@ -811,7 +827,9 @@
   }
 
   .logo-wrapper {
-    margin-bottom: 5px !important;
+    margin-bottom: -20px !important; // Bring everything up
+    margin-top: 10px !important;
+    transform: scale(0.75);
   }
 }
 
@@ -1089,7 +1107,7 @@
   .crown-icon {
     position: static;
     width: 25px !important;
-    margin-right: 5px !important; // Space from name on mobile
+    margin-right: 2px !important; // Much closer on mobile
     display: inline-block;
   }
 
@@ -1106,12 +1124,13 @@
   }
 
   .gameCodePos {
-    position: static !important;
-    margin: 5px 0 !important;
-    transform: none !important;
+    position: absolute !important;
+    top: 5px !important;
+    right: 5px !important;
+    transform: scale(0.65) !important;
     z-index: 100;
-    width: 100%;
-    text-align: center;
+    width: auto !important;
+    text-align: right !important;
   }
 
   .timerPos {
