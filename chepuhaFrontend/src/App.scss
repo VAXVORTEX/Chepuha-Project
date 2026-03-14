@@ -111,6 +111,7 @@
 .nickname-input {
   @include font-abel-32;
   width: 100%;
+  max-width: 750px; // Match Join screen width
   height: 90px;
   border-radius: 45px;
   padding: 0 40px;
@@ -722,21 +723,23 @@
   }
 
   .inline-color-picker {
-    transform: scale(0.6);
-    position: absolute;
-    right: -25px; // Moved further right to not push name
-    top: 50%;
-    transform: translateY(-50%) scale(0.6);
+    position: relative; // Changed from absolute to flow naturally
+    right: 0;
+    top: 0;
+    margin-top: 10px;
+    transform: scale(0.8);
+    justify-content: center;
   }
 
   .player-item {
     position: relative;
     display: flex;
+    flex-direction: column; // Stack nick and picker vertically on mobile
     justify-content: center;
     align-items: center;
     width: 100%;
-    min-height: 60px;
-    margin-bottom: 5px;
+    min-height: 80px;
+    margin-bottom: 10px;
   }
 
   .player-name-wrapper {
@@ -1062,14 +1065,16 @@
   .nickname-input {
     height: 60px !important;
     font-size: 20px !important;
-    border-radius: 45px !important; // Pill shape as requested
+    border-radius: 45px !important;
+    width: 70% !important; // Narrowed significantly for mobile to clear Room Code
+    margin: 0 auto !important;
   }
 
   .create-game-container {
     gap: 15px;
-    margin-top: 25vh; // Lowered significantly from 15vh to avoid any overlap
+    margin-top: 22vh; // Lowered significantly from 15vh to be well beneath Room Code
     height: auto;
-    min-height: 55vh;
+    min-height: 50vh;
     justify-content: center;
     padding-bottom: 20px;
 
@@ -1102,7 +1107,7 @@
 
   .lobby-container {
     gap: 30px;
-    margin-top: -5vh;
+    margin-top: 2vh; // Calibrated from 12vh
   }
 
   .lobby-info {
@@ -1133,7 +1138,7 @@
     gap: 25px;
     width: 100%;
     align-items: center;
-    margin-top: 10px;
+    margin-top: 15px; // Calibrated from 40px
     transform: none;
   }
 
@@ -1145,7 +1150,7 @@
   }
 
   .logo-wrapper {
-    margin-top: 10vh; // Lowered from 5px to move everything down
+    margin-top: 5vh; // Calibrated from 15vh
     margin-bottom: 25px;
     width: 100%;
     display: flex;
@@ -1178,8 +1183,9 @@
 
   .create-game-pc-code-wrapper {
     position: absolute;
-    top: 12vh !important; // Lowered from 25px/10vh to be below logo
-    right: 15px !important;
+    top: 2vh !important;
+    left: 15px !important; // Moved to left to avoid the right-side overlap
+    right: auto !important;
     width: auto;
     left: auto;
     transform: none;
@@ -1233,7 +1239,7 @@
     position: absolute !important;
     width: 60px !important;
     height: 60px !important;
-    bottom: 140px !important; // Raised further from 100px to avoid clipping
+    bottom: 60px !important; // Raised above illustrations to be visible
     right: 20px !important;
     background-color: rgba(255, 255, 255, 0.2) !important;
     border: 3px solid #000000 !important;
@@ -1290,7 +1296,7 @@
     height: 130px !important;
     right: -10px !important;
     left: auto !important;
-    bottom: 220px !important; // Raised further from 180px
+    bottom: 5px !important; // Calibrated
   }
 
   .red-guy-bg {
@@ -1298,7 +1304,7 @@
     height: 150px !important;
     left: -10px !important;
     right: auto !important;
-    bottom: 160px !important; // Raised further from 120px
+    bottom: 5px !important; // Calibrated
   }
 
 
