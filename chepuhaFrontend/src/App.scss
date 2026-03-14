@@ -382,9 +382,9 @@
 // ── Create Screen Layout ──────────────────────────────
 .create-game-pc-code-wrapper {
   position: absolute;
-  top: 40px;
-  right: 60px;
-  width: 1200px;
+  top: 30px;
+  right: 40px;
+  width: 1400px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -759,10 +759,10 @@
   }
 
   .menu-buttons {
-    flex-direction: column !important; // Stacking vertically for normal look
+    flex-direction: column !important;
     justify-content: center !important;
-    gap: 30px !important;
-    margin-top: -50px !important; // Raise buttons MUCH higher
+    gap: 25px !important;
+    margin-top: 10px !important; // Restore normal spacing to avoid logo overlap
 
     .button {
       width: 250px !important;
@@ -772,8 +772,8 @@
   }
 
   .create-game-container {
-    margin-top: -2vh !important; // Raise container further up
-    gap: 15px !important; // Tighter vertical gaps
+    margin-top: 10px !important; // Restore normal spacing
+    gap: 15px !important;
   }
 
   .nickname-input {
@@ -857,8 +857,8 @@
   }
 
   .logo-wrapper {
-    margin-bottom: -20px !important; // Bring everything up
-    margin-top: 10px !important;
+    margin-bottom: 20px !important;
+    margin-top: 5px !important;
     transform: scale(0.75);
   }
 }
@@ -1142,8 +1142,8 @@
   }
 
   .logo-wrapper {
-    margin-top: -40px; // Less aggressive negative margin to keep distance from buttons
-    margin-bottom: 30px;
+    margin-top: 5px; // No more negative margin for home
+    margin-bottom: 25px;
     width: 100%;
     display: flex;
     justify-content: center;
