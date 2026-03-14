@@ -746,8 +746,8 @@
   }
 
   .create-game-container {
-    margin-top: 5vh !important; // Push down
-    gap: 30px !important;
+    margin-top: 2vh !important; // Raise container
+    gap: 20px !important; // Tighter spacing
   }
 
   .nickname-input {
@@ -774,8 +774,8 @@
     position: relative !important;
     left: 50% !important;
     margin-left: -325px !important;
-    margin-top: 10px !important; // Bring up to balance with Join button
-    margin-bottom: -150px !important; // Push create button lower
+    margin-top: -10px !important; // Shifted UP further
+    margin-bottom: -180px !important; // More negative margin to pull create button UP
   }
 
   .carousel-section {
@@ -1137,11 +1137,13 @@
     text-align: right !important;
 
     &.create-code-mobile {
-      position: static !important;
-      margin: 0 auto 10px !important;
-      transform: scale(1.1) !important;
-      text-align: center !important;
-      width: 100% !important;
+      position: absolute !important;
+      top: -35px !important; // Way higher
+      left: 10px !important; // Top-left as requested
+      right: auto !important;
+      transform: scale(0.9) !important;
+      text-align: left !important;
+      width: auto !important;
     }
   }
 
@@ -1180,8 +1182,8 @@
     position: absolute !important;
     width: 60px !important;
     height: 60px !important;
-    bottom: 8px !important;
-    right: 8px !important;
+    bottom: 30px !important; // Raised from bottom
+    right: 15px !important;
     background-color: rgba(255, 255, 255, 0.2) !important;
     border: 3px solid #000000 !important;
     border-radius: 50% !important;
@@ -1237,7 +1239,7 @@
     height: 130px !important;
     right: -10px !important;
     left: auto !important;
-    bottom: 60px !important; // Sync with global
+    bottom: 80px !important; // Raised
   }
 
   .red-guy-bg {
@@ -1245,7 +1247,7 @@
     height: 150px !important;
     left: -10px !important;
     right: auto !important;
-    bottom: 0px !important;
+    bottom: 25px !important; // Raised
   }
 
 

@@ -1462,7 +1462,7 @@ function App() {
                       cycleColor={cycleColor}
                       AVAILABLE_COLORS={AVAILABLE_COLORS}
                       crownImage={crownImage}
-                      showColorPicker={true} // Force true for testing/utility if needed, or use parsedColorHighlight
+                      showColorPicker={parsedColorHighlight}
                     />
                   ))
                 ) : (
@@ -1474,7 +1474,7 @@ function App() {
                     cycleColor={cycleColor}
                     AVAILABLE_COLORS={AVAILABLE_COLORS}
                     crownImage={crownImage}
-                    showColorPicker={true}
+                    showColorPicker={parsedColorHighlight}
                   />
                 )}
               </div>
