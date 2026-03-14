@@ -4,6 +4,7 @@ export interface SavedPlayerStory {
     story: string;
     answers?: string[];
     templateId?: string;
+    playerColor?: string;
 }
 export interface SavedGame {
     id: string;
@@ -11,6 +12,7 @@ export interface SavedGame {
     date: string;
     roomCode: string;
     hostName: string;
+    hostColor?: string;
     stories: SavedPlayerStory[];
     timestamp: number;
 }

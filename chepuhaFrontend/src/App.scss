@@ -702,7 +702,7 @@
     display: flex !important;
     flex-direction: column !important;
     justify-content: flex-start !important; // Start from top
-    padding: 60px 0 20px 0; // Padding for absolute room code
+    padding: 40px 0 20px 0; // Balanced padding
   }
 
   .story-mode-desc {
@@ -749,8 +749,8 @@
 
   .logo-wrapper {
     order: -1 !important; // Absolute first
-    margin-top: 2vh !important;
-    margin-bottom: 30px !important;
+    margin-top: 5vh !important; // Lowered from 2vh
+    margin-bottom: 20px !important;
   }
 
   .menu-buttons {
@@ -772,14 +772,21 @@
   }
 
   .nickname-input {
+    width: 100% !important;
+    height: 55px !important;
+    border-radius: 45px !important;
+    padding: 0 30px !important;
+    border: 3px solid #000000 !important;
+    font-size: 18px !important;
+    text-align: center !important;
+    background: #ffffff !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .input-card {
     width: 90% !important;
     max-width: 400px;
-    font-size: 1.2rem;
-    height: 50px;
     margin: 0 auto;
-    background: white;
-    border-radius: 12px;
-    text-align: center;
   }
 
   .create-options-row {
@@ -1225,7 +1232,7 @@
     position: absolute !important;
     width: 60px !important;
     height: 60px !important;
-    bottom: 45px !important; // Raised further
+    bottom: 60px !important; // Raised further from 45px
     right: 20px !important;
     background-color: rgba(255, 255, 255, 0.2) !important;
     border: 3px solid #000000 !important;
@@ -1282,7 +1289,7 @@
     height: 130px !important;
     right: -10px !important;
     left: auto !important;
-    bottom: 110px !important; // Raised further
+    bottom: 140px !important; // Raised further from 110px
   }
 
   .red-guy-bg {
@@ -1290,7 +1297,7 @@
     height: 150px !important;
     left: -10px !important;
     right: auto !important;
-    bottom: 55px !important; // Raised further
+    bottom: 85px !important; // Raised further from 55px
   }
 
 
@@ -1330,11 +1337,10 @@
 
 .rainbow-text {
   background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
-  background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: rainbow-text-animation 3s linear infinite;
+  -webkit-text-fill-color: transparent !important;
+  display: inline-block;
   font-weight: bold;
 }
 
@@ -1342,7 +1348,8 @@
   background: linear-gradient(to right, #ff4e50, #f9d423);
   -webkit-background-clip: text;
   background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-text-fill-color: transparent !important;
+  display: inline-block;
   font-weight: bold;
 }
 
@@ -1350,33 +1357,37 @@
   background: linear-gradient(to right, #00c6ff, #0072ff);
   -webkit-background-clip: text;
   background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-text-fill-color: transparent !important;
+  display: inline-block;
   font-weight: bold;
 }
 
 .flag-ua-text {
-  background: linear-gradient(to bottom, #0057b7 50%, #ffd700 50%);
+  background: linear-gradient(to bottom, #0057b7, #ffd700);
   -webkit-background-clip: text;
   background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-text-fill-color: transparent !important;
+  display: inline-block;
   text-shadow: none !important;
   font-weight: bold;
 }
 
 .flag-usa-text {
-  background: linear-gradient(to bottom, #bf0a30 33%, #ffffff 33%, #ffffff 66%, #00247d 66%);
+  background: linear-gradient(to bottom, #bf0a30, #ffffff, #00247d);
   -webkit-background-clip: text;
   background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-text-fill-color: transparent !important;
+  display: inline-block;
   text-shadow: none !important;
   font-weight: bold;
 }
 
 .flag-uk-text {
-  background: linear-gradient(90deg, #00247d 33%, #cf142b 33%, #cf142b 66%, #00247d 66%);
+  background: linear-gradient(90deg, #00247d, #cf142b, #00247d);
   -webkit-background-clip: text;
   background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-text-fill-color: transparent !important;
+  display: inline-block;
   text-shadow: none !important;
   font-weight: bold;
 }
@@ -1386,7 +1397,8 @@
   background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-text-fill-color: transparent !important;
+  display: inline-block;
   animation: rainbow-text-animation 5s linear infinite;
   font-weight: bold;
 }

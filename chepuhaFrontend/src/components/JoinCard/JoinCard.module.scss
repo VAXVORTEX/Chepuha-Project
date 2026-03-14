@@ -10,6 +10,7 @@
   width: 100%;
   box-sizing: border-box;
   padding: 20px;
+  background: transparent !important; // Ensure bg matches App
 }
 
 .container {
@@ -94,7 +95,7 @@
   .container {
     padding: 0;
     max-width: 95vw;
-    margin-top: 10vh; // Bring down from top
+    margin-top: 5vh; // Raised from 10vh to be higher
   }
 
   .inputWrapper {

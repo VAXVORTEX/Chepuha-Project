@@ -10,6 +10,7 @@ import Timer from "./components/Timer/Timer";
 import JoinCard from "./components/JoinCard/JoinCard";
 import WaitCard from "./components/WaitCard/WaitCard";
 import HomeIcon from "./components/HomeIcon/HomeIcon";
+import Input from "./components/Input/Input";
 import GameResult from "./components/GameResult/GameResult";
 import logoImage from "./assets/images/Logo.png";
 import logoImageEng from "./assets/images/Chepuha_eng.png";
@@ -469,29 +470,16 @@ function App() {
             const color = owner?.color || (String(ansOwnerId) === String(playerId) ? playerColor : '#fff');
 
             if (color === 'special:flag-ua') {
-              return ans.split(' ').map((word: string, i: number, arr: string[]) => {
-                const c = i < arr.length / 2 ? '#0057b7' : '#ffd700';
-                return `<span style="color: ${c}; font-weight: bold; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">${word}</span>`;
-              }).join(' ');
+              return `<span class="flag-ua-text">${ans}</span>`;
             }
             if (color === 'special:flag-usa') {
-              return ans.split(' ').map((word: string, i: number, arr: string[]) => {
-                const c = i % 3 === 0 ? '#bf0a30' : i % 3 === 1 ? '#ffffff' : '#00247d';
-                return `<span style="color: ${c}; font-weight: bold; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">${word}</span>`;
-              }).join(' ');
+              return `<span class="flag-usa-text">${ans}</span>`;
             }
             if (color === 'special:flag-uk') {
-              return ans.split(' ').map((word: string, i: number, arr: string[]) => {
-                const c = i % 2 === 0 ? '#cf142b' : '#00247d';
-                return `<span style="color: ${c}; font-weight: bold; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">${word}</span>`;
-              }).join(' ');
+              return `<span class="flag-uk-text">${ans}</span>`;
             }
             if (color === 'special:rainbow') {
-              const rainbowColors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#8b00ff'];
-              return ans.split(' ').map((word: string, i: number, arr: string[]) => {
-                const c = rainbowColors[i % rainbowColors.length];
-                return `<span style="color: ${c}; font-weight: bold; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">${word}</span>`;
-              }).join(' ');
+              return `<span class="rainbow-text">${ans}</span>`;
             }
 
             const isSpecial = color?.startsWith('special:');
@@ -508,11 +496,15 @@ function App() {
             return `<span${className} style="${style}">${ans}</span>`;
           });
 
+          const sheetOwner = players.find(p => String(p.id) === String(sheetOwnerId));
+          const sheetOwnerColor = sheetOwner?.color || (String(sheetOwnerId) === String(playerId) ? playerColor : '#000');
+
           return {
             playerName: nick,
             story: activeTemplate.buildStory(coloredAnswers, language, String(sessionId || 'local'), String(s.id || Math.random())),
             answers: fullAnswers,
-            templateId: activeTemplate.id
+            templateId: activeTemplate.id,
+            playerColor: sheetOwnerColor
           };
         });
 
@@ -533,6 +525,7 @@ function App() {
           date,
           roomCode: gameRoomCode,
           hostName,
+          hostColor: hostPlayer?.color || '#000',
           stories: built
         });
       }
@@ -884,8 +877,7 @@ function App() {
     }));
   };
 
-  const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  const handleNicknameChange = (value: string) => {
     if (value.length <= 25) {
       setAppState(prev => ({ ...prev, nickname: value, error: "" }));
     } else {
@@ -1330,13 +1322,13 @@ function App() {
             {roomCode && <GameCode code={roomCode} className="gameCodePos create-code-mobile" />}
           </div>
           <div className="create-game-container" style={{ pointerEvents: 'none' }}>
-            <div className="input-wrapper" style={{ pointerEvents: 'auto' }}>
-              <input
-                type="text"
-                className={`nickname-input ${error ? "error" : ""}`}
-                placeholder={t('ENTER_NICK_PLACEHOLDER')}
+            <div className="input-card" style={{ pointerEvents: 'auto' }}>
+              <Input
                 value={nickname}
                 onChange={handleNicknameChange}
+                placeholder={t('ENTER_NICK_PLACEHOLDER')}
+                className={`nickname-input ${error ? "error" : ""}`}
+                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && goToLobby()}
               />
             </div>
             <span className="error-message" style={{ minHeight: '24px', display: 'block', pointerEvents: 'auto' }}>{error || '\u00A0'}</span>
