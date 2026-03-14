@@ -701,8 +701,8 @@
   .app-view {
     display: flex !important;
     flex-direction: column !important;
-    justify-content: center !important;
-    padding: 20px 0;
+    justify-content: flex-start !important; // Start from top
+    padding: 60px 0 20px 0; // Padding for absolute room code
   }
 
   .story-mode-desc {
@@ -767,7 +767,7 @@
   }
 
   .create-game-container {
-    margin-top: 10px !important; // Restore normal spacing
+    margin-top: 10px !important; // Small margin under room code
     gap: 15px !important;
   }
 
@@ -795,8 +795,8 @@
     position: relative !important;
     left: 50% !important;
     margin-left: -325px !important;
-    margin-top: -60px !important; // Pull settings UP way more
-    margin-bottom: -220px !important; // Pull create button UP further
+    margin-top: -30px !important; // Pull settings even closer
+    margin-bottom: -190px !important;
   }
 
   .carousel-section {
@@ -1169,11 +1169,25 @@
   }
 
   .create-game-pc-code-wrapper {
-    position: static;
+    position: absolute;
+    top: 10px !important;
+    right: 10px !important;
+    width: auto;
+    left: auto;
     transform: none;
-    width: 100%;
-    margin-top: 10px;
-    display: block; // Show in flow on mobile
+    display: block;
+  }
+
+  .gameCodePos {
+    &.create-code-mobile {
+      position: absolute !important;
+      top: 0px !important;
+      right: 0px !important;
+      left: auto !important;
+      transform: none !important;
+      text-align: right !important;
+      width: auto !important;
+    }
   }
 
   .timerPos {
