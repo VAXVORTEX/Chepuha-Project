@@ -15,6 +15,22 @@ interface RoundCardProps {
     onSubmitAnswer?: (answer: string) => void;
     hints?: string[];
 }
+const getNicknameStyle = (color: string) => {
+    if (color?.startsWith('special:')) return {};
+    const isBlack = !color || color === '#000000' || color === '#000';
+    return {
+        color: color || '#000000',
+        textShadow: isBlack ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
+    };
+};
+
+const getNicknameClassName = (color: string) => {
+    if (color?.startsWith('special:')) {
+        return `${styles.playerName} ${color.replace('special:', '')}-text`;
+    }
+    return styles.playerName;
+};
+
 export const RoundCard = ({
     playerName,
     playerColor,
@@ -49,10 +65,7 @@ export const RoundCard = ({
     return (
         <div className={`${styles.roundCard} ${isWaiting ? styles.waiting : ''}`}>
             <div className={styles.header}>
-                <h2 className={styles.playerName} style={{
-                    color: playerColor || '#000000',
-                    textShadow: (!playerColor || playerColor === '#000000' || playerColor === '#000') ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
-                }}>{playerName}</h2>
+                <h2 className={getNicknameClassName(playerColor || '')} style={getNicknameStyle(playerColor || '')}>{playerName}</h2>
             </div>
             <div className={styles.body}>
                 {isWaiting ? (

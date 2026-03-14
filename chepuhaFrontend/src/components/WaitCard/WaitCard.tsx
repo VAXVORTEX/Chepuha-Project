@@ -12,6 +12,22 @@ interface WaitCardProps {
   totalRounds?: number;
   message?: string;
 }
+const getNicknameStyle = (color: string) => {
+  if (color?.startsWith('special:')) return {};
+  const isBlack = !color || color === '#000000' || color === '#000';
+  return {
+    color: color || '#000000',
+    textShadow: isBlack ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
+  };
+};
+
+const getNicknameClassName = (color: string) => {
+  if (color?.startsWith('special:')) {
+    return `${styles.nickText} ${color.replace('special:', '')}-text`;
+  }
+  return styles.nickText;
+};
+
 const WaitCard: React.FC<WaitCardProps> = ({
   nick,
   playerColor,
@@ -23,10 +39,7 @@ const WaitCard: React.FC<WaitCardProps> = ({
   return (
     <div className={styles.wrapper}>
       <div className={styles.container}>
-        <h2 className={styles.nickText}>{t('YOUR_NICK')} <span style={{
-          color: playerColor || '#000000',
-          textShadow: (!playerColor || playerColor === '#000000' || playerColor === '#000') ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
-        }}>{nick}</span></h2>
+        <h2 className={getNicknameClassName(playerColor || '')}>{t('YOUR_NICK')} <span style={getNicknameStyle(playerColor || '')}>{nick}</span></h2>
         <p className={styles.countText}>
           {joinedCount} / {totalCount} {t('PLAYERS_READY')}
         </p>

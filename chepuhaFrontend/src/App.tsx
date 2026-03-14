@@ -152,10 +152,26 @@ const getInitialState = (): AppState => {
 };
 
 export const AVAILABLE_COLORS = [
-  '#000000', '#e5a629', '#2962e5', '#e52929', '#29a62b', '#9c29e5',
-  '#e529b3', '#29e5d0', '#ffffff', '#ff8c00', '#ff1493',
-  '#00ff00', '#00bfff', '#8a2be2', '#a52a2a', '#ff69b4',
-  '#4682b4', '#d2691e', '#32cd32'
+  // REDS
+  '#e52929', '#ff0000', '#8b0000', '#ff4500', '#ff6347',
+  // ORANGES
+  '#ff8c00', '#ffa500', '#e5a629', '#ffd700',
+  // YELLOWS
+  '#ffff00', '#fafad2', '#ffffed',
+  // GREENS
+  '#29a62b', '#00ff00', '#32cd32', '#008000', '#adff2f', '#98fb98', '#00fa9a',
+  // BLUES
+  '#2962e5', '#00bfff', '#0000ff', '#00008b', '#4682b4', '#87ceeb', '#add8e6',
+  // PURPLES
+  '#9c29e5', '#8a2be2', '#4b0082', '#9932cc', '#ba55d3', '#e6e6fa',
+  // PINKS
+  '#e529b3', '#ff69b4', '#ff1493', '#ffc0cb', '#db7093',
+  // CYANS/TEALS
+  '#29e5d0', '#00ffff', '#20b2aa', '#40e0d0',
+  // GRAYS / BLACK
+  '#ffffff', '#808080', '#c0c0c0', '#dcdcdc', '#000000',
+  // SPECIALS
+  'special:rainbow', 'special:fire-gradient', 'special:ice-gradient', 'special:flag-ua', 'special:flag-usa', 'special:flag-uk'
 ];
 
 const GAME_LENGTH_INDICES: Record<number, number[]> = {
@@ -165,11 +181,21 @@ const GAME_LENGTH_INDICES: Record<number, number[]> = {
 };
 
 const getNicknameStyle = (color: string) => {
+  if (color?.startsWith('special:')) {
+    return {}; // Handled by class name
+  }
   const isBlack = !color || color === '#000000' || color === '#000';
   return {
     color: color || '#000000',
     textShadow: isBlack ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
   };
+};
+
+const getNicknameClassName = (color: string) => {
+  if (color?.startsWith('special:')) {
+    return `player-name ${color.replace('special:', '')}-text`;
+  }
+  return 'player-name';
 };
 
 const PlayerItem = ({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, crownImage, showColorPicker }: any) => {
@@ -191,12 +217,12 @@ const PlayerItem = ({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, cro
     <div key={p.id || String(i)} className={`player-item ${pulse ? 'color-updated' : ''}`}>
       <div className="player-name-wrapper">
         {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
-        <span className="player-name" style={getNicknameStyle(activeColor)}>{p.nickname}</span>
+        <span className={getNicknameClassName(activeColor)} style={getNicknameStyle(activeColor)}>{p.nickname}</span>
       </div>
       {isMe && showColorPicker && (
         <div className="inline-color-picker">
           <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
-          <div className="inline-color-swatch" style={{ background: activeColor }} />
+          <div className={`inline-color-swatch ${activeColor?.startsWith('special:') ? activeColor.replace('special:', '') : ''}`} style={!activeColor?.startsWith('special:') ? { background: activeColor } : {}} />
           <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
         </div>
       )}
@@ -408,17 +434,20 @@ function App() {
     try {
       const sheets = await getStorySheetsBySession(sessionId);
       const built = (sheets || [])
-        .filter(s => s && s.answers && s.answers.length > 0)
+        // We now include sheets even if they have no answers yet (they will be filled by fallbacks)
         .map(s => {
           const sorted = [...(s.answers || [])].sort((a, b) => a.position_in_sheet - b.position_in_sheet);
           const p = s.player_id as any;
-          const nick = p?.nickname || 'Гравець';
+          // Fallback to name from the player list if not in the sheet object
+          const sheetOwnerId = typeof s.player_id === 'object' ? s.player_id.id : s.player_id;
+          const ownerFromList = players.find(p => String(p.id) === String(sheetOwnerId));
+          const nick = p?.nickname || ownerFromList?.nickname || 'Гравець';
           const pAnswers = sorted.map(a => a.answer_text);
 
           const indices = GAME_LENGTH_INDICES[gameLength] || GAME_LENGTH_INDICES[12];
           const fullAnswers = Array(12).fill("");
           indices.forEach((qIndex, i) => {
-            fullAnswers[qIndex] = pAnswers[i];
+            if (pAnswers[i]) fullAnswers[qIndex] = pAnswers[i];
           });
           for (let i = 0; i < 12; i++) {
             if (!fullAnswers[i]) {
@@ -433,8 +462,45 @@ function App() {
             const ansOwnerId = originalAnswer ? (typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id.id : originalAnswer.player_id) : null;
             const owner = players.find(p => String(p.id) === String(ansOwnerId));
             const color = owner?.color || (String(ansOwnerId) === String(playerId) ? playerColor : '#fff');
-            const shadow = (color === '#000000' || color === '#000') ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)';
-            return `<span style="color: ${color}; font-weight: bold; text-shadow: ${shadow};">${ans}</span>`;
+
+            if (color === 'special:flag-ua') {
+              return ans.split(' ').map((word: string, i: number, arr: string[]) => {
+                const c = i < arr.length / 2 ? '#0057b7' : '#ffd700';
+                return `<span style="color: ${c}; font-weight: bold; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">${word}</span>`;
+              }).join(' ');
+            }
+            if (color === 'special:flag-usa') {
+              return ans.split(' ').map((word: string, i: number, arr: string[]) => {
+                const c = i % 3 === 0 ? '#bf0a30' : i % 3 === 1 ? '#ffffff' : '#00247d';
+                return `<span style="color: ${c}; font-weight: bold; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">${word}</span>`;
+              }).join(' ');
+            }
+            if (color === 'special:flag-uk') {
+              return ans.split(' ').map((word: string, i: number, arr: string[]) => {
+                const c = i % 2 === 0 ? '#cf142b' : '#00247d';
+                return `<span style="color: ${c}; font-weight: bold; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">${word}</span>`;
+              }).join(' ');
+            }
+            if (color === 'special:rainbow') {
+              const rainbowColors = ['#ff0000', '#ff7f00', '#ffff00', '#00ff00', '#0000ff', '#4b0082', '#8b00ff'];
+              return ans.split(' ').map((word: string, i: number, arr: string[]) => {
+                const c = rainbowColors[i % rainbowColors.length];
+                return `<span style="color: ${c}; font-weight: bold; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;">${word}</span>`;
+              }).join(' ');
+            }
+
+            const isSpecial = color?.startsWith('special:');
+            let style = `color: ${color}; font-weight: bold;`;
+            let className = '';
+
+            if (isSpecial) {
+              className = ` class="${color.replace('special:', '')}-text"`;
+              style = ''; // Handled by class
+            } else {
+              const shadow = (color === '#000000' || color === '#000') ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)';
+              style += ` text-shadow: ${shadow};`;
+            }
+            return `<span${className} style="${style}">${ans}</span>`;
           });
 
           return {
@@ -444,13 +510,11 @@ function App() {
             templateId: activeTemplate.id
           };
         });
+
       if (built.length > 0) {
-        // Validation: verify that at least one story has at least one answer if it's not a single-player game
-        const hasAnyAnswers = built.some(s => s.answers && s.answers.some(a => a !== "..."));
-        if (!hasAnyAnswers && players.length > 1) {
-          console.warn("No real answers found yet, delaying final result.");
-          return;
-        }
+        // Validation: skip if NO SHEETS were found at all (shouldn't happen if game started)
+        const hasAnySheets = built.length > 0;
+        if (!hasAnySheets) return;
 
         setAppState(prev => ({ ...prev, allStories: built }));
         // Mark session as completed in DB to avoid collisions and "tails"
@@ -1382,7 +1446,7 @@ function App() {
           <div className="lobby-container">
             <div className="lobby-info">
               <h2 className="lobby-text">
-                {t('YOUR_NICK')} <span style={getNicknameStyle(playerColor)}>{nickname}</span>
+                {t('YOUR_NICK')} <span className={getNicknameClassName(playerColor)} style={getNicknameStyle(playerColor)}>{nickname}</span>
               </h2>
               <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
               <div className="players-list">
