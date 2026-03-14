@@ -1270,7 +1270,7 @@ function App() {
 
   return (
     <div className="app-view">
-      {roomCode && !didGameStart && (isCreatingLobby || isLobby) && phase !== Phases.Join && phase !== Phases.History && phase !== Phases.End && (
+      {roomCode && !didGameStart && (isCreatingLobby || isLobby) && phase !== Phases.Join && phase !== Phases.History && phase !== Phases.End && !isCreatingLobby && (
         <GameCode code={roomCode} className="gameCodePos" />
       )}
 
@@ -1322,6 +1322,7 @@ function App() {
       {!didGameStart && isCreatingLobby && !isLobby && phase !== Phases.Join && (
         <>
           <div className="create-game-container" style={{ pointerEvents: 'none' }}>
+            {roomCode && <GameCode code={roomCode} className="gameCodePos create-code-mobile" />}
             <div className="input-wrapper" style={{ pointerEvents: 'auto' }}>
               <input
                 type="text"

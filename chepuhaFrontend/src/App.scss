@@ -733,14 +733,14 @@
   }
 
   .menu-buttons {
-    flex-direction: row !important;
+    flex-direction: column !important; // Stacking vertically for normal look
     justify-content: center !important;
-    gap: 15px !important;
+    gap: 30px !important;
     margin-top: 20px !important;
 
     .button {
-      width: 165px !important;
-      font-size: 18px !important;
+      width: 250px !important;
+      font-size: 22px !important;
       margin: 0 !important;
     }
   }
@@ -774,8 +774,8 @@
     position: relative !important;
     left: 50% !important;
     margin-left: -325px !important;
-    margin-top: 40px !important; // Pushed down as requested
-    margin-bottom: -110px !important;
+    margin-top: 10px !important; // Bring up to balance with Join button
+    margin-bottom: -150px !important; // Push create button lower
   }
 
   .carousel-section {
@@ -804,7 +804,7 @@
   }
 
   .template-title {
-    font-size: 50px !important;
+    font-size: 32px !important; // Smaller labels as requested
   }
 
   .game-settings-section {
@@ -815,6 +815,10 @@
   .game-length-picker {
     width: 100%;
     align-items: center;
+
+    span {
+      font-size: 20px !important; // Smaller text
+    }
   }
 
   .extra-options {
@@ -1131,6 +1135,14 @@
     z-index: 100;
     width: auto !important;
     text-align: right !important;
+
+    &.create-code-mobile {
+      position: static !important;
+      margin: 0 auto 10px !important;
+      transform: scale(1.1) !important;
+      text-align: center !important;
+      width: 100% !important;
+    }
   }
 
   .timerPos {
