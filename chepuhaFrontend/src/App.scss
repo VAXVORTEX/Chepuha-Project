@@ -736,7 +736,7 @@
     flex-direction: column !important; // Stacking vertically for normal look
     justify-content: center !important;
     gap: 30px !important;
-    margin-top: 20px !important;
+    margin-top: -50px !important; // Raise buttons MUCH higher
 
     .button {
       width: 250px !important;
@@ -746,8 +746,8 @@
   }
 
   .create-game-container {
-    margin-top: 2vh !important; // Raise container
-    gap: 20px !important; // Tighter spacing
+    margin-top: -2vh !important; // Raise container further up
+    gap: 15px !important; // Tighter vertical gaps
   }
 
   .nickname-input {
@@ -774,8 +774,8 @@
     position: relative !important;
     left: 50% !important;
     margin-left: -325px !important;
-    margin-top: -10px !important; // Shifted UP further
-    margin-bottom: -180px !important; // More negative margin to pull create button UP
+    margin-top: -60px !important; // Pull settings UP way more
+    margin-bottom: -220px !important; // Pull create button UP further
   }
 
   .carousel-section {
@@ -1116,7 +1116,7 @@
   }
 
   .logo-wrapper {
-    margin-top: -30px; // Pulled logo even higher
+    margin-top: -80px; // Pulled logo way higher
     margin-bottom: 20px;
     width: 100%;
     display: flex;
@@ -1138,11 +1138,11 @@
 
     &.create-code-mobile {
       position: absolute !important;
-      top: -35px !important; // Way higher
-      left: 10px !important; // Top-left as requested
-      right: auto !important;
+      top: -100px !important; // Way higher to give room for nick
+      right: 15px !important; // Top-right as requested
+      left: auto !important;
       transform: scale(0.9) !important;
-      text-align: left !important;
+      text-align: right !important;
       width: auto !important;
     }
   }
@@ -1182,8 +1182,8 @@
     position: absolute !important;
     width: 60px !important;
     height: 60px !important;
-    bottom: 30px !important; // Raised from bottom
-    right: 15px !important;
+    bottom: 45px !important; // Raised further
+    right: 20px !important;
     background-color: rgba(255, 255, 255, 0.2) !important;
     border: 3px solid #000000 !important;
     border-radius: 50% !important;
@@ -1239,7 +1239,7 @@
     height: 130px !important;
     right: -10px !important;
     left: auto !important;
-    bottom: 80px !important; // Raised
+    bottom: 110px !important; // Raised further
   }
 
   .red-guy-bg {
@@ -1247,7 +1247,7 @@
     height: 150px !important;
     left: -10px !important;
     right: auto !important;
-    bottom: 25px !important; // Raised
+    bottom: 55px !important; // Raised further
   }
 
 
