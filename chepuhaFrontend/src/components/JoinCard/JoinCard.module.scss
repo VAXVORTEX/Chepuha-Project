@@ -94,24 +94,27 @@
   .container {
     padding: 0;
     max-width: 95vw;
-    margin-top: 0;
+    margin-top: 10vh; // Bring down from top
   }
 
   .inputWrapper {
-    min-height: 80px; // Reduced further to bring button up more
+    min-height: 80px;
+    margin-bottom: 10px;
   }
 
   .form {
-    gap: 0px; // min-height already provides spacing
+    gap: 15px;
   }
 
   .input {
-    height: 60px;
-    font-size: 20px;
+    height: 55px;
+    font-size: 18px;
+    padding: 0 30px;
   }
 
   .errorText {
-    font-size: 20px;
+    font-size: 16px;
+    padding-left: 20px;
   }
 
   .submitBlock {

@@ -108,7 +108,7 @@ const getInitialState = (): AppState => {
     gameLength: 9,
     storyMode: false,
     hintsEnabled: false,
-    colorHighlight: false,
+    colorHighlight: true,
     playerColor: AVAILABLE_COLORS[0]
   };
 
@@ -141,7 +141,7 @@ const getInitialState = (): AppState => {
           gameLength: parsed.gameLength || 9,
           storyMode: parsed.storyMode || false,
           hintsEnabled: parsed.hintsEnabled || false,
-          colorHighlight: parsed.colorHighlight || false,
+          colorHighlight: true,
           playerColor: parsed.playerColor || AVAILABLE_COLORS[0],
         };
       }
@@ -1461,7 +1461,7 @@ function App() {
                       cycleColor={cycleColor}
                       AVAILABLE_COLORS={AVAILABLE_COLORS}
                       crownImage={crownImage}
-                      showColorPicker={parsedColorHighlight}
+                      showColorPicker={true} // Force true for testing/utility if needed, or use parsedColorHighlight
                     />
                   ))
                 ) : (
@@ -1473,7 +1473,7 @@ function App() {
                     cycleColor={cycleColor}
                     AVAILABLE_COLORS={AVAILABLE_COLORS}
                     crownImage={crownImage}
-                    showColorPicker={parsedColorHighlight}
+                    showColorPicker={true}
                   />
                 )}
               </div>
