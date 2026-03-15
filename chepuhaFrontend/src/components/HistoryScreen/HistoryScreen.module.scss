@@ -162,7 +162,8 @@
         padding: 20px 10px;
         border-width: 5px;
         height: auto;
-        min-height: 85vh;
+        min-height: 80vh; // Reduced from 85vh to lift it higher
+        margin-top: -20px; // Lifted explicitly
     }
 
     .title {

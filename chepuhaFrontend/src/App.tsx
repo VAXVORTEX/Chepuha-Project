@@ -217,11 +217,11 @@ const PlayerItem = ({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, cro
   return (
     <div key={p.id || String(i)} className={`player-item ${pulse ? 'color-updated' : ''}`}>
       <div className="player-name-wrapper">
-        {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
         <span
           className={`${getNicknameClassName(activeColor)} ${!showColorPicker ? 'no-highlight' : ''}`}
           style={showColorPicker ? getNicknameStyle(activeColor) : { color: '#000000', textShadow: 'none' }}
         >
+          {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
           {p.nickname}
         </span>
       </div>
@@ -1267,8 +1267,10 @@ function App() {
 
   return (
     <div className="app-view">
-      {roomCode && !didGameStart && (isCreatingLobby || isLobby) && phase !== Phases.Join && phase !== Phases.History && phase !== Phases.End && !isCreatingLobby && (
-        <GameCode code={roomCode} className="gameCodePos" />
+      {roomCode && !didGameStart && isLobby && phase !== Phases.Join && phase !== Phases.History && phase !== Phases.End && (
+        <div className="create-game-pc-code-wrapper">
+          <GameCode code={roomCode} className="gameCodePos create-code-mobile" />
+        </div>
       )}
 
       {!didGameStart && !isCreatingLobby && phase === Phases.Main && !isLobby && (
