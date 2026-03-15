@@ -10,6 +10,7 @@ interface Story {
   story: string;
   answers?: string[];
   templateId?: string;
+  playerColor?: string;
 }
 interface ResultProps {
   stories: Story[];
@@ -44,7 +45,7 @@ const GameResult: React.FC<ResultProps> = ({
 }) => {
   const { t, language } = useLanguage();
   const current = stories[storyIndex];
-  const title = current ? `${t('STORY_OF')} ${current.playerName}` : t('LOADING');
+
   let content = current?.story ?? "";
   let finalAnswers = current?.answers;
   let finalTemplateId = current?.templateId;
@@ -66,11 +67,19 @@ const GameResult: React.FC<ResultProps> = ({
   if (phase === Phases.History) {
     content = content.replace(/<\/?[^>]+(>|$)/g, "");
   }
+
+  const pColor = current?.playerColor;
+  const nameIsSpecial = pColor?.startsWith('special:') ?? false;
+  const nameClass = nameIsSpecial ? `${pColor?.replace('special:', '')}-text` : '';
+  const nameStyle = !nameIsSpecial && pColor ? { color: pColor } : {};
+
   return (
     <div className={classNames(styles.wrapper, styles[phase])}>
       <div className={styles.container}>
         <div className={classNames(styles.box, styles[phase])}>
-          <h2 className={styles.title}>{title}</h2>
+          <h2 className={styles.title}>
+            {t('STORY_OF')} <span className={nameClass} style={nameStyle}>{current?.playerName || t('LOADING')}</span>
+          </h2>
           <div className={styles.storyNav}>
             <button
               className={styles.arrowBtn}

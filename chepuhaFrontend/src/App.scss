@@ -100,7 +100,7 @@
   gap: 50px;
   width: 100%;
   max-width: 1200px;
-  margin-top: -10vh;
+  margin-top: -5vh;
 }
 
 .input-wrapper {
@@ -111,6 +111,7 @@
 .nickname-input {
   @include font-abel-32;
   width: 100%;
+  max-width: 750px; // Match Join screen width
   height: 90px;
   border-radius: 45px;
   padding: 0 40px;
@@ -134,9 +135,8 @@
   color: $red;
   -webkit-text-stroke: 1px $black;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
-  align-self: flex-start;
-  margin-left: 40px;
-  margin-top: -30px;
+  align-self: center;
+  margin-top: 0 !important; // Remove extra gap
 }
 
 .lobby-container {
@@ -163,15 +163,6 @@
   color: $black;
   margin: 0;
   text-align: center;
-
-  span {
-    text-shadow:
-      -2px -2px 0 #000,
-      2px -2px 0 #000,
-      -2px 2px 0 #000,
-      2px 2px 0 #000,
-      0 4px 8px rgba(0, 0, 0, 0.3);
-  }
 }
 
 .lobby-subtitle {
@@ -208,12 +199,12 @@
 }
 
 .crown-icon {
-  position: absolute;
-  right: 100%;
-  margin-right: 2px; // 2px adaptive gap as requested
-  width: 60px;
+  width: 45px;
   height: auto;
   object-fit: contain;
+  margin-right: -2px; // Closer pairing
+  margin-top: -3px; // Align better with text
+  flex-shrink: 0;
 }
 
 .player-name {
@@ -222,6 +213,12 @@
   text-align: center;
   white-space: nowrap;
   transition: color 0.5s ease;
+
+  &.no-highlight {
+    color: #000000 !important;
+    text-shadow: none !important;
+    -webkit-text-stroke: 0 !important;
+  }
 }
 
 @keyframes color-pulse {
@@ -384,6 +381,21 @@
 }
 
 // ── Create Screen Layout ──────────────────────────────
+.create-game-pc-code-wrapper {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  pointer-events: none;
+  z-index: 500;
+
+  .gameCodePos {
+    position: relative !important;
+    top: 0 !important;
+    right: 0 !important;
+    pointer-events: auto;
+  }
+}
+
 .create-options-row {
   display: flex;
   flex-direction: row;
@@ -690,8 +702,8 @@
   .app-view {
     display: flex !important;
     flex-direction: column !important;
-    justify-content: center !important;
-    padding: 20px 0;
+    justify-content: flex-start !important; // Start from top
+    padding: 40px 0 20px 0; // Balanced padding
   }
 
   .story-mode-desc {
@@ -711,21 +723,23 @@
   }
 
   .inline-color-picker {
-    transform: scale(0.6);
-    position: absolute;
-    right: -25px; // Moved further right to not push name
-    top: 50%;
-    transform: translateY(-50%) scale(0.6);
+    position: relative; // Changed from absolute to flow naturally
+    right: 0;
+    top: 0;
+    margin-top: 10px;
+    transform: scale(0.8);
+    justify-content: center;
   }
 
   .player-item {
     position: relative;
     display: flex;
+    flex-direction: column; // Stack nick and picker vertically on mobile
     justify-content: center;
     align-items: center;
     width: 100%;
-    min-height: 60px;
-    margin-bottom: 5px;
+    min-height: 80px;
+    margin-bottom: 10px;
   }
 
   .player-name-wrapper {
@@ -738,41 +752,78 @@
 
   .logo-wrapper {
     order: -1 !important; // Absolute first
-    margin-top: 5vh;
-    margin-bottom: 40px;
+    margin-top: 5vh !important; // Lowered from 2vh
+    margin-bottom: 20px !important;
   }
 
   .menu-buttons {
-    order: 1;
-    margin-top: 0;
+    flex-direction: column !important;
+    justify-content: center !important;
+    gap: 25px !important;
+    margin-top: 10px !important; // Restore normal spacing to avoid logo overlap
+
+    .button {
+      width: 250px !important;
+      font-size: 22px !important;
+      margin: 0 !important;
+    }
+  }
+
+  .create-game-container {
+    margin-top: -30px !important; // Pull input closer to the absolute room code
+    gap: 15px !important;
   }
 
   .nickname-input {
+    width: 100% !important;
+    height: 55px !important;
+    border-radius: 45px !important;
+    padding: 0 30px !important;
+    border: 3px solid #000000 !important;
+    font-size: 18px !important;
+    text-align: center !important;
+    background: #ffffff !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .input-card {
     width: 90% !important;
     max-width: 400px;
-    font-size: 1.2rem;
-    height: 50px;
     margin: 0 auto;
-    background: white;
-    border-radius: 12px;
-    text-align: center;
   }
 
   .create-options-row {
-    flex-direction: row;
-    align-items: center;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 15px !important;
+    padding: 0 !important;
+    width: 650px !important;
+    max-width: none !important;
+    transform: scale(0.55) !important;
+    transform-origin: top center !important;
+    position: relative !important;
+    left: 50% !important;
+    margin-left: -325px !important;
+    margin-top: -30px !important; // Pull settings even closer
+    margin-bottom: -190px !important;
+  }
+
+  .carousel-section {
+    width: auto !important;
+    // ... existing ...
+  }
+
+  .game-settings-container {
+    width: 100%;
+    display: flex;
     justify-content: center;
-    gap: 15px;
-    padding: 0;
-    width: 650px;
-    max-width: none;
-    transform: scale(0.55);
-    transform-origin: top center;
-    position: relative;
-    left: 50%;
-    margin-left: -325px;
-    margin-top: 10px;
-    margin-bottom: -50px; // Very safe margin to prevent overlap
+  }
+
+  .game-settings-section {
+    width: 100%;
+    max-width: 90%;
+    gap: 25px;
   }
 
   .template-title {
@@ -784,21 +835,36 @@
   }
 
   .template-title {
-    font-size: 50px !important;
+    font-size: 32px !important; // Smaller labels as requested
   }
 
-  .settings-title {
-    font-size: 44px !important;
+  .game-settings-section {
+    flex-direction: column !important;
+    gap: 30px !important;
   }
 
   .game-length-picker {
+    width: 100%;
+    align-items: center;
+
     span {
-      font-size: 38px !important;
+      font-size: 20px !important; // Smaller text
     }
   }
 
-  .toggle-label {
-    font-size: 30px !important;
+  .extra-options {
+    width: 100%;
+    max-width: 90% !important;
+  }
+
+  .toggle-option {
+    padding: 12px !important;
+  }
+
+  .logo-wrapper {
+    margin-bottom: 20px !important;
+    margin-top: 5px !important;
+    transform: scale(0.75);
   }
 }
 
@@ -997,20 +1063,25 @@
   }
 
   .nickname-input {
-    height: 60px;
-    font-size: 20px;
+    height: 60px !important;
+    font-size: 20px !important;
+    border-radius: 45px !important;
+    width: 75% !important; // Narrowed to avoid overlap with Room Code
+    margin: 0 auto !important;
   }
 
   .create-game-container {
     gap: 15px;
-    margin-top: -2vh;
+    margin-top: 35vh; // Lowered even further to definitely clear Room Code
     height: auto;
-    min-height: 70vh;
+    min-height: 50vh;
     justify-content: center;
-    padding-bottom: 20px;
+    position: relative;
+    z-index: 10;
 
     .button {
-      margin-top: 60px !important; // Lowered button even more on mobile
+      margin-top: 10px !important;
+      margin-bottom: 80px !important; // Push away from home icon
     }
   }
 
@@ -1037,7 +1108,7 @@
 
   .lobby-container {
     gap: 30px;
-    margin-top: -5vh;
+    margin-top: 25vh; // Lowered significantly as requested (from 12vh)
   }
 
   .lobby-info {
@@ -1056,7 +1127,8 @@
   .player-name-wrapper {
     display: flex;
     align-items: center;
-    position: relative;
+    justify-content: center;
+    gap: 8px;
   }
 
   .player-name {
@@ -1067,19 +1139,20 @@
     gap: 25px;
     width: 100%;
     align-items: center;
-    margin-top: 10px;
+    margin-top: 60px; // Lowered further as requested (from 40px)
     transform: none;
   }
 
   .crown-icon {
-    width: 35px !important;
-    right: 100%;
-    margin-right: 2px;
+    position: static;
+    width: 25px !important;
+    margin-right: 2px !important; // Much closer on mobile
+    display: inline-block;
   }
 
   .logo-wrapper {
-    margin-top: -30px; // Pulled logo even higher
-    margin-bottom: 20px;
+    margin-top: 25vh; // Lowered significantly as requested (from 15vh)
+    margin-bottom: 25px;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -1090,11 +1163,46 @@
   }
 
   .gameCodePos {
-    position: absolute;
-    top: 20px;
-    right: 15px; // Added margin from edge
-    transform: none;
+    position: absolute !important;
+    top: 5px !important;
+    right: 5px !important;
+    transform: scale(0.65) !important;
     z-index: 100;
+    width: auto !important;
+    text-align: right !important;
+
+    &.create-code-mobile {
+      position: absolute !important;
+      top: -20px !important; // Slightly higher relative to container
+      right: 15px !important;
+      left: auto !important;
+      transform: scale(0.9) !important;
+      text-align: right !important;
+      width: auto !important;
+    }
+  }
+
+  .create-game-pc-code-wrapper {
+    position: absolute;
+    top: 2vh !important;
+    right: 15px !important; // Positioned Top-Right as requested
+    left: auto !important;
+    width: auto;
+    left: auto;
+    transform: none;
+    display: block;
+  }
+
+  .gameCodePos {
+    &.create-code-mobile {
+      position: absolute !important;
+      top: 0px !important;
+      right: 0px !important;
+      left: auto !important;
+      transform: none !important;
+      text-align: right !important;
+      width: auto !important;
+    }
   }
 
   .timerPos {
@@ -1132,8 +1240,8 @@
     position: absolute !important;
     width: 60px !important;
     height: 60px !important;
-    bottom: 8px !important;
-    right: 8px !important;
+    bottom: 25px !important; // Calibrated bottom position
+    right: 20px !important;
     background-color: rgba(255, 255, 255, 0.2) !important;
     border: 3px solid #000000 !important;
     border-radius: 50% !important;
@@ -1185,19 +1293,19 @@
   }
 
   .yellow-guy-bg {
-    width: 130px !important;
-    height: 130px !important;
-    right: -10px !important;
+    width: 120px !important; // Slightly smaller as requested
+    height: 120px !important;
+    right: 0 !important;
     left: auto !important;
-    bottom: 60px !important; // Sync with global
+    bottom: 110px !important; // Positioned above Home icon
   }
 
   .red-guy-bg {
-    width: 150px !important;
-    height: 150px !important;
-    left: -10px !important;
+    width: 130px !important; // Slightly smaller as requested
+    height: 130px !important;
+    left: 0 !important; // Touching left edge corner
     right: auto !important;
-    bottom: 0px !important;
+    bottom: 0 !important; // Touching bottom edge corner
   }
 
 
@@ -1218,6 +1326,115 @@
   color: #ffd800;
   /* Yellow */
   font-weight: bold;
+}
+
+// ── SPECIAL COLORS ──────────────────────────────
+@keyframes rainbow-text-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.rainbow-text {
+  background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+}
+
+.fire-gradient-text {
+  background: linear-gradient(to right, #ff4e50, #f9d423);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+}
+
+.ice-gradient-text {
+  background: linear-gradient(to right, #00c6ff, #0072ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+}
+
+.flag-ua-text {
+  background: linear-gradient(to bottom, #0057b7, #ffd700);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-usa-text {
+  background: linear-gradient(to bottom, #bf0a30, #ffffff, #00247d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-uk-text {
+  background: linear-gradient(90deg, #00247d, #cf142b, #00247d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.gold-text {
+  background: linear-gradient(45deg, #ffd700, #fff, #ffd700);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 5s linear infinite;
+  font-weight: bold;
+}
+
+.inline-color-swatch {
+  &.rainbow {
+    background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
+  }
+
+  &.fire-gradient {
+    background: linear-gradient(to right, #ff4e50, #f9d423);
+  }
+
+  &.ice-gradient {
+    background: linear-gradient(to right, #00c6ff, #0072ff);
+  }
+
+  &.flag-ua {
+    background: linear-gradient(to bottom, #0057b7 50%, #ffd700 50%);
+  }
+
+  &.flag-usa {
+    background: linear-gradient(to bottom, #bf0a30 33%, #ffffff 33%, #ffffff 66%, #00247d 66%);
+  }
+
+  &.flag-uk {
+    background: linear-gradient(90deg, #00247d 33%, #cf142b 33%, #cf142b 66%, #00247d 66%);
+  }
 }
 
 // History box outline
