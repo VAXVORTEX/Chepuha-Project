@@ -1066,17 +1066,18 @@
     height: 60px !important;
     font-size: 20px !important;
     border-radius: 45px !important;
-    width: 70% !important; // Narrowed significantly for mobile to clear Room Code
+    width: 75% !important; // Narrowed to avoid overlap with Room Code
     margin: 0 auto !important;
   }
 
   .create-game-container {
     gap: 15px;
-    margin-top: 22vh; // Lowered significantly from 15vh to be well beneath Room Code
+    margin-top: 35vh; // Lowered even further to definitely clear Room Code
     height: auto;
     min-height: 50vh;
     justify-content: center;
-    padding-bottom: 20px;
+    position: relative;
+    z-index: 10;
 
     .button {
       margin-top: 10px !important;
@@ -1107,7 +1108,7 @@
 
   .lobby-container {
     gap: 30px;
-    margin-top: 2vh; // Calibrated from 12vh
+    margin-top: 25vh; // Lowered significantly as requested (from 12vh)
   }
 
   .lobby-info {
@@ -1138,7 +1139,7 @@
     gap: 25px;
     width: 100%;
     align-items: center;
-    margin-top: 15px; // Calibrated from 40px
+    margin-top: 60px; // Lowered further as requested (from 40px)
     transform: none;
   }
 
@@ -1150,7 +1151,7 @@
   }
 
   .logo-wrapper {
-    margin-top: 5vh; // Calibrated from 15vh
+    margin-top: 25vh; // Lowered significantly as requested (from 15vh)
     margin-bottom: 25px;
     width: 100%;
     display: flex;
@@ -1184,8 +1185,8 @@
   .create-game-pc-code-wrapper {
     position: absolute;
     top: 2vh !important;
-    left: 15px !important; // Moved to left to avoid the right-side overlap
-    right: auto !important;
+    right: 15px !important; // Positioned Top-Right as requested
+    left: auto !important;
     width: auto;
     left: auto;
     transform: none;
@@ -1239,7 +1240,7 @@
     position: absolute !important;
     width: 60px !important;
     height: 60px !important;
-    bottom: 60px !important; // Raised above illustrations to be visible
+    bottom: 25px !important; // Calibrated bottom position
     right: 20px !important;
     background-color: rgba(255, 255, 255, 0.2) !important;
     border: 3px solid #000000 !important;
@@ -1292,19 +1293,19 @@
   }
 
   .yellow-guy-bg {
-    width: 130px !important;
-    height: 130px !important;
-    right: -10px !important;
+    width: 120px !important; // Slightly smaller as requested
+    height: 120px !important;
+    right: 0 !important;
     left: auto !important;
-    bottom: 5px !important; // Calibrated
+    bottom: 110px !important; // Positioned above Home icon
   }
 
   .red-guy-bg {
-    width: 150px !important;
-    height: 150px !important;
-    left: -10px !important;
+    width: 130px !important; // Slightly smaller as requested
+    height: 130px !important;
+    left: 0 !important; // Touching left edge corner
     right: auto !important;
-    bottom: 5px !important; // Calibrated
+    bottom: 0 !important; // Touching bottom edge corner
   }
 
 
