@@ -203,10 +203,13 @@ const GAME_LENGTH_INDICES: Record<number, number[]> = {
 };
 
 const getNicknameStyle = (color: string) => {
-  if (color?.startsWith('special:')) {
-    return {}; // Handled by class name
+  const isBlack = color === '#000000' || color === '#000';
+  const isSpecial = color?.startsWith('special:');
+
+  if (isSpecial) {
+    return { textShadow: 'none' };
   }
-  const isBlack = !color || color === '#000000' || color === '#000';
+
   return {
     color: color || '#000000',
     textShadow: isBlack ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
