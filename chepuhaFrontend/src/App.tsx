@@ -217,21 +217,21 @@ const PlayerItem = ({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, cro
   return (
     <div key={p.id || String(i)} className={`player-item ${pulse ? 'color-updated' : ''}`}>
       <div className="player-name-wrapper">
+        {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
         <span
           className={`${getNicknameClassName(activeColor)} ${!showColorPicker ? 'no-highlight' : ''}`}
           style={showColorPicker ? getNicknameStyle(activeColor) : { color: '#000000', textShadow: 'none' }}
         >
-          {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
           {p.nickname}
         </span>
+        {isMe && showColorPicker && (
+          <div className="inline-color-picker">
+            <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
+            <div className={`inline-color-swatch ${activeColor?.startsWith('special:') ? activeColor.replace('special:', '') : ''}`} style={!activeColor?.startsWith('special:') ? { background: activeColor } : {}} />
+            <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
+          </div>
+        )}
       </div>
-      {isMe && showColorPicker && (
-        <div className="inline-color-picker">
-          <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
-          <div className={`inline-color-swatch ${activeColor?.startsWith('special:') ? activeColor.replace('special:', '') : ''}`} style={!activeColor?.startsWith('special:') ? { background: activeColor } : {}} />
-          <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
-        </div>
-      )}
     </div>
   );
 };
@@ -1568,10 +1568,10 @@ function App() {
               }
               return rawQuestion;
             })()}
-            playerReady={derivedJoinedCount}
             playerTotal={derivedTotalCount}
             onSubmitAnswer={doAnswerSubmit}
             hints={parsedHintsEnabled ? (activeTemplate.fallbacks[currentRound - 1] || []) : undefined}
+            showColors={parsedColorHighlight}
           />
         </>
       )}
@@ -1586,6 +1586,7 @@ function App() {
           phase={phase}
           onHome={goHome}
           onSave={() => { }}
+          showColors={parsedColorHighlight}
         />
       )}
 

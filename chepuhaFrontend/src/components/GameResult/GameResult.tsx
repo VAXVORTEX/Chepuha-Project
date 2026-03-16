@@ -21,11 +21,13 @@ interface ResultProps {
   onSave?: () => void;
   onPrev: () => void;
   onNext: () => void;
+  showColors?: boolean;
 }
-function downloadAsTxt(text: string, playerName: string) {
+const downloadAsTxt = (text: string, playerName: string) => {
   const safe = playerName.replace(/[^a-zA-Z0-9\u0400-\u04ff]/g, "_");
   const filename = `${safe}_ChepuhaGame.txt`;
-  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const plainText = text.replace(/<\/?[^>]+(>|$)/g, ""); // Always plain text for TXT download
+  const blob = new Blob([plainText], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -42,6 +44,7 @@ const GameResult: React.FC<ResultProps> = ({
   onSave,
   onPrev,
   onNext,
+  showColors = true
 }) => {
   const { t, language } = useLanguage();
   const current = stories[storyIndex];
@@ -63,15 +66,22 @@ const GameResult: React.FC<ResultProps> = ({
     }
   }
 
-  // Strip colors if in History view
-  if (phase === Phases.History) {
+  // Strip colors if in History view OR if showColors is disabled
+  if (phase === Phases.History || !showColors) {
     content = content.replace(/<\/?[^>]+(>|$)/g, "");
   }
 
   const pColor = current?.playerColor;
-  const nameIsSpecial = pColor?.startsWith('special:') ?? false;
+  const showNameColor = showColors && pColor;
+  const nameIsSpecial = showNameColor && pColor?.startsWith('special:');
   const nameClass = nameIsSpecial ? `${pColor?.replace('special:', '')}-text` : '';
-  const nameStyle = !nameIsSpecial && pColor ? { color: pColor } : {};
+  const nameStyle = !nameIsSpecial && showNameColor
+    ? { color: pColor }
+    : {
+      color: '#FFFFFF',
+      textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)',
+      WebkitTextStroke: '1px black'
+    };
 
   return (
     <div className={classNames(styles.wrapper, styles[phase])}>
