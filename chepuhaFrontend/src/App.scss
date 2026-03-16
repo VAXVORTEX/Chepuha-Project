@@ -205,8 +205,8 @@
 
 .crown-icon {
   position: absolute;
-  right: calc(100% + 8px); // Closer to name (was 15px)
-  top: 48%; // Slightly higher (was 50%)
+  right: calc(100% + 5px); // Closer to name
+  top: 35% !important; // User requested perfect centering (was 48%)
   transform: translateY(-50%);
   width: 100px;
   height: auto;
@@ -764,16 +764,17 @@
   }
 
   .logo-wrapper {
-    order: -1 !important; // Absolute first
-    margin-top: 15vh !important; // Lowered from 0 to 15vh
-    margin-bottom: 20px !important;
+    order: -1;
+    margin-top: 5vh !important; // Balanced with centered buttons
+    margin-bottom: 30px !important;
+    flex-shrink: 0;
   }
 
   .menu-buttons {
     flex-direction: column !important;
     justify-content: center !important;
-    gap: 25px !important;
-    margin-top: 60px !important; // Lowered further from 30px
+    gap: 30px !important;
+    margin-top: 20px !important; // Small gap from logo
 
     .button {
       width: 250px !important;
@@ -783,8 +784,12 @@
   }
 
   .create-game-container {
-    margin-top: -30px !important; // Pull input closer to the absolute room code
-    gap: 15px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    min-height: 60vh !important; // Center vertically in viewport
+    margin-top: 5vh !important;
+    gap: 25px !important;
   }
 
   .nickname-input {
@@ -1154,11 +1159,11 @@
   }
 
   .player-name-wrapper {
-    display: flex !important; // Use flex for stacking
-    flex-direction: column !important; // Vertical stack
+    display: inline-flex !important;
+    flex-direction: row !important; // Horizontal side-slots
     align-items: center !important;
     justify-content: center !important;
-    gap: 12px !important; // Space between elements
+    gap: 0px !important; // No Gap, use absolute positioning
     width: auto;
     text-align: center;
     position: relative;
@@ -1170,25 +1175,25 @@
   }
 
   .inline-color-picker {
-    position: relative !important; // Bring back into flow
-    left: auto !important;
+    position: absolute !important; // Revert to slots
+    left: calc(100% + 5px) !important;
     right: auto !important;
-    top: auto !important;
-    transform: none !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px !important;
-    padding: 6px 12px !important;
-    background: transparent !important; // Restored transparency
+    gap: 6px !important;
+    padding: 2px 4px !important; // Even smaller
+    background: transparent !important;
 
     .inline-color-arrow {
-      font-size: 16px !important; // Smaller arrows
+      font-size: 14px !important; // Smaller arrows
     }
 
     .inline-color-swatch {
-      width: 20px !important; // Smaller swatch
-      height: 20px !important;
+      width: 18px !important; // Smaller swatch
+      height: 18px !important;
     }
   }
 
@@ -1201,12 +1206,12 @@
   }
 
   .crown-icon {
-    position: relative !important; // Bring back into flow
-    right: auto !important;
+    position: absolute !important; // Revert to slots
+    right: calc(100% + 5px) !important;
     left: auto !important;
-    top: auto !important;
-    transform: none !important;
-    width: 50px !important; // Slightly smaller to match stack
+    top: 35% !important; // Match PC visual centering
+    transform: translateY(-50%) !important;
+    width: 40px !important; // Smaller crown on mobile
     margin-bottom: 0 !important;
     display: inline-flex;
   }
