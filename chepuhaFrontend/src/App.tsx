@@ -244,7 +244,12 @@ const PlayerItem = ({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, cro
         {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
         <span
           className={`${getNicknameClassName(activeColor)} ${!showColorPicker ? 'no-highlight' : ''}`}
-          style={showColorPicker ? getNicknameStyle(activeColor) : { color: '#000000', textShadow: 'none' }}
+          data-length={p.nickname?.length || 0}
+          style={{
+            ...(showColorPicker ? getNicknameStyle(activeColor) : { color: '#000000', textShadow: 'none' }),
+            fontSize: p.nickname?.length > 10 ? `calc(min(50px, (100% / ${p.nickname.length / 0.6})))` : undefined,
+            lineHeight: '1.1'
+          }}
         >
           {p.nickname}
         </span>
@@ -902,7 +907,7 @@ function App() {
   };
 
   const handleNicknameChange = (value: string) => {
-    if (value.length <= 15) {
+    if (value.length <= 20) {
       setAppState(prev => ({ ...prev, nickname: value, error: "" }));
     } else {
       setAppState(prev => ({ ...prev, error: String(t('ERR_NICK_LONG' as any)) }));
@@ -972,6 +977,7 @@ function App() {
 
   const handleJoinGame = async (nick: string, code: string) => {
     if (appState.isJoining) return;
+    const truncatedNick = nick.trim().slice(0, 20);
     const joinStartTime = Date.now();
     setAppState(prev => ({ ...prev, isJoining: true, error: "" }));
     try {
@@ -983,10 +989,10 @@ function App() {
 
       // Set nickname, roomCode early for UX but DON'T set sessionId yet to avoid triggering
       // useGameState refetch before we have the full rejoin state ready
-      setAppState(prev => ({ ...prev, nickname: nick, roomCode: code }));
+      setAppState(prev => ({ ...prev, nickname: truncatedNick, roomCode: code }));
 
       const existingPlayers = await getPlayersBySession(targetSession.id);
-      const existingPlayer = existingPlayers.find((p: Player) => p.nickname.toLowerCase() === nick.toLowerCase());
+      const existingPlayer = existingPlayers.find((p: Player) => p.nickname.toLowerCase() === truncatedNick.toLowerCase());
 
       if (targetSession.session_status === 'active' && !existingPlayer) {
         return setAppState(prev => ({ ...prev, isJoining: false, error: String(t('ERR_NOT_FOUND' as any)) }));
@@ -1475,8 +1481,13 @@ function App() {
                 <span className="label-part">{t('YOUR_NICK')}</span>
                 <div className="nick-scroll-container">
                   <span
-                    className={`${getNicknameClassName(playerColor)} ${!parsedColorHighlight ? 'no-highlight' : ''}`}
-                    style={parsedColorHighlight ? getNicknameStyle(playerColor) : { color: '#000000', textShadow: 'none' }}
+                    className={`player-name ${getNicknameClassName(playerColor)} ${!parsedColorHighlight ? 'no-highlight' : ''}`}
+                    data-length={nickname.length}
+                    style={{
+                      ...(parsedColorHighlight ? getNicknameStyle(playerColor) : { color: '#000000', textShadow: 'none' }),
+                      fontSize: nickname.length > 10 ? `calc(min(60px, (100vw / ${nickname.length / 0.5})))` : undefined,
+                      lineHeight: '1.2'
+                    }}
                   >
                     {nickname}
                   </span>

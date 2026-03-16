@@ -69,7 +69,15 @@ export const RoundCard = ({
     return (
         <div className={`${styles.roundCard} ${isWaiting ? styles.waiting : ''}`}>
             <div className={styles.header}>
-                <h2 className={getNicknameClassName(playerColor || '', showColors)} style={getNicknameStyle(playerColor || '', showColors)}>{playerName}</h2>
+                <h2
+                    className={getNicknameClassName(playerColor || '', showColors)}
+                    style={{
+                        ...getNicknameStyle(playerColor || '', showColors),
+                        fontSize: playerName?.length > 10 ? `calc(min(40px, (100vw / ${playerName.length / 0.5})))` : undefined
+                    }}
+                >
+                    {playerName}
+                </h2>
             </div>
             <div className={styles.body}>
                 {isWaiting ? (
