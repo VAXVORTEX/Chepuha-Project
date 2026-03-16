@@ -765,7 +765,7 @@
 
   .logo-wrapper {
     order: -1;
-    margin-top: 5vh !important; // Balanced with centered buttons
+    margin-top: auto !important; // Use auto for centering
     margin-bottom: 30px !important;
     flex-shrink: 0;
   }
@@ -775,6 +775,8 @@
     justify-content: center !important;
     gap: 30px !important;
     margin-top: 20px !important; // Small gap from logo
+    margin-bottom: auto !important; // Bottom auto for centering
+    margin-bottom: auto !important; // Use auto for centering
 
     .button {
       width: 250px !important;
@@ -788,7 +790,8 @@
     flex-direction: column !important;
     justify-content: center !important;
     min-height: 60vh !important; // Center vertically in viewport
-    margin-top: 5vh !important;
+    margin-top: auto !important; // Auto margins for true centering
+    margin-bottom: auto !important;
     gap: 25px !important;
   }
 
@@ -881,7 +884,7 @@
 
   .logo-wrapper {
     margin-bottom: 20px !important;
-    margin-top: 5px !important;
+    // Removed redundant margin-top: 5px to allow centering from auto
     transform: scale(0.75);
   }
 }
@@ -1084,14 +1087,15 @@
     height: 60px !important;
     font-size: 20px !important;
     border-radius: 45px !important;
-    width: 90% !important; // Match Join screen visual width
-    margin: 10vh auto 0 !important; // Raised further (from 20vh) to avoid overlap with boy
-    display: block !important; // Ensure block for margin auto
+    width: 90% !important;
+    margin: 0 auto !important; // Center horizontally, vertical handled by container flex
+    display: block !important;
   }
 
   .create-game-container {
     gap: 15px;
-    margin-top: 5vh; // Reduced from 10vh to lift the whole section higher
+    margin-top: auto !important; // Center vertically
+    margin-bottom: auto !important;
     height: auto;
     min-height: 45vh;
     justify-content: center;
@@ -1100,7 +1104,7 @@
 
     .button {
       margin-top: 10px !important;
-      margin-bottom: 80px !important; // Push away from home icon
+      margin-bottom: 40px !important; // Slightly less padding to keep centering tight
     }
   }
 
@@ -1178,7 +1182,7 @@
     position: absolute !important; // Revert to slots
     left: calc(100% + 5px) !important;
     right: auto !important;
-    top: 50% !important;
+    top: 35% !important; // Raised to match crown (was 50%)
     transform: translateY(-50%) !important;
     display: flex;
     align-items: center;
@@ -1188,12 +1192,12 @@
     background: transparent !important;
 
     .inline-color-arrow {
-      font-size: 14px !important; // Smaller arrows
+      font-size: 12px !important; // Even smaller arrows
     }
 
     .inline-color-swatch {
-      width: 18px !important; // Smaller swatch
-      height: 18px !important;
+      width: 14px !important; // Even smaller swatch
+      height: 14px !important;
     }
   }
 
