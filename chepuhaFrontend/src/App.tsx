@@ -902,7 +902,7 @@ function App() {
   };
 
   const handleNicknameChange = (value: string) => {
-    if (value.length <= 25) {
+    if (value.length <= 15) {
       setAppState(prev => ({ ...prev, nickname: value, error: "" }));
     } else {
       setAppState(prev => ({ ...prev, error: String(t('ERR_NICK_LONG' as any)) }));

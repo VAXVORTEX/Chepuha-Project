@@ -179,20 +179,21 @@
     }
 
     .nick-scroll-container {
-      flex-grow: 1;
+      width: auto; // Remove flex-grow: 1 to keep it close to label
       max-width: 550px; // ESCROLL: Increased to fit ~15 chars on PC
       overflow: hidden;
       display: flex;
-      justify-content: flex-start; // Changed from center to avoid clipping/weird margins
+      justify-content: flex-start;
       padding: 5px 0;
       position: relative;
-      cursor: ew-resize; // Indicate scrollability
+      cursor: ew-resize;
 
       .player-name {
         padding: 0 10px;
         transition: transform 0.3s ease-out;
         will-change: transform;
-        max-width: none !important; // Allow full width for marquee
+        max-width: none !important;
+        overflow-y: hidden !important; // Fix vertical jitter
       }
 
       &:hover .player-name {
@@ -1517,7 +1518,7 @@
     background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -1527,7 +1528,7 @@
     background: linear-gradient(to right, #ff4e50, #f9d423);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -1537,7 +1538,7 @@
     background: linear-gradient(to right, #00c6ff, #0072ff);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -1547,7 +1548,7 @@
     background: linear-gradient(to bottom, #0057b7, #ffd700);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -1557,7 +1558,7 @@
     background: linear-gradient(to bottom, #bf0a30, #ffffff, #00247d);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -1567,7 +1568,7 @@
     background: linear-gradient(90deg, #00247d, #cf142b, #00247d);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -1577,7 +1578,7 @@
     background: linear-gradient(to bottom, #000000 33.3%, #ff0000 33.3%, #ff0000 66.6%, #ffcc00 66.6%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -1587,7 +1588,7 @@
     background: linear-gradient(to right, #002395 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ed2939 66.6%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -1597,7 +1598,7 @@
     background: radial-gradient(circle, #bc002d 40%, #ffffff 41%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -1607,7 +1608,7 @@
     background: linear-gradient(to bottom, #ffffff 50%, #dc143c 50%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -1617,7 +1618,7 @@
     background: linear-gradient(to bottom, #e40303, #ff8c00, #ffed00, #008026, #004dff, #750787);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -1627,7 +1628,7 @@
     background: linear-gradient(to bottom, #5bcefa 20%, #f5a9b8 20%, #f5a9b8 40%, #ffffff 40%, #ffffff 60%, #f5a9b8 60%, #f5a9b8 80%, #5bcefa 80%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -1638,7 +1639,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 3s linear infinite;
     font-weight: bold;
@@ -1649,11 +1650,11 @@
     background-size: 300% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 4s ease infinite;
     font-weight: bold;
-    text-shadow: 0 0 10px rgba(0, 242, 255, 0.5), 0 0 20px rgba(251, 0, 255, 0.5) !important;
+    text-shadow: none !important;
   }
 
   .legendary-text {
@@ -1661,11 +1662,11 @@
     background-size: 400% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 6s linear infinite;
     font-weight: bold;
-    text-shadow: 0 0 15px rgba(0, 255, 255, 0.8) !important;
+    text-shadow: none !important;
   }
 
   .gold-text {
@@ -1673,7 +1674,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 5s linear infinite;
     font-weight: bold;
@@ -2024,7 +2025,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 3s linear infinite;
     font-weight: bold;
@@ -2036,7 +2037,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 4s linear infinite;
     font-weight: bold;
@@ -2048,7 +2049,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 5s linear infinite;
     font-weight: bold;
@@ -2060,7 +2061,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 6s linear infinite;
     font-weight: bold;
@@ -2072,7 +2073,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 5s linear infinite;
     font-weight: bold;
@@ -2084,7 +2085,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 3s linear infinite;
     font-weight: bold;
@@ -2096,7 +2097,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 4s linear infinite;
     font-weight: bold;
@@ -2108,11 +2109,11 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 3s linear infinite;
     font-weight: bold;
-    text-shadow: 0 0 10px rgba(240, 147, 251, 0.5) !important;
+    text-shadow: none !important;
   }
 
   .toxic-text {
@@ -2120,7 +2121,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 2s linear infinite;
     font-weight: bold;
@@ -2132,7 +2133,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 4s linear infinite;
     font-weight: bold;
@@ -2144,7 +2145,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2155,7 +2156,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2166,7 +2167,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2177,7 +2178,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2188,7 +2189,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2199,7 +2200,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2210,7 +2211,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2221,7 +2222,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2232,10 +2233,10 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1) !important;
+    text-shadow: none !important;
   }
 
   .phantom-text {
@@ -2243,7 +2244,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2255,7 +2256,7 @@
     background-size: 200% 200%;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 8s ease infinite;
     font-weight: bold;
@@ -2267,11 +2268,11 @@
     background-size: 200% 200%;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 4s ease infinite;
     font-weight: bold;
-    text-shadow: 0 0 10px rgba(253, 187, 45, 0.4) !important;
+    text-shadow: none !important;
   }
 
   .black-hole-text {
@@ -2279,10 +2280,10 @@
     background-size: 200% 200%;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.2) !important;
+    text-shadow: none !important;
   }
 
   .stardust-text {
@@ -2290,11 +2291,11 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 6s linear infinite;
     font-weight: bold;
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3) !important;
+    text-shadow: none !important;
   }
 
   .comet-text {
@@ -2302,7 +2303,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 4s linear infinite;
     font-weight: bold;
@@ -2314,11 +2315,11 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 6s linear infinite;
     font-weight: bold;
-    text-shadow: 0 0 10px rgba(146, 254, 157, 0.4) !important;
+    text-shadow: none !important;
   }
 
   .horizon-text {
@@ -2326,7 +2327,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2337,7 +2338,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2348,11 +2349,11 @@
     background-size: 300% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 0.2s steps(2) infinite;
     font-weight: bold;
-    text-shadow: 2px 0 #ff00ff, -2px 0 #00ffff !important;
+    text-shadow: none !important;
   }
 
   .matrix-text {
@@ -2360,11 +2361,11 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 2s linear infinite;
     font-weight: bold;
-    text-shadow: 0 0 5px #00ff00 !important;
+    text-shadow: none !important;
   }
 
   .plasma-text {
@@ -2372,11 +2373,11 @@
     background-size: 200% 200%;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 3s ease infinite;
     font-weight: bold;
-    text-shadow: 0 0 10px rgba(235, 51, 73, 0.5) !important;
+    text-shadow: none !important;
   }
 
   .magma-text {
@@ -2384,11 +2385,11 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 4s linear infinite;
     font-weight: bold;
-    text-shadow: 0 0 5px #ed213a !important;
+    text-shadow: none !important;
   }
 
   .frost-text {
@@ -2396,11 +2397,11 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 5s linear infinite;
     font-weight: bold;
-    text-shadow: 0 0 8px rgba(0, 210, 255, 0.3) !important;
+    text-shadow: none !important;
   }
 
   .oasis-text {
@@ -2408,7 +2409,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2419,7 +2420,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2430,7 +2431,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2441,7 +2442,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2452,7 +2453,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2463,7 +2464,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2474,10 +2475,10 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
-    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8) !important;
+    text-shadow: none !important;
   }
 
   .chrome-text {
@@ -2485,7 +2486,7 @@
     background-size: 100% 200%;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2496,7 +2497,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2507,7 +2508,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2518,7 +2519,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2529,7 +2530,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2540,7 +2541,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2550,7 +2551,7 @@
     background: repeating-linear-gradient(45deg, #111, #111 2px, #333 2px, #333 4px);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2561,7 +2562,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2572,7 +2573,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2583,7 +2584,7 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     font-weight: bold;
     text-shadow: none !important;
@@ -2593,7 +2594,7 @@
     background: linear-gradient(to right, #008c45 33.3%, #f4f5f0 33.3%, #f4f5f0 66.6%, #cd212a 66.6%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -2603,7 +2604,7 @@
     background: linear-gradient(to bottom, #aa151b 25%, #f1bf00 25%, #f1bf00 75%, #aa151b 75%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -2613,7 +2614,7 @@
     background: radial-gradient(circle, #002776 25%, #fed141 26%, #fed141 50%, #009c3b 51%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -2623,7 +2624,7 @@
     background: linear-gradient(to right, #ff0000 25%, #ffffff 25%, #ffffff 75%, #ff0000 75%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -2633,9 +2634,9 @@
     background: linear-gradient(to bottom, #ee1c25 0%, #ee1c25 100%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
-    text-shadow: 1px 1px 0 #ffff00 !important;
+    text-shadow: none !important;
     font-weight: bold;
   }
 
@@ -2643,7 +2644,7 @@
     background: radial-gradient(circle, #cd2e3a 50%, #0047a0 51%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     border: 1px solid #eee;
     text-shadow: none !important;
@@ -2654,9 +2655,9 @@
     background: linear-gradient(135deg, #00008b 0%, #00008b 100%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
-    text-shadow: 1px 1px 0 #ffffff, -1px -1px 0 #ff0000 !important;
+    text-shadow: none !important;
     font-weight: bold;
   }
 
@@ -2665,9 +2666,9 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
-    text-shadow: 1px 1px 2px #fff !important;
+    text-shadow: none !important;
     font-weight: bold;
   }
 
@@ -2675,7 +2676,7 @@
     background: radial-gradient(circle, #fff 10%, #000 11%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -2685,9 +2686,9 @@
     background: linear-gradient(to bottom, #000 40%, #8b0000 40%, #8b0000 60%, #000 60%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
-    text-shadow: 0 0 5px #ff0000 !important;
+    text-shadow: none !important;
     font-weight: bold;
   }
 
@@ -2696,11 +2697,11 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 2s linear infinite;
     font-weight: bold;
-    text-shadow: 0 0 10px #ff00ff !important;
+    text-shadow: none !important;
   }
 
   .flag-cyber-samurai-2-text {
@@ -2708,18 +2709,18 @@
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     animation: rainbow-text-animation 4s linear infinite;
     font-weight: bold;
-    text-shadow: 0 0 10px #f3ec78 !important;
+    text-shadow: none !important;
   }
 
   .flag-bi-text {
     background: linear-gradient(to bottom, #d60270 40%, #9b4f96 40%, #9b4f96 60%, #0038a8 60%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -2729,7 +2730,7 @@
     background: linear-gradient(to bottom, #ff218c 33.3%, #ffd800 33.3%, #ffd800 66.6%, #21b1ff 66.6%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -2739,7 +2740,7 @@
     background: linear-gradient(to bottom, #000000 25%, #a3a3a3 25%, #a3a3a3 50%, #ffffff 50%, #ffffff 75%, #800080 75%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -2749,7 +2750,7 @@
     background: linear-gradient(to bottom, #fff433 25%, #ffffff 25%, #ffffff 50%, #9b59d0 50%, #9b59d0 75%, #2d2d2d 75%);
     -webkit-background-clip: text;
     background-clip: text;
-    -webkit-text-fill-color: transparent !important;
+    -webkit-text-fill-color: transparent !important; color: transparent !important;
     display: inline-block;
     text-shadow: none !important;
     font-weight: bold;
@@ -2759,5 +2760,9 @@
     border: 2px solid rgba(0, 0, 0, 0.1);
     padding: 10px;
     border-radius: 10px;
+
+    @media (max-width: 480px) {
+      margin-top: -30px; // Lift higher on mobile
+    }
   }
 }
