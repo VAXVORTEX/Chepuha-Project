@@ -164,8 +164,45 @@
   margin: 0;
   text-align: center;
 
+  &.label-and-nick {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+
+    .label-part {
+      white-space: nowrap;
+      flex-shrink: 0;
+      @include font-pangolin(60);
+    }
+
+    .nick-scroll-container {
+      flex-grow: 1;
+      max-width: 550px; // ESCROLL: Increased to fit ~15 chars on PC
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+      padding: 5px 0;
+      position: relative;
+      cursor: ew-resize; // Indicate scrollability
+
+      .player-name {
+        padding: 0 10px;
+        transition: transform 0.3s ease-out;
+        will-change: transform;
+      }
+
+      &:hover .player-name {
+        // Only scrolls if content is wider than 550px (marquee handles this with calc)
+        animation: marquee 8s linear infinite alternate;
+      }
+    }
+  }
+
   span {
-    @include font-pangolin(80); // Match label size exactly
+    @include font-pangolin(80);
   }
 }
 
@@ -182,6 +219,21 @@
   align-items: center;
   gap: 10px;
   width: 100%;
+  max-height: 280px; // LIMIT: Show approx 4 items
+  overflow-y: auto;
+  padding-right: 10px; // Space for internal flow
+  scrollbar-width: thin;
+  scrollbar-color: $red transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    display: block !important;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: $red;
+    border-radius: 10px;
+  }
 }
 
 .player-item {
@@ -206,7 +258,7 @@
 .crown-icon {
   position: absolute;
   right: calc(100% + 5px); // Closer to name
-  top: 35% !important; // User requested perfect centering (was 48%)
+  top: calc(50% - 4px) !important; // LIFTED: 4px higher as requested
   transform: translateY(-50%);
   width: 100px;
   height: auto;
@@ -221,6 +273,13 @@
   white-space: nowrap;
   transition: color 0.5s ease;
   display: inline-block;
+  max-width: 180px; // ESCROLL: Limit width for scrolling
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   &.no-highlight {
     color: #000000 !important;
@@ -243,6 +302,17 @@
   100% {
     transform: scale(1);
     filter: brightness(1);
+  }
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    // Only translates if the name is actually longer than 550px
+    transform: translateX(min(0px, calc(-100% + 550px)));
   }
 }
 
@@ -348,7 +418,7 @@
   z-index: 100; // Above general card backgrounds
   opacity: 0.5;
   cursor: default;
-  pointer-events: auto;
+  pointer-events: none !important; // CLICK PRIORITY: Give buttons/inputs priority
 }
 
 .yellow-guy-bg {
@@ -739,7 +809,7 @@
     position: relative; // Changed from absolute to flow naturally
     right: 0;
     top: 0;
-    margin-top: 10px;
+    margin-top: 0 !important; // Removed margin as requested
     transform: scale(0.8);
     justify-content: center;
   }
@@ -765,8 +835,8 @@
 
   .logo-wrapper {
     order: -1;
-    margin-top: auto !important; // Use auto for centering
-    margin-bottom: 30px !important;
+    margin-top: auto !important; // Center-start
+    margin-bottom: 25px !important;
     flex-shrink: 0;
   }
 
@@ -774,9 +844,8 @@
     flex-direction: column !important;
     justify-content: center !important;
     gap: 30px !important;
-    margin-top: 20px !important; // Small gap from logo
-    margin-bottom: auto !important; // Bottom auto for centering
-    margin-bottom: auto !important; // Use auto for centering
+    margin-top: 0px !important;
+    margin-bottom: 28vh !important; // LIFTED FURTHER: Push group even higher
 
     .button {
       width: 250px !important;
@@ -1093,9 +1162,9 @@
   }
 
   .create-game-container {
-    gap: 15px;
-    margin-top: auto !important; // Center vertically
-    margin-bottom: auto !important;
+    gap: 20px;
+    margin-top: auto !important; // Center-start
+    margin-bottom: 25vh !important; // LIFTED: Push group higher
     height: auto;
     min-height: 45vh;
     justify-content: center;
@@ -1103,8 +1172,8 @@
     z-index: 10;
 
     .button {
-      margin-top: 10px !important;
-      margin-bottom: 40px !important; // Slightly less padding to keep centering tight
+      margin-top: 15px !important;
+      margin-bottom: 20vh !important; // MATCHED: Match menu button level and clear boy
     }
   }
 
@@ -1145,12 +1214,38 @@
 
   .lobby-container {
     gap: 30px;
-    margin-top: 12vh !important; // Raised from 35vh to 12vh
+    margin-top: 25vh !important; // LOWERED: User says it was too high (~12vh)
   }
 
   .lobby-info {
     gap: 10px;
-    width: 90%;
+    width: 95%;
+  }
+
+  .label-and-nick {
+    font-size: 32px !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+    align-items: center !important;
+
+    .label-part {
+      font-size: 20px !important;
+      opacity: 0.7;
+    }
+
+    .nick-scroll-container {
+      max-width: 250px !important;
+      overflow-x: auto !important;
+      justify-content: center !important;
+
+      .player-name {
+        font-size: 36px !important;
+      }
+
+      &:hover .player-name {
+        animation: none;
+      }
+    }
   }
 
   .player-item {
@@ -1176,13 +1271,15 @@
   .player-name {
     font-size: 28px !important;
     margin: 0 auto; // Force centering
+    max-width: 150px !important; // TIGHTER: Ensure side elements fit on mobile
   }
 
   .inline-color-picker {
     position: absolute !important; // Revert to slots
     left: calc(100% + 5px) !important;
     right: auto !important;
-    top: 35% !important; // Raised to match crown (was 50%)
+    top: 50% !important;
+    margin-top: 0 !important; // REMOVED MARGIN: As requested
     transform: translateY(-50%) !important;
     display: flex;
     align-items: center;
@@ -1213,7 +1310,7 @@
     position: absolute !important; // Revert to slots
     right: calc(100% + 5px) !important;
     left: auto !important;
-    top: 35% !important; // Match PC visual centering
+    top: calc(50% - 4px) !important; // LIFTED: 4px higher
     transform: translateY(-50%) !important;
     width: 40px !important; // Smaller crown on mobile
     margin-bottom: 0 !important;
@@ -1221,7 +1318,7 @@
   }
 
   .logo-wrapper {
-    margin-top: 35vh; // Lowered from 25vh for even better center/bottom balance
+    margin-top: 20vh; // LIFTED: Brought higher from 35vh
     margin-bottom: 25px;
     width: 100%;
     display: flex;
@@ -1359,7 +1456,7 @@
     transform: none !important;
     opacity: 0.5;
     z-index: 100 !important; // Above card backgrounds
-    pointer-events: auto !important;
+    pointer-events: none !important; // CLICK PRIORITY: Mobile too
   }
 
   .yellow-guy-bg {
@@ -1422,6 +1519,7 @@
     -webkit-text-fill-color: transparent !important;
     display: inline-block;
     font-weight: bold;
+    text-shadow: none !important;
   }
 
   .fire-gradient-text {
@@ -1431,6 +1529,7 @@
     -webkit-text-fill-color: transparent !important;
     display: inline-block;
     font-weight: bold;
+    text-shadow: none !important;
   }
 
   .ice-gradient-text {
@@ -1440,6 +1539,7 @@
     -webkit-text-fill-color: transparent !important;
     display: inline-block;
     font-weight: bold;
+    text-shadow: none !important;
   }
 
   .flag-ua-text {
@@ -1472,6 +1572,101 @@
     font-weight: bold;
   }
 
+  .flag-de-text {
+    background: linear-gradient(to bottom, #000000 33.3%, #ff0000 33.3%, #ff0000 66.6%, #ffcc00 66.6%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: none !important;
+    font-weight: bold;
+  }
+
+  .flag-fr-text {
+    background: linear-gradient(to right, #002395 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ed2939 66.6%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: none !important;
+    font-weight: bold;
+  }
+
+  .flag-jp-text {
+    background: radial-gradient(circle, #bc002d 40%, #ffffff 41%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: none !important;
+    font-weight: bold;
+  }
+
+  .flag-pl-text {
+    background: linear-gradient(to bottom, #ffffff 50%, #dc143c 50%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: none !important;
+    font-weight: bold;
+  }
+
+  .gender-pride-text {
+    background: linear-gradient(to bottom, #e40303, #ff8c00, #ffed00, #008026, #004dff, #750787);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: none !important;
+    font-weight: bold;
+  }
+
+  .gender-trans-text {
+    background: linear-gradient(to bottom, #5bcefa 20%, #f5a9b8 20%, #f5a9b8 40%, #ffffff 40%, #ffffff 60%, #f5a9b8 60%, #f5a9b8 80%, #5bcefa 80%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: none !important;
+    font-weight: bold;
+  }
+
+  .pirates-text {
+    background: linear-gradient(45deg, #000 30%, #ffd700 50%, #000 70%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 3s linear infinite;
+    font-weight: bold;
+  }
+
+  .cyberpunk-text {
+    background: linear-gradient(90deg, #f3ec78, #af4261, #00f2ff, #fb00ff);
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 4s ease infinite;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(0, 242, 255, 0.5), 0 0 20px rgba(251, 0, 255, 0.5) !important;
+  }
+
+  .legendary-text {
+    background: linear-gradient(135deg, #00ffff, #fff, #00c6ff, #fff, #00ffff);
+    background-size: 400% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 6s linear infinite;
+    font-weight: bold;
+    text-shadow: 0 0 15px rgba(0, 255, 255, 0.8) !important;
+  }
+
   .gold-text {
     background: linear-gradient(45deg, #ffd700, #fff, #ffd700);
     background-size: 200% auto;
@@ -1496,6 +1691,22 @@
       background: linear-gradient(to right, #00c6ff, #0072ff);
     }
 
+    &.gold {
+      background: linear-gradient(45deg, #ffd700, #fff, #ffd700);
+    }
+
+    &.pirates {
+      background: linear-gradient(45deg, #000, #ffd700, #000);
+    }
+
+    &.cyberpunk {
+      background: linear-gradient(90deg, #00f2ff, #fb00ff);
+    }
+
+    &.legendary {
+      background: linear-gradient(135deg, #00ffff, #fff, #00c6ff);
+    }
+
     &.flag-ua {
       background: linear-gradient(to bottom, #0057b7 50%, #ffd700 50%);
     }
@@ -1507,9 +1718,1042 @@
     &.flag-uk {
       background: linear-gradient(90deg, #00247d 33%, #cf142b 33%, #cf142b 66%, #00247d 66%);
     }
+
+    &.flag-de {
+      background: linear-gradient(to bottom, #000 33%, #f00 33%, #f00 66%, #ff0 66%);
+    }
+
+    &.flag-fr {
+      background: linear-gradient(to right, #002395 33%, #fff 33%, #fff 66%, #ed2939 66%);
+    }
+
+    &.flag-jp {
+      background: radial-gradient(circle, #bc002d 40%, #fff 41%);
+      border: 1px solid #ccc;
+    }
+
+    &.flag-pl {
+      background: linear-gradient(to bottom, #fff 50%, #dc143c 50%);
+      border: 1px solid #ccc;
+    }
+
+    &.gender-pride {
+      background: linear-gradient(to bottom, #e40303, #ff8c00, #ffed00, #008026, #004dff, #750787);
+    }
+
+    &.gender-trans {
+      background: linear-gradient(to bottom, #5bcefa 20%, #f5a9b8 20%, #f5a9b8 40%, #fff 40%, #fff 60%, #f5a9b8 60%, #f5a9b8 80%, #5bcefa 80%);
+    }
+
+    // ── 70+ NEW COLORS & GRADIENTS ──────────────────
+
+    &.solar {
+      background: linear-gradient(90deg, #ffcc33, #ff6600, #ff3300);
+    }
+
+    &.deep-sea {
+      background: linear-gradient(90deg, #001f3f, #0074d9, #7fdbff);
+    }
+
+    &.sunset {
+      background: linear-gradient(90deg, #ff5f6d, #ffc371);
+    }
+
+    &.nebula {
+      background: linear-gradient(90deg, #6a3093, #a044ff, #e94057);
+    }
+
+    &.forest {
+      background: linear-gradient(90deg, #134e5e, #71b280);
+    }
+
+    &.volcano {
+      background: linear-gradient(90deg, #f83600, #f9d423);
+    }
+
+    &.arctic {
+      background: linear-gradient(90deg, #83a4d4, #b6fbff);
+    }
+
+    &.neon-night {
+      background: linear-gradient(90deg, #f093fb, #f5576c);
+    }
+
+    &.toxic {
+      background: linear-gradient(90deg, #00b09b, #96c93d);
+    }
+
+    &.candy {
+      background: linear-gradient(90deg, #ff00cc, #3333ff);
+    }
+
+    &.midnight {
+      background: linear-gradient(90deg, #232526, #414345);
+    }
+
+    &.emerald {
+      background: linear-gradient(90deg, #50c878, #2e8b57);
+    }
+
+    &.ruby {
+      background: linear-gradient(90deg, #e0115f, #8b0000);
+    }
+
+    &.sapphire {
+      background: linear-gradient(90deg, #0f52ba, #000080);
+    }
+
+    &.amethyst {
+      background: linear-gradient(90deg, #9966cc, #4b0082);
+    }
+
+    &.citrine {
+      background: linear-gradient(90deg, #e4d00a, #8b8000);
+    }
+
+    &.topaz {
+      background: linear-gradient(90deg, #ffc87c, #ff7e5f);
+    }
+
+    &.obsidian {
+      background: linear-gradient(90deg, #2c3e50, #000000);
+    }
+
+    &.pearl {
+      background: radial-gradient(circle, #fff, #dbdbdb);
+    }
+
+    &.phantom {
+      background: linear-gradient(90deg, #d3d3d3, #708090);
+    }
+
+    &.galaxy {
+      background: radial-gradient(circle, #20002c, #cbb4d4);
+    }
+
+    &.supernova {
+      background: radial-gradient(circle, #fdbb2d, #22c1c3);
+    }
+
+    &.black-hole {
+      background: radial-gradient(circle, #000, #353535);
+    }
+
+    &.stardust {
+      background: linear-gradient(90deg, #0f2027, #203a43, #2c5364);
+    }
+
+    &.comet {
+      background: linear-gradient(to right, #2b5876, #4e4376);
+    }
+
+    &.aurora {
+      background: linear-gradient(90deg, #00c9ff, #92fe9d);
+    }
+
+    &.horizon {
+      background: linear-gradient(90deg, #485563, #29323c);
+    }
+
+    &.twilight {
+      background: linear-gradient(90deg, #0f0c29, #302b63, #24243e);
+    }
+
+    &.glitch {
+      background: linear-gradient(90deg, #ff0000, #00ff00, #0000ff);
+    }
+
+    &.matrix {
+      background: linear-gradient(90deg, #000, #0f0, #000);
+    }
+
+    &.plasma {
+      background: radial-gradient(circle, #eb3349, #f45c43);
+    }
+
+    &.magma {
+      background: linear-gradient(90deg, #ed213a, #93291e);
+    }
+
+    &.frost {
+      background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+    }
+
+    &.oasis {
+      background: linear-gradient(90deg, #1d976c, #93f9b9);
+    }
+
+    &.savanna {
+      background: linear-gradient(90deg, #f12711, #f5af19);
+    }
+
+    &.mesa {
+      background: linear-gradient(90deg, #5a3f37, #2c7744);
+    }
+
+    &.tundra {
+      background: linear-gradient(90deg, #304352, #d7d2cc);
+    }
+
+    &.reef {
+      background: linear-gradient(90deg, #00b4db, #0083b0);
+    }
+
+    &.abyss {
+      background: linear-gradient(90deg, #000, #434343);
+    }
+
+    &.void {
+      background: linear-gradient(90deg, #0f0c29, #000);
+    }
+
+    &.chrome {
+      background: linear-gradient(to bottom, #7d7e7d 0%, #0e0e0e 100%);
+    }
+
+    &.copper {
+      background: linear-gradient(90deg, #b87333, #c58249);
+    }
+
+    &.bronze {
+      background: linear-gradient(90deg, #cd7f32, #a57164);
+    }
+
+    &.silver {
+      background: linear-gradient(90deg, #c0c0c0, #e0e0e0);
+    }
+
+    &.platinum {
+      background: linear-gradient(90deg, #e5e4e2, #b7b7b7);
+    }
+
+    &.titanium {
+      background: linear-gradient(90deg, #a0a0a0, #505050);
+    }
+
+    &.carbon {
+      background: repeating-linear-gradient(45deg, #111, #111 2px, #333 2px, #333 4px);
+    }
+
+    &.quartz {
+      background: linear-gradient(90deg, #fefefe, #f4f4f4);
+    }
+
+    &.amber {
+      background: linear-gradient(90deg, #ffbf00, #ff7e00);
+    }
+
+    &.jade {
+      background: linear-gradient(90deg, #00a86b, #0081d5);
+    }
+
+    &.flag-it {
+      background: linear-gradient(to right, #008c45 33%, #f4f5f0 33%, #f4f5f0 66%, #cd212a 66%);
+    }
+
+    &.flag-es {
+      background: linear-gradient(to bottom, #aa151b 25%, #f1bf00 25%, #f1bf00 75%, #aa151b 75%);
+    }
+
+    &.flag-br {
+      background: radial-gradient(circle, #002776 25%, #fed141 26%, #fed141 50%, #009c3b 51%);
+    }
+
+    &.flag-ca {
+      background: linear-gradient(to right, #ff0000 25%, #fff 25%, #fff 75%, #ff0000 75%);
+    }
+
+    &.flag-cn {
+      background: #ee1c25;
+      border: 1px solid #ffff00;
+    }
+
+    &.flag-kr {
+      background: #fff;
+      border: 1px solid #0047a0;
+      box-shadow: inset 0 0 5px #cd2e3a;
+    }
+
+    &.flag-au {
+      background: #00008b;
+      border: 1px solid #fff;
+    }
+
+    &.flag-pirates {
+      background: linear-gradient(45deg, #000, #333, #000);
+    }
+
+    &.flag-pirates-2 {
+      background: radial-gradient(circle, #fff 10%, #000 11%);
+    }
+
+    &.flag-pirates-3 {
+      background: linear-gradient(to bottom, #000, #8b0000, #000);
+    }
+
+    &.flag-cyber-samurai {
+      background: linear-gradient(90deg, #f0f, #0ff);
+    }
+
+    &.flag-cyber-samurai-2 {
+      background: linear-gradient(135deg, #f3ec78, #af4261);
+    }
+
+    &.flag-bi {
+      background: linear-gradient(to bottom, #d60270 40%, #9b4f96 40%, #9b4f96 60%, #0038a8 60%);
+    }
+
+    &.flag-pan {
+      background: linear-gradient(to bottom, #ff218c 33%, #ffd800 33%, #ffd800 66%, #21b1ff 66%);
+    }
+
+    &.flag-ace {
+      background: linear-gradient(to bottom, #000, #a3a3a3, #fff, #800080);
+    }
+
+    &.flag-nonbinary {
+      background: linear-gradient(to bottom, #fff433, #fff, #9b59d0, #2d2d2d);
+    }
   }
 
-  // History box outline
+  // ── TEXT CLASSES FOR NEW COLORS ──────────────────
+
+  .solar-text {
+    background: linear-gradient(90deg, #ffcc33, #ff6600, #ff3300);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 3s linear infinite;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .deep-sea-text {
+    background: linear-gradient(90deg, #001f3f, #0074d9, #7fdbff);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 4s linear infinite;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .sunset-text {
+    background: linear-gradient(90deg, #ff5f6d, #ffc371);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 5s linear infinite;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .nebula-text {
+    background: linear-gradient(90deg, #6a3093, #a044ff, #e94057);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 6s linear infinite;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .forest-text {
+    background: linear-gradient(90deg, #134e5e, #71b280);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 5s linear infinite;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .volcano-text {
+    background: linear-gradient(90deg, #f83600, #f9d423);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 3s linear infinite;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .arctic-text {
+    background: linear-gradient(90deg, #83a4d4, #b6fbff);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 4s linear infinite;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .neon-night-text {
+    background: linear-gradient(90deg, #f093fb, #f5576c);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 3s linear infinite;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(240, 147, 251, 0.5) !important;
+  }
+
+  .toxic-text {
+    background: linear-gradient(90deg, #00b09b, #96c93d);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 2s linear infinite;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .candy-text {
+    background: linear-gradient(90deg, #ff00cc, #3333ff);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 4s linear infinite;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .midnight-text {
+    background: linear-gradient(90deg, #232526, #414345);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .emerald-text {
+    background: linear-gradient(90deg, #50c878, #2e8b57);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .ruby-text {
+    background: linear-gradient(90deg, #e0115f, #8b0000);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .sapphire-text {
+    background: linear-gradient(90deg, #0f52ba, #000080);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .amethyst-text {
+    background: linear-gradient(90deg, #9966cc, #4b0082);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .citrine-text {
+    background: linear-gradient(90deg, #e4d00a, #8b8000);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .topaz-text {
+    background: linear-gradient(90deg, #ffc87c, #ff7e5f);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .obsidian-text {
+    background: linear-gradient(90deg, #2c3e50, #000000);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .pearl-text {
+    background: linear-gradient(90deg, #eaeaea, #dbdbdb, #f2f2f2);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .phantom-text {
+    background: linear-gradient(90deg, #d3d3d3, #708090);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+    opacity: 0.8;
+  }
+
+  .galaxy-text {
+    background: radial-gradient(circle, #20002c, #cbb4d4);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 8s ease infinite;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .supernova-text {
+    background: radial-gradient(circle, #fdbb2d, #22c1c3);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 4s ease infinite;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(253, 187, 45, 0.4) !important;
+  }
+
+  .black-hole-text {
+    background: radial-gradient(circle, #000000, #353535, #000000);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(255, 255, 255, 0.2) !important;
+  }
+
+  .stardust-text {
+    background: linear-gradient(90deg, #0f2027, #203a43, #2c5364);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 6s linear infinite;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.3) !important;
+  }
+
+  .comet-text {
+    background: linear-gradient(to right, #2b5876, #4e4376);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 4s linear infinite;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .aurora-text {
+    background: linear-gradient(90deg, #00c9ff, #92fe9d);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 6s linear infinite;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(146, 254, 157, 0.4) !important;
+  }
+
+  .horizon-text {
+    background: linear-gradient(90deg, #485563, #29323c);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .twilight-text {
+    background: linear-gradient(90deg, #0f0c29, #302b63, #24243e);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .glitch-text {
+    background: linear-gradient(90deg, #ff0000, #00ff00, #0000ff);
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 0.2s steps(2) infinite;
+    font-weight: bold;
+    text-shadow: 2px 0 #ff00ff, -2px 0 #00ffff !important;
+  }
+
+  .matrix-text {
+    background: linear-gradient(90deg, #000000, #00ff00, #000000);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 2s linear infinite;
+    font-weight: bold;
+    text-shadow: 0 0 5px #00ff00 !important;
+  }
+
+  .plasma-text {
+    background: radial-gradient(circle, #eb3349, #f45c43);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 3s ease infinite;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(235, 51, 73, 0.5) !important;
+  }
+
+  .magma-text {
+    background: linear-gradient(90deg, #ed213a, #93291e);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 4s linear infinite;
+    font-weight: bold;
+    text-shadow: 0 0 5px #ed213a !important;
+  }
+
+  .frost-text {
+    background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 5s linear infinite;
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(0, 210, 255, 0.3) !important;
+  }
+
+  .oasis-text {
+    background: linear-gradient(90deg, #1d976c, #93f9b9);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .savanna-text {
+    background: linear-gradient(90deg, #f12711, #f5af19);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .mesa-text {
+    background: linear-gradient(90deg, #5a3f37, #2c7744);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .tundra-text {
+    background: linear-gradient(90deg, #304352, #d7d2cc);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .reef-text {
+    background: linear-gradient(90deg, #00b4db, #0083b0);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .abyss-text {
+    background: linear-gradient(90deg, #000000, #434343);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .void-text {
+    background: linear-gradient(90deg, #0f0c29, #000000);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(0, 0, 0, 0.8) !important;
+  }
+
+  .chrome-text {
+    background: linear-gradient(to bottom, #7d7e7d 0%, #0e0e0e 100%);
+    background-size: 100% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .copper-text {
+    background: linear-gradient(90deg, #b87333, #c58249, #b87333);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .bronze-text {
+    background: linear-gradient(90deg, #cd7f32, #a57164);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .silver-text {
+    background: linear-gradient(90deg, #c0c0c0, #e0e0e0, #c0c0c0);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .platinum-text {
+    background: linear-gradient(90deg, #e5e4e2, #b7b7b7);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .titanium-text {
+    background: linear-gradient(90deg, #a0a0a0, #505050);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .carbon-text {
+    background: repeating-linear-gradient(45deg, #111, #111 2px, #333 2px, #333 4px);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .quartz-text {
+    background: linear-gradient(90deg, #fefefe, #f4f4f4, #fefefe);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .amber-text {
+    background: linear-gradient(90deg, #ffbf00, #ff7e00);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .jade-text {
+    background: linear-gradient(90deg, #00a86b, #0081d5);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    font-weight: bold;
+    text-shadow: none !important;
+  }
+
+  .flag-it-text {
+    background: linear-gradient(to right, #008c45 33.3%, #f4f5f0 33.3%, #f4f5f0 66.6%, #cd212a 66.6%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: none !important;
+    font-weight: bold;
+  }
+
+  .flag-es-text {
+    background: linear-gradient(to bottom, #aa151b 25%, #f1bf00 25%, #f1bf00 75%, #aa151b 75%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: none !important;
+    font-weight: bold;
+  }
+
+  .flag-br-text {
+    background: radial-gradient(circle, #002776 25%, #fed141 26%, #fed141 50%, #009c3b 51%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: none !important;
+    font-weight: bold;
+  }
+
+  .flag-ca-text {
+    background: linear-gradient(to right, #ff0000 25%, #ffffff 25%, #ffffff 75%, #ff0000 75%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: none !important;
+    font-weight: bold;
+  }
+
+  .flag-cn-text {
+    background: linear-gradient(to bottom, #ee1c25 0%, #ee1c25 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: 1px 1px 0 #ffff00 !important;
+    font-weight: bold;
+  }
+
+  .flag-kr-text {
+    background: radial-gradient(circle, #cd2e3a 50%, #0047a0 51%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    border: 1px solid #eee;
+    text-shadow: none !important;
+    font-weight: bold;
+  }
+
+  .flag-au-text {
+    background: linear-gradient(135deg, #00008b 0%, #00008b 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: 1px 1px 0 #ffffff, -1px -1px 0 #ff0000 !important;
+    font-weight: bold;
+  }
+
+  .flag-pirates-text {
+    background: linear-gradient(45deg, #000, #333, #000);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: 1px 1px 2px #fff !important;
+    font-weight: bold;
+  }
+
+  .flag-pirates-2-text {
+    background: radial-gradient(circle, #fff 10%, #000 11%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: none !important;
+    font-weight: bold;
+  }
+
+  .flag-pirates-3-text {
+    background: linear-gradient(to bottom, #000 40%, #8b0000 40%, #8b0000 60%, #000 60%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: 0 0 5px #ff0000 !important;
+    font-weight: bold;
+  }
+
+  .flag-cyber-samurai-text {
+    background: linear-gradient(90deg, #ff00ff, #00ffff);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 2s linear infinite;
+    font-weight: bold;
+    text-shadow: 0 0 10px #ff00ff !important;
+  }
+
+  .flag-cyber-samurai-2-text {
+    background: linear-gradient(135deg, #f3ec78, #af4261);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    animation: rainbow-text-animation 4s linear infinite;
+    font-weight: bold;
+    text-shadow: 0 0 10px #f3ec78 !important;
+  }
+
+  .flag-bi-text {
+    background: linear-gradient(to bottom, #d60270 40%, #9b4f96 40%, #9b4f96 60%, #0038a8 60%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: none !important;
+    font-weight: bold;
+  }
+
+  .flag-pan-text {
+    background: linear-gradient(to bottom, #ff218c 33.3%, #ffd800 33.3%, #ffd800 66.6%, #21b1ff 66.6%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: none !important;
+    font-weight: bold;
+  }
+
+  .flag-ace-text {
+    background: linear-gradient(to bottom, #000000 25%, #a3a3a3 25%, #a3a3a3 50%, #ffffff 50%, #ffffff 75%, #800080 75%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: none !important;
+    font-weight: bold;
+  }
+
+  .flag-nonbinary-text {
+    background: linear-gradient(to bottom, #fff433 25%, #ffffff 25%, #ffffff 50%, #9b59d0 50%, #9b59d0 75%, #2d2d2d 75%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    display: inline-block;
+    text-shadow: none !important;
+    font-weight: bold;
+  }
+
   .history-stories {
     border: 2px solid rgba(0, 0, 0, 0.1);
     padding: 10px;

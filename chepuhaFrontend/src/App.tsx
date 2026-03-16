@@ -169,10 +169,31 @@ export const AVAILABLE_COLORS = [
   '#e529b3', '#ff69b4', '#ff1493', '#ffc0cb', '#db7093',
   // CYANS/TEALS
   '#29e5d0', '#00ffff', '#20b2aa', '#40e0d0',
+  // VIBRANT ADDITIONS
+  '#ff00ff', '#00ffea', '#ffae00', '#7b00ff', '#00ff1a',
   // GRAYS / BLACK
   '#ffffff', '#808080', '#c0c0c0', '#dcdcdc', '#000000',
   // SPECIALS
-  'special:rainbow', 'special:fire-gradient', 'special:ice-gradient', 'special:flag-ua', 'special:flag-usa', 'special:flag-uk'
+  'special:rainbow', 'special:fire-gradient', 'special:ice-gradient', 'special:gold',
+  'special:pirates', 'special:cyberpunk', 'special:legendary',
+  // 50 NEW GRADIENTS
+  'special:solar', 'special:deep-sea', 'special:sunset', 'special:nebula', 'special:forest',
+  'special:volcano', 'special:arctic', 'special:neon-night', 'special:toxic', 'special:candy',
+  'special:midnight', 'special:emerald', 'special:ruby', 'special:sapphire', 'special:amethyst',
+  'special:citrine', 'special:topaz', 'special:obsidian', 'special:pearl', 'special:phantom',
+  'special:galaxy', 'special:supernova', 'special:black-hole', 'special:stardust', 'special:comet',
+  'special:aurora', 'special:horizon', 'special:twilight', 'special:glitch', 'special:matrix',
+  'special:plasma', 'special:magma', 'special:frost', 'special:oasis', 'special:savanna',
+  'special:mesa', 'special:tundra', 'special:reef', 'special:abyss', 'special:void',
+  'special:chrome', 'special:copper', 'special:bronze', 'special:silver', 'special:platinum',
+  'special:titanium', 'special:carbon', 'special:quartz', 'special:amber', 'special:jade',
+  // FLAGS & CUSTOM
+  'special:flag-ua', 'special:flag-usa', 'special:flag-uk', 'special:flag-de', 'special:flag-fr', 'special:flag-jp', 'special:flag-pl',
+  'special:flag-it', 'special:flag-es', 'special:flag-br', 'special:flag-ca', 'special:flag-cn', 'special:flag-kr', 'special:flag-au',
+  'special:flag-pirates', 'special:flag-pirates-2', 'special:flag-pirates-3',
+  'special:flag-cyber-samurai', 'special:flag-cyber-samurai-2',
+  'special:flag-bi', 'special:flag-pan', 'special:flag-ace', 'special:flag-nonbinary',
+  'special:gender-pride', 'special:gender-trans'
 ];
 
 const GAME_LENGTH_INDICES: Record<number, number[]> = {
@@ -886,7 +907,7 @@ function App() {
   };
 
   const goToLobby = async () => {
-    if (!nickname.trim()) {
+    if (!nickname || !nickname.trim()) {
       setAppState(prev => ({ ...prev, error: String(t('ERR_NICKNAME' as any)) }));
       return;
     }
@@ -1447,13 +1468,16 @@ function App() {
           </div>
           <div className="lobby-container">
             <div className="lobby-info">
-              <h2 className="lobby-text">
-                {t('YOUR_NICK')} <span
-                  className={`${getNicknameClassName(playerColor)} ${!parsedColorHighlight ? 'no-highlight' : ''}`}
-                  style={parsedColorHighlight ? getNicknameStyle(playerColor) : { color: '#000000', textShadow: 'none' }}
-                >
-                  {nickname}
-                </span>
+              <h2 className="lobby-text label-and-nick">
+                <span className="label-part">{t('YOUR_NICK')}</span>
+                <div className="nick-scroll-container">
+                  <span
+                    className={`${getNicknameClassName(playerColor)} ${!parsedColorHighlight ? 'no-highlight' : ''}`}
+                    style={parsedColorHighlight ? getNicknameStyle(playerColor) : { color: '#000000', textShadow: 'none' }}
+                  >
+                    {nickname}
+                  </span>
+                </div>
               </h2>
               <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
               <div className="players-list">

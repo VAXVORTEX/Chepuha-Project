@@ -163,7 +163,7 @@
         border-width: 5px;
         height: auto;
         min-height: 80vh; // Reduced from 85vh to lift it higher
-        margin-top: -20px; // Lifted explicitly
+        margin-top: -80px; // LIFTED: Push card higher from -20px
     }
 
     .title {

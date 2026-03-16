@@ -24,9 +24,17 @@
     font-size: 44px;
   }
 
-  &:hover {
-    opacity: 0.8;
-    transform: scale(1.06);
+  @media (hover: hover) {
+    &:hover {
+      opacity: 0.8;
+      transform: scale(1.06);
+    }
+  }
+
+  @media (max-width: 768px) {
+    &:active {
+      transform: scale(0.98); // Subtle feedback but no "lighten" color change if requested
+    }
   }
 
   &.main {
