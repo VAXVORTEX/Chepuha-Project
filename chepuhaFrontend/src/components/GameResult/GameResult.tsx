@@ -83,12 +83,24 @@ const GameResult: React.FC<ResultProps> = ({
       WebkitTextStroke: '1px black'
     };
 
+  // Dynamic font-size calculation (Shrink-to-fit)
+  const getFontSize = (text: string) => {
+    if (!text) return undefined;
+    const len = text.length;
+    // VERY small for Results header to avoid overlap with "STORY OF"
+    if (len <= 10) return "24px";
+    const baseSize = 24;
+    const scaleFactor = 10 / len;
+    const calculatedSize = Math.max(14, Math.floor(baseSize * Math.pow(scaleFactor, 0.9)));
+    return `${calculatedSize}px`;
+  };
+
   return (
     <div className={classNames(styles.wrapper, styles[phase])}>
       <div className={styles.container}>
         <div className={classNames(styles.box, styles[phase])}>
           <h2 className={styles.title}>
-            {t('STORY_OF')} <span className={nameClass} style={nameStyle}>{current?.playerName || t('LOADING')}</span>
+            {t('STORY_OF')} <span className={nameClass} style={{ ...nameStyle, fontSize: getFontSize(current?.playerName) }}>{current?.playerName || t('LOADING')}</span>
           </h2>
           <div className={styles.storyNav}>
             <button

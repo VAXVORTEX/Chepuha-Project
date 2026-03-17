@@ -13,8 +13,10 @@
 }
 
 .app-view {
-  width: 100vw;
-  height: 100vh;
+  width: 149.25vw;
+  height: 149.25vh;
+  transform: scale(0.67);
+  transform-origin: top left;
   background-image: url(./assets/images/gameBackground.jpg);
   background-size: cover;
   background-position: center;
@@ -32,16 +34,11 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
-  margin-top: -5vh;
-  margin-bottom: 2vh;
+  margin-top: -10vh;
+  margin-bottom: 20px;
   width: 100%;
   max-width: 85%;
   z-index: 15;
-
-  @media (max-height: 700px) {
-    margin-top: -2vh;
-    margin-bottom: 5px;
-  }
 
   .logo-boy-hitbox {
     position: absolute;
@@ -78,16 +75,11 @@
   }
 
   .logo {
-    width: min(1000px, 90vw);
+    width: 1200px;
     height: auto;
     pointer-events: none;
     max-width: 100%;
     margin: 0;
-
-    @media (max-width: 768px) {
-      width: 95vw;
-      margin-top: 5vh;
-    }
   }
 }
 
@@ -105,14 +97,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3vh;
+  gap: 50px;
   width: 100%;
   max-width: 1200px;
-  margin-top: 0;
-
-  @media (max-height: 700px) {
-    gap: 10px;
-  }
+  margin-top: -5vh;
 }
 
 .input-wrapper {
@@ -181,8 +169,9 @@
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    gap: 15px;
+    gap: 20px;
     width: 100%;
+    margin: 20px 0;
 
     .label-part {
       white-space: nowrap;
@@ -191,33 +180,34 @@
     }
 
     .nick-scroll-container {
-      flex: 0 1 auto;
-      min-width: 100px; // Ensure container doesn't collapse to 0 width
-      max-width: 550px;
-      overflow-x: hidden;
-      overflow-y: hidden;
+      width: auto;
+      max-width: 800px;
+      overflow: hidden;
       display: flex;
-      justify-content: flex-start;
+      justify-content: center; // Centering: keep content centered
+      align-items: center;
       padding: 5px 0;
       position: relative;
-      container-type: inline-size;
       cursor: ew-resize;
 
       .player-name {
-        width: max-content;
         padding: 0 10px;
-        transition: color 0.5s ease, font-size 0.3s ease;
+        transition: transform 0.3s ease-out;
         will-change: transform;
         max-width: none !important;
+        overflow-y: hidden !important; // Fix vertical jitter
+      }
+
+      &:hover .player-name {
+        // Only scrolls if content is wider than 550px
+        animation: marquee 8s linear infinite alternate;
       }
     }
   }
-}
 
-// Properly closed .lobby-text and .lobby-info (fixing matched brace issues)
-
-span {
-  @include font-pangolin(80);
+  span {
+    @include font-pangolin(80);
+  }
 }
 
 .lobby-subtitle {
@@ -233,11 +223,15 @@ span {
   align-items: center;
   gap: 10px;
   width: 100%;
-  max-height: 280px; // LIMIT: Show approx 4 items
-  overflow-y: auto;
-  padding-right: 10px; // Space for internal flow
+  overflow-y: hidden; // Default: no scroll
+  padding-right: 10px;
   scrollbar-width: thin;
   scrollbar-color: $red transparent;
+
+  &.has-many-players {
+    overflow-y: auto; // Only scroll if 4+ players
+    max-height: 280px;
+  }
 
   &::-webkit-scrollbar {
     width: 6px;
@@ -287,8 +281,8 @@ span {
   white-space: nowrap;
   transition: color 0.5s ease;
   display: inline-block;
-  max-width: 550px; // ESCROLL: Increased from 180px
-  overflow-x: auto;
+  max-width: 550px;
+  overflow-x: hidden; // HIDE unnecessary scroll indicators
   scrollbar-width: none;
 
   &::-webkit-scrollbar {
@@ -319,7 +313,16 @@ span {
   }
 }
 
-// Marquee removed in favor of shrink-to-fit scaling
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    // Only translates if the name is actually longer than 550px
+    transform: translateX(min(0px, calc(-100% + 550px)));
+  }
+}
 
 .lobby-actions {
   width: 100%;
@@ -327,6 +330,7 @@ span {
   flex-direction: column;
   align-items: center;
   gap: 15px;
+  margin-top: 50px; // LOWERED: Start Game button on PC
 }
 
 .gameCodePos {
@@ -466,21 +470,16 @@ span {
 // ── Create Screen Layout ──────────────────────────────
 .create-game-pc-code-wrapper {
   position: absolute;
-  top: 3vw;
-  right: 3vw;
-  z-index: 500;
+  top: 20px;
+  right: 20px;
   pointer-events: none;
+  z-index: 500;
 
   .gameCodePos {
     position: relative !important;
     top: 0 !important;
     right: 0 !important;
     pointer-events: auto;
-  }
-
-  @media (max-width: 768px) {
-    top: 10px;
-    right: 10px;
   }
 }
 
@@ -734,7 +733,7 @@ span {
 // ── Inline Color Picker (Lobby) ──────────────────────
 .inline-color-picker {
   position: absolute;
-  left: calc(100% + 15px); // Pinned to the right of the name
+  left: calc(100% + 20px); // Increased spacing to prevent clipping
   top: 50%;
   transform: translateY(-50%);
   display: flex;
@@ -769,7 +768,78 @@ span {
   height: 28px;
   border-radius: 50%;
   border: 2px solid $black;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+  margin: 2px; // FIX clipping
+
+  // Special Gradients for Swatches
+  &.rainbow {
+    background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff) !important;
+  }
+
+  &.fire-gradient {
+    background: linear-gradient(to right, #ff4e50, #f9d423) !important;
+  }
+
+  &.fire-text {
+    background: linear-gradient(to right, #ff4e50, #f9d423) !important;
+  }
+
+  // Fallback
+  &.ice-gradient {
+    background: linear-gradient(to right, #00c6ff, #0072ff) !important;
+  }
+
+  &.gold {
+    background: linear-gradient(45deg, #ffd700, #daa520, #ffd700, #fff8dc) !important;
+  }
+
+  &.gold-text {
+    background: linear-gradient(45deg, #ffd700, #daa520, #ffd700, #fff8dc) !important;
+  }
+
+  &.nebula {
+    background: linear-gradient(to right, #41295a, #2f0743) !important;
+  }
+
+  &.sunset {
+    background: linear-gradient(to right, #f12711, #f5af19) !important;
+  }
+
+  &.solar {
+    background: linear-gradient(to right, #ff512f, #f09819) !important;
+  }
+
+  &.cyberpunk {
+    background: linear-gradient(45deg, #00ff00, #ff00ff, #00ffff) !important;
+  }
+
+  &.pirates {
+    background: repeating-linear-gradient(45deg, #333, #333 5px, #8b4513 5px, #8b4513 10px) !important;
+  }
+
+  &.flag-lesbian {
+    background: linear-gradient(to bottom, #d52d00, #ff9a56, #ffffff, #d362a4, #a30262) !important;
+  }
+
+  &.cyber-samurai-iconic {
+    background: linear-gradient(45deg, #ff0000, #000, #ff0000) !important;
+  }
+
+  &.pirate-caribbean {
+    background: linear-gradient(to right, #000, #fff, #000) !important;
+  }
+
+  &.flag-intersex {
+    background: radial-gradient(circle, transparent 40%, #7902aa 41%, #7902aa 50%, transparent 51%), #ffd800 !important;
+  }
+
+  &.flag-genderqueer {
+    background: linear-gradient(to bottom, #b57edc 33.3%, #ffffff 33.3%, #ffffff 66.6%, #4a8123 66.6%) !important;
+  }
+
+  &.flag-polysexual {
+    background: linear-gradient(to bottom, #f714ba 33.3%, #01d66a 33.3%, #01d66a 66.6%, #1594f6 66.6%) !important;
+  }
 }
 
 // Story mode desc
@@ -1244,12 +1314,14 @@ span {
     }
 
     .nick-scroll-container {
-      max-width: 250px !important;
+      max-width: 90vw !important; // Increased to fit 25 chars comfortably
       overflow-x: auto !important;
       justify-content: center !important;
+      padding-bottom: 5px; // Space for the scrollbar if it appears
 
       .player-name {
-        font-size: 36px !important;
+        // font-size: 36px !important; // Removed: let dynamic scaling handle it
+        margin: 0;
       }
 
       &:hover .player-name {
@@ -1281,7 +1353,7 @@ span {
   .player-name {
     font-size: 28px !important;
     margin: 0 auto; // Force centering
-    max-width: 150px !important; // TIGHTER: Ensure side elements fit on mobile
+    max-width: 80vw !important; // RELAXED: Allow more room for 25 chars
   }
 
   .inline-color-picker {
@@ -1361,13 +1433,13 @@ span {
 
   .create-game-pc-code-wrapper {
     position: absolute;
-    top: 15px !important;
-    right: 20px !important;
+    top: 2vh !important;
+    right: 15px !important; // Positioned Top-Right as requested
     left: auto !important;
     width: auto;
+    left: auto;
     transform: none;
     display: block;
-    z-index: 1000;
   }
 
   .gameCodePos {
@@ -1383,18 +1455,22 @@ span {
   }
 
   .timerPos {
-    top: 5px;
-    left: 5px;
-    transform: scale(0.6) !important;
+    top: 10px;
+    left: 15px;
+    transform: scale(0.8);
   }
 
   .roundPos {
-    top: 5px;
-    right: 5px;
-    transform: scale(0.6) !important;
+    top: 10px;
+    right: 15px;
+    transform: scale(0.7);
   }
 
-
+  .timerPos {
+    top: 10px !important;
+    left: 15px !important;
+    transform: scale(0.7);
+  }
 
   .lobby-timer-display {
     top: 10px;
@@ -1490,1332 +1566,1436 @@ span {
   .players-list {
     background: transparent !important;
   }
+}
 
-  // ── ANSWER HIGHLIGHTING (Final Story) ──────────────
-  .my-answer-text {
-    color: $red;
-    font-weight: bold;
+// @media (max-width: 768px) END
+
+// ── ANSWER HIGHLIGHTING (Final Story) ──────────────
+.my-answer-text {
+  color: $red;
+  font-weight: bold;
+}
+
+.other-answer-text {
+  color: #ffd800;
+  /* Yellow */
+  font-weight: bold;
+}
+
+// ── SPECIAL COLORS ──────────────────────────────
+@keyframes rainbow-text-animation {
+  0% {
+    background-position: 0% 50%;
   }
 
-  .other-answer-text {
-    color: #ffd800;
-    /* Yellow */
-    font-weight: bold;
+  50% {
+    background-position: 100% 50%;
   }
 
-  // ── SPECIAL COLORS ──────────────────────────────
-  @keyframes rainbow-text-animation {
-    0% {
-      background-position: 0% 50%;
-    }
-
-    50% {
-      background-position: 100% 50%;
-    }
-
-    100% {
-      background-position: 0% 50%;
-    }
+  100% {
+    background-position: 0% 50%;
   }
+}
 
-  .rainbow-text {
+.rainbow-text {
+  background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.fire-gradient-text {
+  background: linear-gradient(to right, #ff4e50, #f9d423);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.ice-gradient-text {
+  background: linear-gradient(to right, #00c6ff, #0072ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.flag-ua-text {
+  background: linear-gradient(to bottom, #0057b7, #ffd700);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-usa-text {
+  background: linear-gradient(to bottom, #bf0a30, #ffffff, #00247d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-uk-text {
+  background: linear-gradient(90deg, #00247d, #cf142b, #00247d);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-de-text {
+  background: linear-gradient(to bottom, #000000 33.3%, #ff0000 33.3%, #ff0000 66.6%, #ffcc00 66.6%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-fr-text {
+  background: linear-gradient(to right, #002395 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ed2939 66.6%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-jp-text {
+  background: radial-gradient(circle, #bc002d 40%, #ffffff 41%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-pl-text {
+  background: linear-gradient(to bottom, #ffffff 50%, #dc143c 50%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.gender-pride-text {
+  background: linear-gradient(to bottom, #e40303, #ff8c00, #ffed00, #008026, #004dff, #750787);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.gender-trans-text {
+  background: linear-gradient(to bottom, #5bcefa 20%, #f5a9b8 20%, #f5a9b8 40%, #ffffff 40%, #ffffff 60%, #f5a9b8 60%, #f5a9b8 80%, #5bcefa 80%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.pirates-text {
+  background: linear-gradient(45deg, #000 30%, #ffd700 50%, #000 70%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 3s linear infinite;
+  font-weight: bold;
+}
+
+.cyberpunk-text {
+  background: linear-gradient(90deg, #f3ec78, #af4261, #00f2ff, #fb00ff);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 4s ease infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.legendary-text {
+  background: linear-gradient(135deg, #00ffff, #fff, #00c6ff, #fff, #00ffff);
+  background-size: 400% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 6s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.gold-text {
+  background: linear-gradient(45deg, #ffd700, #fff, #ffd700);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 5s linear infinite;
+  font-weight: bold;
+}
+
+.inline-color-swatch {
+  &.rainbow {
     background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important; // PCFIX: For Chrome/Edge compatibility
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .fire-gradient-text {
+  &.fire-gradient {
     background: linear-gradient(to right, #ff4e50, #f9d423);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .ice-gradient-text {
+  &.ice-gradient {
     background: linear-gradient(to right, #00c6ff, #0072ff);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .flag-ua-text {
-    background: linear-gradient(to bottom, #0057b7, #ffd700);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
-  }
-
-  .flag-usa-text {
-    background: linear-gradient(to bottom, #bf0a30, #ffffff, #00247d);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
-  }
-
-  .flag-uk-text {
-    background: linear-gradient(90deg, #00247d, #cf142b, #00247d);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
-  }
-
-  .flag-de-text {
-    background: linear-gradient(to bottom, #000000 33.3%, #ff0000 33.3%, #ff0000 66.6%, #ffcc00 66.6%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
-  }
-
-  .flag-fr-text {
-    background: linear-gradient(to right, #002395 33.3%, #ffffff 33.3%, #ffffff 66.6%, #ed2939 66.6%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
-  }
-
-  .flag-jp-text {
-    background: radial-gradient(circle, #bc002d 40%, #ffffff 41%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
-  }
-
-  .flag-pl-text {
-    background: linear-gradient(to bottom, #ffffff 50%, #dc143c 50%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
-  }
-
-  .gender-pride-text {
-    background: linear-gradient(to bottom, #e40303, #ff8c00, #ffed00, #008026, #004dff, #750787);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
-  }
-
-  .gender-trans-text {
-    background: linear-gradient(to bottom, #5bcefa 20%, #f5a9b8 20%, #f5a9b8 40%, #ffffff 40%, #ffffff 60%, #f5a9b8 60%, #f5a9b8 80%, #5bcefa 80%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
-  }
-
-  .pirates-text {
-    background: linear-gradient(45deg, #000 30%, #ffd700 50%, #000 70%);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 3s linear infinite;
-    font-weight: bold;
-  }
-
-  .cyberpunk-text {
-    background: linear-gradient(90deg, #f3ec78, #af4261, #00f2ff, #fb00ff);
-    background-size: 300% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important; // PCFIX
-    display: inline-block;
-    animation: rainbow-text-animation 4s ease infinite;
-    font-weight: bold;
-    // REMOVED heavy shadows to fix mobile outlines
-    text-shadow: none !important;
-  }
-
-  .legendary-text {
-    background: linear-gradient(135deg, #00ffff, #fff, #00c6ff, #fff, #00ffff);
-    background-size: 400% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important; // PCFIX
-    display: inline-block;
-    animation: rainbow-text-animation 6s linear infinite;
-    font-weight: bold;
-    // REMOVED heavy shadows to fix mobile outlines
-    text-shadow: none !important;
-  }
-
-  .gold-text {
+  &.gold {
     background: linear-gradient(45deg, #ffd700, #fff, #ffd700);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 5s linear infinite;
-    font-weight: bold;
   }
 
-  .inline-color-swatch {
-    &.rainbow {
-      background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff);
-    }
-
-    &.fire-gradient {
-      background: linear-gradient(to right, #ff4e50, #f9d423);
-    }
-
-    &.ice-gradient {
-      background: linear-gradient(to right, #00c6ff, #0072ff);
-    }
-
-    &.gold {
-      background: linear-gradient(45deg, #ffd700, #fff, #ffd700);
-    }
-
-    &.pirates {
-      background: linear-gradient(45deg, #000, #ffd700, #000);
-    }
-
-    &.cyberpunk {
-      background: linear-gradient(90deg, #00f2ff, #fb00ff);
-    }
-
-    &.legendary {
-      background: linear-gradient(135deg, #00ffff, #fff, #00c6ff);
-    }
-
-    &.flag-ua {
-      background: linear-gradient(to bottom, #0057b7 50%, #ffd700 50%);
-    }
-
-    &.flag-usa {
-      background: linear-gradient(to bottom, #bf0a30 33%, #ffffff 33%, #ffffff 66%, #00247d 66%);
-    }
-
-    &.flag-uk {
-      background: linear-gradient(90deg, #00247d 33%, #cf142b 33%, #cf142b 66%, #00247d 66%);
-    }
-
-    &.flag-de {
-      background: linear-gradient(to bottom, #000 33%, #f00 33%, #f00 66%, #ff0 66%);
-    }
-
-    &.flag-fr {
-      background: linear-gradient(to right, #002395 33%, #fff 33%, #fff 66%, #ed2939 66%);
-    }
-
-    &.flag-jp {
-      background: radial-gradient(circle, #bc002d 40%, #fff 41%);
-      border: 1px solid #ccc;
-    }
-
-    &.flag-pl {
-      background: linear-gradient(to bottom, #fff 50%, #dc143c 50%);
-      border: 1px solid #ccc;
-    }
-
-    &.gender-pride {
-      background: linear-gradient(to bottom, #e40303, #ff8c00, #ffed00, #008026, #004dff, #750787);
-    }
-
-    &.gender-trans {
-      background: linear-gradient(to bottom, #5bcefa 20%, #f5a9b8 20%, #f5a9b8 40%, #fff 40%, #fff 60%, #f5a9b8 60%, #f5a9b8 80%, #5bcefa 80%);
-    }
-
-    // ── 70+ NEW COLORS & GRADIENTS ──────────────────
-
-    &.solar {
-      background: linear-gradient(90deg, #ffcc33, #ff6600, #ff3300);
-    }
-
-    &.deep-sea {
-      background: linear-gradient(90deg, #001f3f, #0074d9, #7fdbff);
-    }
-
-    &.sunset {
-      background: linear-gradient(90deg, #ff5f6d, #ffc371);
-    }
-
-    &.nebula {
-      background: linear-gradient(90deg, #6a3093, #a044ff, #e94057);
-    }
-
-    &.forest {
-      background: linear-gradient(90deg, #134e5e, #71b280);
-    }
-
-    &.volcano {
-      background: linear-gradient(90deg, #f83600, #f9d423);
-    }
-
-    &.arctic {
-      background: linear-gradient(90deg, #83a4d4, #b6fbff);
-    }
-
-    &.neon-night {
-      background: linear-gradient(90deg, #f093fb, #f5576c);
-    }
-
-    &.toxic {
-      background: linear-gradient(90deg, #00b09b, #96c93d);
-    }
-
-    &.candy {
-      background: linear-gradient(90deg, #ff00cc, #3333ff);
-    }
-
-    &.midnight {
-      background: linear-gradient(90deg, #232526, #414345);
-    }
-
-    &.emerald {
-      background: linear-gradient(90deg, #50c878, #2e8b57);
-    }
-
-    &.ruby {
-      background: linear-gradient(90deg, #e0115f, #8b0000);
-    }
-
-    &.sapphire {
-      background: linear-gradient(90deg, #0f52ba, #000080);
-    }
-
-    &.amethyst {
-      background: linear-gradient(90deg, #9966cc, #4b0082);
-    }
-
-    &.citrine {
-      background: linear-gradient(90deg, #e4d00a, #8b8000);
-    }
-
-    &.topaz {
-      background: linear-gradient(90deg, #ffc87c, #ff7e5f);
-    }
-
-    &.obsidian {
-      background: linear-gradient(90deg, #2c3e50, #000000);
-    }
-
-    &.pearl {
-      background: radial-gradient(circle, #fff, #dbdbdb);
-    }
-
-    &.phantom {
-      background: linear-gradient(90deg, #d3d3d3, #708090);
-    }
-
-    &.galaxy {
-      background: radial-gradient(circle, #20002c, #cbb4d4);
-    }
-
-    &.supernova {
-      background: radial-gradient(circle, #fdbb2d, #22c1c3);
-    }
-
-    &.black-hole {
-      background: radial-gradient(circle, #000, #353535);
-    }
-
-    &.stardust {
-      background: linear-gradient(90deg, #0f2027, #203a43, #2c5364);
-    }
-
-    &.comet {
-      background: linear-gradient(to right, #2b5876, #4e4376);
-    }
-
-    &.aurora {
-      background: linear-gradient(90deg, #00c9ff, #92fe9d);
-    }
-
-    &.horizon {
-      background: linear-gradient(90deg, #485563, #29323c);
-    }
-
-    &.twilight {
-      background: linear-gradient(90deg, #0f0c29, #302b63, #24243e);
-    }
-
-    &.glitch {
-      background: linear-gradient(90deg, #ff0000, #00ff00, #0000ff);
-    }
-
-    &.matrix {
-      background: linear-gradient(90deg, #000, #0f0, #000);
-    }
-
-    &.plasma {
-      background: radial-gradient(circle, #eb3349, #f45c43);
-    }
-
-    &.magma {
-      background: linear-gradient(90deg, #ed213a, #93291e);
-    }
-
-    &.frost {
-      background: linear-gradient(90deg, #00d2ff, #3a7bd5);
-    }
-
-    &.oasis {
-      background: linear-gradient(90deg, #1d976c, #93f9b9);
-    }
-
-    &.savanna {
-      background: linear-gradient(90deg, #f12711, #f5af19);
-    }
-
-    &.mesa {
-      background: linear-gradient(90deg, #5a3f37, #2c7744);
-    }
-
-    &.tundra {
-      background: linear-gradient(90deg, #304352, #d7d2cc);
-    }
-
-    &.reef {
-      background: linear-gradient(90deg, #00b4db, #0083b0);
-    }
-
-    &.abyss {
-      background: linear-gradient(90deg, #000, #434343);
-    }
-
-    &.void {
-      background: linear-gradient(90deg, #0f0c29, #000);
-    }
-
-    &.chrome {
-      background: linear-gradient(to bottom, #7d7e7d 0%, #0e0e0e 100%);
-    }
-
-    &.copper {
-      background: linear-gradient(90deg, #b87333, #c58249);
-    }
-
-    &.bronze {
-      background: linear-gradient(90deg, #cd7f32, #a57164);
-    }
-
-    &.silver {
-      background: linear-gradient(90deg, #c0c0c0, #e0e0e0);
-    }
-
-    &.platinum {
-      background: linear-gradient(90deg, #e5e4e2, #b7b7b7);
-    }
-
-    &.titanium {
-      background: linear-gradient(90deg, #a0a0a0, #505050);
-    }
-
-    &.carbon {
-      background: repeating-linear-gradient(45deg, #111, #111 2px, #333 2px, #333 4px);
-    }
-
-    &.quartz {
-      background: linear-gradient(90deg, #fefefe, #f4f4f4);
-    }
-
-    &.amber {
-      background: linear-gradient(90deg, #ffbf00, #ff7e00);
-    }
-
-    &.jade {
-      background: linear-gradient(90deg, #00a86b, #0081d5);
-    }
-
-    &.flag-it {
-      background: linear-gradient(to right, #008c45 33%, #f4f5f0 33%, #f4f5f0 66%, #cd212a 66%);
-    }
-
-    &.flag-es {
-      background: linear-gradient(to bottom, #aa151b 25%, #f1bf00 25%, #f1bf00 75%, #aa151b 75%);
-    }
-
-    &.flag-br {
-      background: radial-gradient(circle, #002776 25%, #fed141 26%, #fed141 50%, #009c3b 51%);
-    }
-
-    &.flag-ca {
-      background: linear-gradient(to right, #ff0000 25%, #fff 25%, #fff 75%, #ff0000 75%);
-    }
-
-    &.flag-cn {
-      background: #ee1c25;
-      border: 1px solid #ffff00;
-    }
-
-    &.flag-kr {
-      background: #fff;
-      border: 1px solid #0047a0;
-      box-shadow: inset 0 0 5px #cd2e3a;
-    }
-
-    &.flag-au {
-      background: #00008b;
-      border: 1px solid #fff;
-    }
-
-    &.flag-pirates {
-      background: linear-gradient(45deg, #000, #333, #000);
-    }
-
-    &.flag-pirates-2 {
-      background: radial-gradient(circle, #fff 10%, #000 11%);
-    }
-
-    &.flag-pirates-3 {
-      background: linear-gradient(to bottom, #000, #8b0000, #000);
-    }
-
-    &.flag-cyber-samurai {
-      background: linear-gradient(90deg, #f0f, #0ff);
-    }
-
-    &.flag-cyber-samurai-2 {
-      background: linear-gradient(135deg, #f3ec78, #af4261);
-    }
-
-    &.flag-bi {
-      background: linear-gradient(to bottom, #d60270 40%, #9b4f96 40%, #9b4f96 60%, #0038a8 60%);
-    }
-
-    &.flag-pan {
-      background: linear-gradient(to bottom, #ff218c 33%, #ffd800 33%, #ffd800 66%, #21b1ff 66%);
-    }
-
-    &.flag-ace {
-      background: linear-gradient(to bottom, #000, #a3a3a3, #fff, #800080);
-    }
-
-    &.flag-nonbinary {
-      background: linear-gradient(to bottom, #fff433, #fff, #9b59d0, #2d2d2d);
-    }
+  &.pirates {
+    background: linear-gradient(45deg, #000, #ffd700, #000);
   }
 
-  // ── TEXT CLASSES FOR NEW COLORS ──────────────────
+  &.cyberpunk {
+    background: linear-gradient(90deg, #00f2ff, #fb00ff);
+  }
 
-  .solar-text {
+  &.legendary {
+    background: linear-gradient(135deg, #00ffff, #fff, #00c6ff);
+  }
+
+  &.flag-ua {
+    background: linear-gradient(to bottom, #0057b7 50%, #ffd700 50%);
+  }
+
+  &.flag-usa {
+    background: linear-gradient(to bottom, #bf0a30 33%, #ffffff 33%, #ffffff 66%, #00247d 66%);
+  }
+
+  &.flag-uk {
+    background: linear-gradient(90deg, #00247d 33%, #cf142b 33%, #cf142b 66%, #00247d 66%);
+  }
+
+  &.flag-de {
+    background: linear-gradient(to bottom, #000 33%, #f00 33%, #f00 66%, #ff0 66%);
+  }
+
+  &.flag-fr {
+    background: linear-gradient(to right, #002395 33%, #fff 33%, #fff 66%, #ed2939 66%);
+  }
+
+  &.flag-jp {
+    background: radial-gradient(circle, #bc002d 40%, #fff 41%);
+    border: 1px solid #ccc;
+  }
+
+  &.flag-pl {
+    background: linear-gradient(to bottom, #fff 50%, #dc143c 50%);
+    border: 1px solid #ccc;
+  }
+
+  &.gender-pride {
+    background: linear-gradient(to bottom, #e40303, #ff8c00, #ffed00, #008026, #004dff, #750787);
+  }
+
+  &.gender-trans {
+    background: linear-gradient(to bottom, #5bcefa 20%, #f5a9b8 20%, #f5a9b8 40%, #fff 40%, #fff 60%, #f5a9b8 60%, #f5a9b8 80%, #5bcefa 80%);
+  }
+
+  // ── 70+ NEW COLORS & GRADIENTS ──────────────────
+
+  &.solar {
     background: linear-gradient(90deg, #ffcc33, #ff6600, #ff3300);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 3s linear infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .deep-sea-text {
+  &.deep-sea {
     background: linear-gradient(90deg, #001f3f, #0074d9, #7fdbff);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 4s linear infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .sunset-text {
+  &.sunset {
     background: linear-gradient(90deg, #ff5f6d, #ffc371);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 5s linear infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .nebula-text {
+  &.nebula {
     background: linear-gradient(90deg, #6a3093, #a044ff, #e94057);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 6s linear infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .forest-text {
+  &.forest {
     background: linear-gradient(90deg, #134e5e, #71b280);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 5s linear infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .volcano-text {
+  &.volcano {
     background: linear-gradient(90deg, #f83600, #f9d423);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 3s linear infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .arctic-text {
+  &.arctic {
     background: linear-gradient(90deg, #83a4d4, #b6fbff);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 4s linear infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .neon-night-text {
+  &.neon-night {
     background: linear-gradient(90deg, #f093fb, #f5576c);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 3s linear infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .toxic-text {
+  &.toxic {
     background: linear-gradient(90deg, #00b09b, #96c93d);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 2s linear infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .candy-text {
+  &.candy {
     background: linear-gradient(90deg, #ff00cc, #3333ff);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 4s linear infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .midnight-text {
+  &.midnight {
     background: linear-gradient(90deg, #232526, #414345);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .emerald-text {
+  &.emerald {
     background: linear-gradient(90deg, #50c878, #2e8b57);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .ruby-text {
+  &.ruby {
     background: linear-gradient(90deg, #e0115f, #8b0000);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .sapphire-text {
+  &.sapphire {
     background: linear-gradient(90deg, #0f52ba, #000080);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .amethyst-text {
+  &.amethyst {
     background: linear-gradient(90deg, #9966cc, #4b0082);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .citrine-text {
+  &.citrine {
     background: linear-gradient(90deg, #e4d00a, #8b8000);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .topaz-text {
+  &.topaz {
     background: linear-gradient(90deg, #ffc87c, #ff7e5f);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .obsidian-text {
+  &.obsidian {
     background: linear-gradient(90deg, #2c3e50, #000000);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .pearl-text {
-    background: linear-gradient(90deg, #eaeaea, #dbdbdb, #f2f2f2);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
+  &.pearl {
+    background: radial-gradient(circle, #fff, #dbdbdb);
   }
 
-  .phantom-text {
+  &.phantom {
     background: linear-gradient(90deg, #d3d3d3, #708090);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
-    opacity: 0.8;
   }
 
-  .galaxy-text {
+  &.galaxy {
     background: radial-gradient(circle, #20002c, #cbb4d4);
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 8s ease infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .supernova-text {
+  &.supernova {
     background: radial-gradient(circle, #fdbb2d, #22c1c3);
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 4s ease infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .black-hole-text {
-    background: radial-gradient(circle, #000000, #353535, #000000);
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
+  &.black-hole {
+    background: radial-gradient(circle, #000, #353535);
   }
 
-  .stardust-text {
+  &.stardust {
     background: linear-gradient(90deg, #0f2027, #203a43, #2c5364);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 6s linear infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .comet-text {
+  &.comet {
     background: linear-gradient(to right, #2b5876, #4e4376);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 4s linear infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .aurora-text {
+  &.aurora {
     background: linear-gradient(90deg, #00c9ff, #92fe9d);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 6s linear infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .horizon-text {
+  &.horizon {
     background: linear-gradient(90deg, #485563, #29323c);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .twilight-text {
+  &.twilight {
     background: linear-gradient(90deg, #0f0c29, #302b63, #24243e);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .glitch-text {
+  &.glitch {
     background: linear-gradient(90deg, #ff0000, #00ff00, #0000ff);
-    background-size: 300% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 0.2s steps(2) infinite;
-    font-weight: bold;
-    text-shadow: 2px 0 #ff00ff, -2px 0 #00ffff !important;
   }
 
-  .matrix-text {
-    background: linear-gradient(90deg, #000000, #00ff00, #000000);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 2s linear infinite;
-    font-weight: bold;
-    text-shadow: 0 0 5px #00ff00 !important;
+  &.matrix {
+    background: linear-gradient(90deg, #000, #0f0, #000);
   }
 
-  .plasma-text {
+  &.plasma {
     background: radial-gradient(circle, #eb3349, #f45c43);
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 3s ease infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .magma-text {
+  &.magma {
     background: linear-gradient(90deg, #ed213a, #93291e);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 4s linear infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .frost-text {
+  &.frost {
     background: linear-gradient(90deg, #00d2ff, #3a7bd5);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 5s linear infinite;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .oasis-text {
+  &.oasis {
     background: linear-gradient(90deg, #1d976c, #93f9b9);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .savanna-text {
+  &.savanna {
     background: linear-gradient(90deg, #f12711, #f5af19);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .mesa-text {
+  &.mesa {
     background: linear-gradient(90deg, #5a3f37, #2c7744);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .tundra-text {
+  &.tundra {
     background: linear-gradient(90deg, #304352, #d7d2cc);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .reef-text {
+  &.reef {
     background: linear-gradient(90deg, #00b4db, #0083b0);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .abyss-text {
-    background: linear-gradient(90deg, #000000, #434343);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
+  &.abyss {
+    background: linear-gradient(90deg, #000, #434343);
   }
 
-  .void-text {
-    background: linear-gradient(90deg, #0f0c29, #000000);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
+  &.void {
+    background: linear-gradient(90deg, #0f0c29, #000);
   }
 
-  .chrome-text {
+  &.chrome {
     background: linear-gradient(to bottom, #7d7e7d 0%, #0e0e0e 100%);
-    background-size: 100% 200%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .copper-text {
-    background: linear-gradient(90deg, #b87333, #c58249, #b87333);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
+  &.copper {
+    background: linear-gradient(90deg, #b87333, #c58249);
   }
 
-  .bronze-text {
+  &.bronze {
     background: linear-gradient(90deg, #cd7f32, #a57164);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .silver-text {
-    background: linear-gradient(90deg, #c0c0c0, #e0e0e0, #c0c0c0);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
+  &.silver {
+    background: linear-gradient(90deg, #c0c0c0, #e0e0e0);
   }
 
-  .platinum-text {
+  &.platinum {
     background: linear-gradient(90deg, #e5e4e2, #b7b7b7);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .titanium-text {
+  &.titanium {
     background: linear-gradient(90deg, #a0a0a0, #505050);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .carbon-text {
+  &.carbon {
     background: repeating-linear-gradient(45deg, #111, #111 2px, #333 2px, #333 4px);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .quartz-text {
-    background: linear-gradient(90deg, #fefefe, #f4f4f4, #fefefe);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
+  &.quartz {
+    background: linear-gradient(90deg, #fefefe, #f4f4f4);
   }
 
-  .amber-text {
+  &.amber {
     background: linear-gradient(90deg, #ffbf00, #ff7e00);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .jade-text {
+  &.jade {
     background: linear-gradient(90deg, #00a86b, #0081d5);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    font-weight: bold;
-    text-shadow: none !important;
   }
 
-  .flag-it-text {
-    background: linear-gradient(to right, #008c45 33.3%, #f4f5f0 33.3%, #f4f5f0 66.6%, #cd212a 66.6%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
+  &.flag-it {
+    background: linear-gradient(to right, #008c45 33%, #f4f5f0 33%, #f4f5f0 66%, #cd212a 66%);
   }
 
-  .flag-es-text {
+  &.flag-es {
     background: linear-gradient(to bottom, #aa151b 25%, #f1bf00 25%, #f1bf00 75%, #aa151b 75%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
   }
 
-  .flag-br-text {
+  &.flag-br {
     background: radial-gradient(circle, #002776 25%, #fed141 26%, #fed141 50%, #009c3b 51%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
   }
 
-  .flag-ca-text {
-    background: linear-gradient(to right, #ff0000 25%, #ffffff 25%, #ffffff 75%, #ff0000 75%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
+  &.flag-ca {
+    background: linear-gradient(to right, #ff0000 25%, #fff 25%, #fff 75%, #ff0000 75%);
   }
 
-  .flag-cn-text {
-    background: linear-gradient(to bottom, #ee1c25 0%, #ee1c25 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    text-shadow: 1px 1px 0 #ffff00 !important;
-    font-weight: bold;
+  &.flag-cn {
+    background: #ee1c25;
+    border: 1px solid #ffff00;
   }
 
-  .flag-kr-text {
-    background: radial-gradient(circle, #cd2e3a 50%, #0047a0 51%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    display: inline-block;
-    border: 1px solid #eee;
-    text-shadow: none !important;
-    font-weight: bold;
+  &.flag-kr {
+    background: #fff;
+    border: 1px solid #0047a0;
+    box-shadow: inset 0 0 5px #cd2e3a;
   }
 
-  .flag-au-text {
-    background: linear-gradient(135deg, #00008b 0%, #00008b 100%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    text-shadow: 1px 1px 0 #ffffff, -1px -1px 0 #ff0000 !important;
-    font-weight: bold;
+  &.flag-au {
+    background: #00008b;
+    border: 1px solid #fff;
   }
 
-  .flag-pirates-text {
+  &.flag-pirates {
     background: linear-gradient(45deg, #000, #333, #000);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    text-shadow: 1px 1px 2px #fff !important;
-    font-weight: bold;
   }
 
-  .flag-pirates-2-text {
+  &.flag-pirates-2 {
     background: radial-gradient(circle, #fff 10%, #000 11%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
   }
 
-  .flag-pirates-3-text {
-    background: linear-gradient(to bottom, #000 40%, #8b0000 40%, #8b0000 60%, #000 60%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important; // Removed shadow for mobile stability
-    font-weight: bold;
+  &.flag-pirates-3 {
+    background: linear-gradient(to bottom, #000, #8b0000, #000);
   }
 
-  .flag-cyber-samurai-text {
-    background: linear-gradient(90deg, #ff00ff, #00ffff);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 2s linear infinite;
-    font-weight: bold;
-    text-shadow: none !important; // Removed shadow for mobile stability
+  &.flag-cyber-samurai {
+    background: linear-gradient(90deg, #f0f, #0ff);
   }
 
-  .flag-cyber-samurai-2-text {
+  &.flag-cyber-samurai-2 {
     background: linear-gradient(135deg, #f3ec78, #af4261);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    animation: rainbow-text-animation 4s linear infinite;
-    font-weight: bold;
-    text-shadow: none !important; // Removed shadow for mobile stability
   }
 
-  .flag-bi-text {
+  &.flag-bi {
     background: linear-gradient(to bottom, #d60270 40%, #9b4f96 40%, #9b4f96 60%, #0038a8 60%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
   }
 
-  .flag-pan-text {
-    background: linear-gradient(to bottom, #ff218c 33.3%, #ffd800 33.3%, #ffd800 66.6%, #21b1ff 66.6%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
+  &.flag-pan {
+    background: linear-gradient(to bottom, #ff218c 33%, #ffd800 33%, #ffd800 66%, #21b1ff 66%);
   }
 
-  .flag-ace-text {
-    background: linear-gradient(to bottom, #000000 25%, #a3a3a3 25%, #a3a3a3 50%, #ffffff 50%, #ffffff 75%, #800080 75%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
+  &.flag-ace {
+    background: linear-gradient(to bottom, #000, #a3a3a3, #fff, #800080);
   }
 
-  .flag-nonbinary-text {
-    background: linear-gradient(to bottom, #fff433 25%, #ffffff 25%, #ffffff 50%, #9b59d0 50%, #9b59d0 75%, #2d2d2d 75%);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent !important;
-    color: transparent !important;
-    display: inline-block;
-    text-shadow: none !important;
-    font-weight: bold;
+  &.flag-nonbinary {
+    background: linear-gradient(to bottom, #fff433, #fff, #9b59d0, #2d2d2d);
   }
+}
 
-  .history-stories {
-    border: 2px solid rgba(0, 0, 0, 0.1);
-    padding: 10px;
-    border-radius: 10px;
+// ── TEXT CLASSES FOR NEW COLORS ──────────────────
+
+.solar-text {
+  background: linear-gradient(90deg, #ffcc33, #ff6600, #ff3300);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 3s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.deep-sea-text {
+  background: linear-gradient(90deg, #001f3f, #0074d9, #7fdbff);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 4s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.sunset-text {
+  background: linear-gradient(90deg, #ff5f6d, #ffc371);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 5s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.nebula-text {
+  background: linear-gradient(90deg, #6a3093, #a044ff, #e94057);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 6s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.forest-text {
+  background: linear-gradient(90deg, #134e5e, #71b280);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 5s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.volcano-text {
+  background: linear-gradient(90deg, #f83600, #f9d423);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 3s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.arctic-text {
+  background: linear-gradient(90deg, #83a4d4, #b6fbff);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 4s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.neon-night-text {
+  background: linear-gradient(90deg, #f093fb, #f5576c);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 3s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.toxic-text {
+  background: linear-gradient(90deg, #00b09b, #96c93d);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 2s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.candy-text {
+  background: linear-gradient(90deg, #ff00cc, #3333ff);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 4s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.midnight-text {
+  background: linear-gradient(90deg, #232526, #414345);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.emerald-text {
+  background: linear-gradient(90deg, #50c878, #2e8b57);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.ruby-text {
+  background: linear-gradient(90deg, #e0115f, #8b0000);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.sapphire-text {
+  background: linear-gradient(90deg, #0f52ba, #000080);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.amethyst-text {
+  background: linear-gradient(90deg, #9966cc, #4b0082);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.citrine-text {
+  background: linear-gradient(90deg, #e4d00a, #8b8000);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.topaz-text {
+  background: linear-gradient(90deg, #ffc87c, #ff7e5f);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.obsidian-text {
+  background: linear-gradient(90deg, #2c3e50, #000000);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.pearl-text {
+  background: linear-gradient(90deg, #eaeaea, #dbdbdb, #f2f2f2);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.phantom-text {
+  background: linear-gradient(90deg, #d3d3d3, #708090);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+  opacity: 0.8;
+}
+
+.galaxy-text {
+  background: radial-gradient(circle, #20002c, #cbb4d4);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 8s ease infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.supernova-text {
+  background: radial-gradient(circle, #fdbb2d, #22c1c3);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 4s ease infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.black-hole-text {
+  background: radial-gradient(circle, #000000, #353535, #000000);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.stardust-text {
+  background: linear-gradient(90deg, #0f2027, #203a43, #2c5364);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 6s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.comet-text {
+  background: linear-gradient(to right, #2b5876, #4e4376);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 4s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.aurora-text {
+  background: linear-gradient(90deg, #00c9ff, #92fe9d);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 6s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.horizon-text {
+  background: linear-gradient(90deg, #485563, #29323c);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.twilight-text {
+  background: linear-gradient(90deg, #0f0c29, #302b63, #24243e);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.glitch-text {
+  background: linear-gradient(90deg, #ff0000, #00ff00, #0000ff);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 0.2s steps(2) infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.matrix-text {
+  background: linear-gradient(90deg, #000000, #00ff00, #000000);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 2s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.plasma-text {
+  background: radial-gradient(circle, #eb3349, #f45c43);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 3s ease infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.magma-text {
+  background: linear-gradient(90deg, #ed213a, #93291e);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 4s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.frost-text {
+  background: linear-gradient(90deg, #00d2ff, #3a7bd5);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 5s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.oasis-text {
+  background: linear-gradient(90deg, #1d976c, #93f9b9);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.savanna-text {
+  background: linear-gradient(90deg, #f12711, #f5af19);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.mesa-text {
+  background: linear-gradient(90deg, #5a3f37, #2c7744);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.tundra-text {
+  background: linear-gradient(90deg, #304352, #d7d2cc);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.reef-text {
+  background: linear-gradient(90deg, #00b4db, #0083b0);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.abyss-text {
+  background: linear-gradient(90deg, #000000, #434343);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.void-text {
+  background: linear-gradient(90deg, #0f0c29, #000000);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.chrome-text {
+  background: linear-gradient(to bottom, #7d7e7d 0%, #0e0e0e 100%);
+  background-size: 100% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.copper-text {
+  background: linear-gradient(90deg, #b87333, #c58249, #b87333);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.bronze-text {
+  background: linear-gradient(90deg, #cd7f32, #a57164);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.silver-text {
+  background: linear-gradient(90deg, #c0c0c0, #e0e0e0, #c0c0c0);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.platinum-text {
+  background: linear-gradient(90deg, #e5e4e2, #b7b7b7);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.titanium-text {
+  background: linear-gradient(90deg, #a0a0a0, #505050);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.carbon-text {
+  background: repeating-linear-gradient(45deg, #111, #111 2px, #333 2px, #333 4px);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.quartz-text {
+  background: linear-gradient(90deg, #fefefe, #f4f4f4, #fefefe);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.amber-text {
+  background: linear-gradient(90deg, #ffbf00, #ff7e00);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.jade-text {
+  background: linear-gradient(90deg, #00a86b, #0081d5);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.flag-it-text {
+  background: linear-gradient(to right, #008c45 33.3%, #f4f5f0 33.3%, #f4f5f0 66.6%, #cd212a 66.6%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-es-text {
+  background: linear-gradient(to bottom, #aa151b 25%, #f1bf00 25%, #f1bf00 75%, #aa151b 75%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-br-text {
+  background: radial-gradient(circle, #002776 25%, #fed141 26%, #fed141 50%, #009c3b 51%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-ca-text {
+  background: linear-gradient(to right, #ff0000 25%, #ffffff 25%, #ffffff 75%, #ff0000 75%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-cn-text {
+  background: linear-gradient(to bottom, #ee1c25 0%, #ee1c25 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-kr-text {
+  background: radial-gradient(circle, #cd2e3a 50%, #0047a0 51%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  border: 1px solid #eee;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-au-text {
+  background: linear-gradient(135deg, #00008b 0%, #00008b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-pirates-text {
+  background: linear-gradient(45deg, #000, #333, #000);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-pirates-2-text {
+  background: radial-gradient(circle, #fff 10%, #000 11%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-pirates-3-text {
+  background: linear-gradient(to bottom, #000 40%, #8b0000 40%, #8b0000 60%, #000 60%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-cyber-samurai-text {
+  background: linear-gradient(90deg, #ff00ff, #00ffff);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 2s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.flag-cyber-samurai-2-text {
+  background: linear-gradient(135deg, #f3ec78, #af4261);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 4s linear infinite;
+  font-weight: bold;
+  text-shadow: none !important;
+}
+
+.flag-bi-text {
+  background: linear-gradient(to bottom, #d60270 40%, #9b4f96 40%, #9b4f96 60%, #0038a8 60%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-pan-text {
+  background: linear-gradient(to bottom, #ff218c 33.3%, #ffd800 33.3%, #ffd800 66.6%, #21b1ff 66.6%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-ace-text {
+  background: linear-gradient(to bottom, #000000 25%, #a3a3a3 25%, #a3a3a3 50%, #ffffff 50%, #ffffff 75%, #800080 75%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-nonbinary-text {
+  background: linear-gradient(to bottom, #fff433 25%, #ffffff 25%, #ffffff 50%, #9b59d0 50%, #9b59d0 75%, #2d2d2d 75%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-lesbian-text {
+  background: linear-gradient(to bottom, #d52d00, #ff9a56, #ffffff, #d362a4, #a30262);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.cyber-samurai-iconic-text {
+  background: linear-gradient(45deg, #ff0000, #000, #ff0000);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  animation: rainbow-text-animation 2s linear infinite;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.5) !important;
+}
+
+.pirate-caribbean-text {
+  background: linear-gradient(to right, #000, #555, #fff, #555, #000);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.2) !important;
+}
+
+.flag-intersex-text {
+  background: radial-gradient(circle, transparent 35%, #7902aa 36%, #7902aa 50%, transparent 51%), #ffd800;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-genderqueer-text {
+  background: linear-gradient(to bottom, #b57edc 33.3%, #ffffff 33.3%, #ffffff 66.6%, #4a8123 66.6%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.flag-polysexual-text {
+  background: linear-gradient(to bottom, #f714ba 33.3%, #01d66a 33.3%, #01d66a 66.6%, #1594f6 66.6%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  display: inline-block;
+  text-shadow: none !important;
+  font-weight: bold;
+}
+
+.history-stories {
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  border-radius: 10px;
+
+  @media (max-width: 480px) {
+    margin-top: -30px; // Lift higher on mobile
   }
 }

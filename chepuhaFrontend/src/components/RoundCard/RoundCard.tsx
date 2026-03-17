@@ -59,6 +59,17 @@ export const RoundCard = ({
         }
     }, [hints]);
 
+    // Dynamic font-size calculation (Shrink-to-fit)
+    const getFontSize = (text: string) => {
+        if (!text) return undefined;
+        const len = text.length;
+        if (len <= 10) return "45px";
+        const baseSize = 45;
+        const scaleFactor = 10 / len;
+        const calculatedSize = Math.max(22, Math.floor(baseSize * Math.pow(scaleFactor, 1.1)));
+        return `${calculatedSize}px`;
+    };
+
     const isWaiting = phase === Phases.Waiting;
     const handleSubmit = () => {
         if (onSubmitAnswer && answer.trim() !== '') {
@@ -66,6 +77,7 @@ export const RoundCard = ({
             setAnswer('');
         }
     };
+
     return (
         <div className={`${styles.roundCard} ${isWaiting ? styles.waiting : ''}`}>
             <div className={styles.header}>
@@ -73,7 +85,7 @@ export const RoundCard = ({
                     className={getNicknameClassName(playerColor || '', showColors)}
                     style={{
                         ...getNicknameStyle(playerColor || '', showColors),
-                        fontSize: playerName?.length > 10 ? `calc(min(40px, (100vw / ${playerName.length / 0.5})))` : undefined
+                        fontSize: getFontSize(playerName)
                     }}
                 >
                     {playerName}

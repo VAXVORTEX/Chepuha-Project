@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, memo } from "react";
 import Button from "./components/Button/Button";
 import HistoryScreen from "./components/HistoryScreen/HistoryScreen";
 import { RoundCard } from "./components/RoundCard/RoundCard";
@@ -190,10 +190,11 @@ export const AVAILABLE_COLORS = [
   // FLAGS & CUSTOM
   'special:flag-ua', 'special:flag-usa', 'special:flag-uk', 'special:flag-de', 'special:flag-fr', 'special:flag-jp', 'special:flag-pl',
   'special:flag-it', 'special:flag-es', 'special:flag-br', 'special:flag-ca', 'special:flag-cn', 'special:flag-kr', 'special:flag-au',
-  'special:flag-pirates', 'special:flag-pirates-2', 'special:flag-pirates-3',
-  'special:flag-cyber-samurai', 'special:flag-cyber-samurai-2',
+  'special:flag-pirates', 'special:flag-pirates-2', 'special:flag-pirates-3', 'special:pirate-caribbean',
+  'special:flag-cyber-samurai', 'special:flag-cyber-samurai-2', 'special:cyber-samurai-iconic',
   'special:flag-bi', 'special:flag-pan', 'special:flag-ace', 'special:flag-nonbinary',
-  'special:gender-pride', 'special:gender-trans'
+  'special:gender-pride', 'special:gender-trans', 'special:flag-lesbian',
+  'special:flag-intersex', 'special:flag-genderqueer', 'special:flag-polysexual'
 ];
 
 const GAME_LENGTH_INDICES: Record<number, number[]> = {
@@ -223,7 +224,20 @@ const getNicknameClassName = (color: string) => {
   return 'player-name';
 };
 
-const PlayerItem = ({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, crownImage, showColorPicker }: any) => {
+// Dynamic font-size calculation (Shrink-to-fit)
+const getFontSize = (text: string, baseSize: number = 36) => {
+  if (!text) return undefined;
+  const len = text.length;
+  if (len <= 10) return `${baseSize}px`;
+
+  const scaleFactor = 10 / len;
+  // Increase minimum size to 26px on PC, keep 18px on mobile
+  const minSize = window.innerWidth > 768 ? 26 : 18;
+  const calculatedSize = Math.max(minSize, Math.floor(baseSize * Math.pow(scaleFactor, 1.0)));
+  return `${calculatedSize}px`;
+};
+
+const PlayerItem = memo(({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, crownImage, showColorPicker }: any) => {
   const [pulse, setPulse] = useState(false);
   const defaultColor = AVAILABLE_COLORS[i % AVAILABLE_COLORS.length];
   const activeColor = isMe && playerColor ? playerColor : (p.color || defaultColor);
@@ -238,16 +252,16 @@ const PlayerItem = ({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, cro
     }
   }, [activeColor]);
 
+
   return (
     <div key={p.id || String(i)} className={`player-item ${pulse ? 'color-updated' : ''}`}>
       <div className="player-name-wrapper">
         {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
         <span
           className={`${getNicknameClassName(activeColor)} ${!showColorPicker ? 'no-highlight' : ''}`}
-          data-length={p.nickname?.length || 0}
           style={{
             ...(showColorPicker ? getNicknameStyle(activeColor) : { color: '#000000', textShadow: 'none' }),
-            fontSize: p.nickname?.length > 10 ? `calc(min(50px, (100% / ${p.nickname.length / 0.6})))` : undefined,
+            fontSize: getFontSize(p.nickname),
             lineHeight: '1.1'
           }}
         >
@@ -263,7 +277,7 @@ const PlayerItem = ({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, cro
       </div>
     </div>
   );
-};
+});
 
 // Helper to safely call API functions that might fail due to missing columns (like 'color')
 const safeApiCall = async (apiFunc: any, payload: any) => {
@@ -907,7 +921,7 @@ function App() {
   };
 
   const handleNicknameChange = (value: string) => {
-    if (value.length <= 20) {
+    if (value.length <= 25) {
       setAppState(prev => ({ ...prev, nickname: value, error: "" }));
     } else {
       setAppState(prev => ({ ...prev, error: String(t('ERR_NICK_LONG' as any)) }));
@@ -977,7 +991,6 @@ function App() {
 
   const handleJoinGame = async (nick: string, code: string) => {
     if (appState.isJoining) return;
-    const truncatedNick = nick.trim().slice(0, 20);
     const joinStartTime = Date.now();
     setAppState(prev => ({ ...prev, isJoining: true, error: "" }));
     try {
@@ -989,10 +1002,10 @@ function App() {
 
       // Set nickname, roomCode early for UX but DON'T set sessionId yet to avoid triggering
       // useGameState refetch before we have the full rejoin state ready
-      setAppState(prev => ({ ...prev, nickname: truncatedNick, roomCode: code }));
+      setAppState(prev => ({ ...prev, nickname: nick, roomCode: code }));
 
       const existingPlayers = await getPlayersBySession(targetSession.id);
-      const existingPlayer = existingPlayers.find((p: Player) => p.nickname.toLowerCase() === truncatedNick.toLowerCase());
+      const existingPlayer = existingPlayers.find((p: Player) => p.nickname.toLowerCase() === nick.toLowerCase());
 
       if (targetSession.session_status === 'active' && !existingPlayer) {
         return setAppState(prev => ({ ...prev, isJoining: false, error: String(t('ERR_NOT_FOUND' as any)) }));
@@ -1481,12 +1494,10 @@ function App() {
                 <span className="label-part">{t('YOUR_NICK')}</span>
                 <div className="nick-scroll-container">
                   <span
-                    className={`player-name ${getNicknameClassName(playerColor)} ${!parsedColorHighlight ? 'no-highlight' : ''}`}
-                    data-length={nickname.length}
+                    className={`${getNicknameClassName(playerColor)} ${!parsedColorHighlight ? 'no-highlight' : ''}`}
                     style={{
                       ...(parsedColorHighlight ? getNicknameStyle(playerColor) : { color: '#000000', textShadow: 'none' }),
-                      fontSize: nickname.length > 10 ? `calc(min(60px, (100vw / ${nickname.length / 0.5})))` : undefined,
-                      lineHeight: '1.2'
+                      fontSize: getFontSize(nickname, 54)
                     }}
                   >
                     {nickname}
@@ -1494,7 +1505,7 @@ function App() {
                 </div>
               </h2>
               <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
-              <div className="players-list">
+              <div className={`players-list ${(players.length >= 4) ? 'has-many-players' : ''}`}>
                 {players.length > 0 ? (
                   players.map((p, i) => (
                     <PlayerItem

@@ -7,7 +7,7 @@ interface TimerProps {
     className?: string;
     duration?: number;
 }
-const Timer: React.FC<TimerProps> = ({ roundStartedAt, serverTimeOffset, onTimeUp, className, duration = 120 }) => {
+const Timer: React.FC<TimerProps> = React.memo(({ roundStartedAt, serverTimeOffset, onTimeUp, className, duration = 120 }) => {
     const [timeLeft, setTimeLeft] = useState(duration);
     const onTimeUpRef = useRef(onTimeUp);
 
@@ -52,5 +52,5 @@ const Timer: React.FC<TimerProps> = ({ roundStartedAt, serverTimeOffset, onTimeU
             {formatTime(timeLeft)}
         </div>
     );
-};
+});
 export default Timer;
