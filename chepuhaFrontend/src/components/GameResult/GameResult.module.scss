@@ -52,10 +52,17 @@
   width: 100%;
   height: 100%;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
   padding: 5px 0 20px 30px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   .text {
+    @include font-pangolin(55); // Increased from 45 for better optics
     text-align: left;
     width: 100%;
     max-width: 100%;
@@ -170,6 +177,7 @@
   }
 
   .part .text {
+    font-size: 18px;
     line-height: 1.25;
     text-align: left;
     width: 100%;

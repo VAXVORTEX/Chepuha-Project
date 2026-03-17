@@ -5,7 +5,6 @@ import { Phases } from "../../types/phaseVariant";
 import HomeIcon from "../HomeIcon/HomeIcon";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { TEMPLATES, parseLegacyStory } from "../../config/templates";
-import AutoFitText from "../AutoFitText/AutoFitText";
 interface Story {
   playerName: string;
   story: string;
@@ -101,11 +100,9 @@ const GameResult: React.FC<ResultProps> = ({
               ◀
             </button>
             <div className={styles.part}>
-              <AutoFitText
-                html={content}
-                maxFontSize={window.innerWidth <= 768 ? 24 : 55}
-                minFontSize={14}
+              <p
                 className={styles.text}
+                dangerouslySetInnerHTML={{ __html: content }}
               />
             </div>
             <button
