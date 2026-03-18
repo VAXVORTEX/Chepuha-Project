@@ -2837,7 +2837,6 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  border: 1px solid #eee;
   text-shadow: none !important;
   font-weight: bold;
 }
@@ -2982,13 +2981,36 @@
 }
 
 .pirate-caribbean-text {
-  // No background-clip: text — we need visible text over flag background
   color: #fff !important;
   -webkit-text-fill-color: #fff !important;
   display: inline-block;
   font-weight: bold;
   text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000 !important;
   -webkit-text-stroke: 1px #000;
+  position: relative;
+  background: #000;
+  padding: 4px 8px;
+  border-radius: 6px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1.8em;
+    height: 1.8em;
+    background: url('./assets/pirate_icon.png') no-repeat center/contain;
+    opacity: 0.5;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  // Ensure text is above the ::before
+  >* {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 .flag-intersex-text {
@@ -3031,32 +3053,7 @@
   justify-content: center;
   gap: 0;
   position: relative;
-}
-
-.nick-segment {
-  display: inline-block;
-  position: relative;
-  padding: 0 2px;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
   z-index: 1;
-
-  &.segment-flag {
-    // Jolly Roger in the middle
-    background: url('./assets/pirate_icon.png') no-repeat center/contain;
-    background-color: rgba(0, 0, 0, 0.5); // 50% opacity background
-    border-radius: 4px;
-    padding: 2px 8px;
-  }
-
-  &.segment-black {
-    background: #000 !important;
-    color: #fff !important;
-    border-radius: 4px;
-    padding: 2px 4px;
-    text-shadow: none !important;
-  }
 }
 
 // Updated Special BG Themes

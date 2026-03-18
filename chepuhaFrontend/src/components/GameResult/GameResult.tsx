@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import classNames from "classnames";
 import styles from "./GameResult.module.scss";
 import { Phases } from "../../types/phaseVariant";
@@ -49,27 +49,31 @@ const GameResult: React.FC<ResultProps> = ({
   const { t, language } = useLanguage();
   const current = stories[storyIndex];
 
-  let content = current?.story ?? "";
-  let finalAnswers = current?.answers;
-  let finalTemplateId = current?.templateId;
-  if (!finalAnswers || !finalTemplateId) {
-    const legacyParsed = parseLegacyStory(content);
-    if (legacyParsed) {
-      finalAnswers = legacyParsed.answers;
-      finalTemplateId = legacyParsed.templateId;
+  // Memoize content to prevent CSS animation restarts on re-render
+  const content = useMemo(() => {
+    let c = current?.story ?? "";
+    let finalAnswers = current?.answers;
+    let finalTemplateId = current?.templateId;
+    if (!finalAnswers || !finalTemplateId) {
+      const legacyParsed = parseLegacyStory(c);
+      if (legacyParsed) {
+        finalAnswers = legacyParsed.answers;
+        finalTemplateId = legacyParsed.templateId;
+      }
     }
-  }
-  if (finalAnswers && finalTemplateId && !content.includes('</span>')) {
-    const tmpl = TEMPLATES[finalTemplateId];
-    if (tmpl) {
-      content = tmpl.buildStory(finalAnswers, language);
+    if (finalAnswers && finalTemplateId && !c.includes('</span>')) {
+      const tmpl = TEMPLATES[finalTemplateId];
+      if (tmpl) {
+        c = tmpl.buildStory(finalAnswers, language);
+      }
     }
-  }
 
-  // Strip colors ONLY if showColors is explicitly disabled
-  if (!showColors) {
-    content = content.replace(/<\/?[^>]+(>|$)/g, "");
-  }
+    // Strip colors ONLY if showColors is explicitly disabled
+    if (!showColors) {
+      c = c.replace(/<\/?[^>]+(>|$)/g, "");
+    }
+    return c;
+  }, [current?.story, current?.answers, current?.templateId, language, showColors]);
 
   const pColor = current?.playerColor;
   const showNameColor = showColors && pColor;
@@ -79,8 +83,7 @@ const GameResult: React.FC<ResultProps> = ({
     ? { color: pColor }
     : {
       color: '#FFFFFF',
-      textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)',
-      WebkitTextStroke: '1px black'
+      textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)'
     };
 
   // Dynamic font-size calculation (Shrink-to-fit)

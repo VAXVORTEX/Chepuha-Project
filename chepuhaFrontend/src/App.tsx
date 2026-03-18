@@ -247,30 +247,6 @@ const renderThemedNickname = (name: string, color: string, defaultSize: number =
   const style = showHighlight ? getNicknameStyle(color) : { color: '#000000', textShadow: 'none' };
   const fontSize = getFontSize(name, defaultSize);
 
-  if (themeClass.includes('pirate-caribbean')) {
-    const len = name.length;
-    const mid = Math.floor(name.length / 2);
-    // Flag for 3 characters in the middle
-    const flagStart = Math.max(0, mid - 1);
-    const flagEnd = Math.min(len, flagStart + 3);
-
-    const chunks: { text: string; type: 'flag' | 'black' }[] = [];
-
-    if (flagStart > 0) chunks.push({ text: name.substring(0, flagStart), type: 'black' });
-    chunks.push({ text: name.substring(flagStart, flagEnd), type: 'flag' });
-    if (flagEnd < len) chunks.push({ text: name.substring(flagEnd), type: 'black' });
-
-    return (
-      <div className={themeClass + ' segmented-nick-wrapper'} style={{ ...style, fontSize }}>
-        {chunks.map((c, idx) => (
-          <span key={idx} className={`nick-segment segment-${c.type}`}>
-            {c.text}
-          </span>
-        ))}
-      </div>
-    );
-  }
-
   return (
     <span className={themeClass + (!showHighlight ? ' no-highlight' : '')} style={{ ...style, fontSize }}>
       {name}
@@ -528,7 +504,9 @@ function App() {
           const coloredAnswers = fullAnswers.map((ans, idx) => {
             if (!parsedColorHighlight) return ans;
             const originalAnswer = (s.answers || []).find((a: any) => a.position_in_sheet === (idx + 1));
-            const ansOwnerId = originalAnswer ? (typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id.id : originalAnswer.player_id) : null;
+            // No player answer for this slot (filled by fallback) → plain text, no color
+            if (!originalAnswer) return ans;
+            const ansOwnerId = typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id.id : originalAnswer.player_id;
             const owner = players.find(p => String(p.id) === String(ansOwnerId));
             const color = owner?.color || (String(ansOwnerId) === String(playerId) ? playerColor : '#fff');
 
