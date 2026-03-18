@@ -165,18 +165,23 @@
   text-align: center;
 
   &.label-and-nick {
-    display: flex;
-    flex-direction: row;
+    display: flex !important;
+    flex-direction: row !important; // FORCE row even on small screens
+    flex-wrap: nowrap !important;
     align-items: center;
     justify-content: center;
-    gap: 20px;
+    gap: 8px; // Tighter for mobile
     width: 100%;
-    margin: 20px 0;
+    margin: 5px 0;
 
     .label-part {
       white-space: nowrap;
       flex-shrink: 0;
-      @include font-pangolin(60);
+      @include font-pangolin(55);
+
+      @media (max-width: 480px) {
+        font-size: 16px; // Removed !important
+      }
     }
 
     .nick-scroll-container {
@@ -184,29 +189,16 @@
       max-width: 800px;
       overflow: hidden;
       display: flex;
-      justify-content: center; // Centering: keep content centered
+      justify-content: center;
       align-items: center;
       padding: 5px 0;
       position: relative;
-      cursor: ew-resize;
-
-      .player-name {
-        padding: 0 10px;
-        transition: transform 0.3s ease-out;
-        will-change: transform;
-        max-width: none !important;
-        overflow-y: hidden !important; // Fix vertical jitter
-      }
-
-      &:hover .player-name {
-        // Only scrolls if content is wider than 550px
-        animation: marquee 8s linear infinite alternate;
-      }
+      // REMOVED cursor and interactive scroll-hint behaviors
     }
   }
 
   span {
-    @include font-pangolin(80);
+    @include font-pangolin(90); // ENLARGED: Your Nick label
   }
 }
 
@@ -299,17 +291,51 @@
 @keyframes color-pulse {
   0% {
     transform: scale(1);
-    filter: brightness(1);
-  }
-
-  50% {
-    transform: scale(1.05);
-    filter: brightness(1.3);
   }
 
   100% {
     transform: scale(1);
-    filter: brightness(1);
+  }
+}
+
+// ── THEMATIC BACKGROUNDS (PHASE 13) ──────────────────
+.cyberpunk-samurai-iconic-text {
+  @extend .cyberpunk-text;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    background-image: url('./assets/images/samurai_oni.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    opacity: 0.15;
+    z-index: -1;
+    pointer-events: none;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.pirate-caribbean-text {
+  @extend .pirates-text;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    background-image: url('./assets/images/pirate_skull.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    opacity: 0.15;
+    z-index: -1;
+    pointer-events: none;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
   }
 }
 
@@ -733,15 +759,16 @@
 // ── Inline Color Picker (Lobby) ──────────────────────
 .inline-color-picker {
   position: absolute;
-  left: calc(100% + 20px); // Increased spacing to prevent clipping
+  left: calc(100% + 20px);
   top: 50%;
   transform: translateY(-50%);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 12px;
-  z-index: 10;
+  z-index: 100; // Increased to ensure visibility above everything in the row
   pointer-events: all;
+  padding: 5px; // Add internal breathing room
 }
 
 .inline-color-label {
@@ -1294,7 +1321,7 @@
 
   .lobby-container {
     gap: 30px;
-    margin-top: 25vh !important; // LOWERED: User says it was too high (~12vh)
+    margin-top: 5vh !important; // As requested for mobile waiting state
   }
 
   .lobby-info {
@@ -1303,13 +1330,13 @@
   }
 
   .label-and-nick {
-    font-size: 32px !important;
+    font-size: 32px; // Removed !important
     flex-direction: column !important;
     gap: 2px !important;
     align-items: center !important;
 
     .label-part {
-      font-size: 20px !important;
+      font-size: 20px; // Removed !important
       opacity: 0.7;
     }
 
@@ -1351,7 +1378,7 @@
   }
 
   .player-name {
-    font-size: 28px !important;
+    font-size: 28px; // Removed !important
     margin: 0 auto; // Force centering
     max-width: 80vw !important; // RELAXED: Allow more room for 25 chars
   }
@@ -1524,6 +1551,11 @@
     }
   }
 
+  .lobby-container {
+    margin-top: 5vh !important;
+    gap: 20px;
+  }
+
   .language-selector {
     bottom: 20px;
     right: 15px;
@@ -1560,6 +1592,10 @@
     position: fixed !important; // Guarantee pinning
   }
 
+
+  .lobby-container {
+    margin-top: 5vh !important;
+  }
 
   .lobby-info,
   .lobby-container,
@@ -2946,15 +2982,13 @@
 }
 
 .pirate-caribbean-text {
-  background: linear-gradient(to right, #000, #555, #fff, #555, #000);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent !important;
-  color: transparent !important;
+  // No background-clip: text — we need visible text over flag background
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
   display: inline-block;
   font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.2) !important;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000 !important;
+  -webkit-text-stroke: 1px #000;
 }
 
 .flag-intersex-text {
@@ -2988,6 +3022,60 @@
   display: inline-block;
   text-shadow: none !important;
   font-weight: bold;
+}
+
+// SEGMENTED NICKNAMES (Pirate, Samurai update)
+.segmented-nick-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  position: relative;
+}
+
+.nick-segment {
+  display: inline-block;
+  position: relative;
+  padding: 0 2px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1;
+
+  &.segment-flag {
+    // Jolly Roger in the middle
+    background: url('./assets/pirate_icon.png') no-repeat center/contain;
+    background-color: rgba(0, 0, 0, 0.5); // 50% opacity background
+    border-radius: 4px;
+    padding: 2px 8px;
+  }
+
+  &.segment-black {
+    background: #000 !important;
+    color: #fff !important;
+    border-radius: 4px;
+    padding: 2px 4px;
+    text-shadow: none !important;
+  }
+}
+
+// Updated Special BG Themes
+.cyber-samurai-iconic-text {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1.5em;
+    height: 1.5em;
+    background: url('./assets/samurai_icon.png') no-repeat center/contain;
+    opacity: 0.25;
+    z-index: -1;
+    pointer-events: none;
+  }
 }
 
 .history-stories {

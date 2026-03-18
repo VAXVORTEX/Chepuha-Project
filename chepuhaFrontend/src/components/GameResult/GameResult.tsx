@@ -66,8 +66,8 @@ const GameResult: React.FC<ResultProps> = ({
     }
   }
 
-  // Strip colors if in History view OR if showColors is disabled
-  if (phase === Phases.History || !showColors) {
+  // Strip colors ONLY if showColors is explicitly disabled
+  if (!showColors) {
     content = content.replace(/<\/?[^>]+(>|$)/g, "");
   }
 
@@ -87,11 +87,15 @@ const GameResult: React.FC<ResultProps> = ({
   const getFontSize = (text: string) => {
     if (!text) return undefined;
     const len = text.length;
-    // VERY small for Results header to avoid overlap with "STORY OF"
-    if (len <= 10) return "24px";
-    const baseSize = 24;
-    const scaleFactor = 10 / len;
-    const calculatedSize = Math.max(14, Math.floor(baseSize * Math.pow(scaleFactor, 0.9)));
+    const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
+    // Base size 90 on PC to match "YOUR NICK" label, 36 on Mobile
+    const baseSize = isPC ? 90 : 36;
+
+    if (len <= 6) return `${baseSize}px`;
+    const scaleFactor = 6 / len;
+    // min size 36 on PC, 18 on Mobile
+    const minSize = isPC ? 36 : 18;
+    const calculatedSize = Math.max(minSize, Math.floor(baseSize * Math.pow(scaleFactor, 0.6)));
     return `${calculatedSize}px`;
   };
 

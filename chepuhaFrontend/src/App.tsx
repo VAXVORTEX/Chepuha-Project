@@ -225,48 +225,68 @@ const getNicknameClassName = (color: string) => {
 };
 
 // Dynamic font-size calculation (Shrink-to-fit)
-const getFontSize = (text: string, baseSize: number = 36) => {
+const getFontSize = (text: string, baseSizeArg: number = 24) => {
   if (!text) return undefined;
   const len = text.length;
-  if (len <= 10) return `${baseSize}px`;
+  const isPC = window.innerWidth > 768;
+  // Increase base size: 90 for PC, 36 for mobile
+  const baseSize = isPC ? 90 : 36;
 
-  const scaleFactor = 10 / len;
-  // Increase minimum size to 26px on PC, keep 18px on mobile
-  const minSize = window.innerWidth > 768 ? 26 : 18;
-  const calculatedSize = Math.max(minSize, Math.floor(baseSize * Math.pow(scaleFactor, 1.0)));
+  if (len <= 6) return `${baseSize}px`;
+
+  // Scale factor: how much to shrink compared to 6 chars
+  const scaleFactor = 6 / len;
+  // min size 36 on PC, 18 on Mobile
+  const minSize = isPC ? 36 : 18;
+  const calculatedSize = Math.max(minSize, Math.floor(baseSize * Math.pow(scaleFactor, 0.6)));
   return `${calculatedSize}px`;
 };
 
-const PlayerItem = memo(({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, crownImage, showColorPicker }: any) => {
-  const [pulse, setPulse] = useState(false);
-  const defaultColor = AVAILABLE_COLORS[i % AVAILABLE_COLORS.length];
-  const activeColor = isMe && playerColor ? playerColor : (p.color || defaultColor);
-  const prevColor = useRef(activeColor);
+const renderThemedNickname = (name: string, color: string, defaultSize: number = 36, showHighlight: boolean = true) => {
+  const themeClass = getNicknameClassName(color);
+  const style = showHighlight ? getNicknameStyle(color) : { color: '#000000', textShadow: 'none' };
+  const fontSize = getFontSize(name, defaultSize);
 
-  useEffect(() => {
-    if (prevColor.current !== activeColor) {
-      setPulse(true);
-      const timer = setTimeout(() => setPulse(false), 1000);
-      prevColor.current = activeColor;
-      return () => clearTimeout(timer);
-    }
-  }, [activeColor]);
+  if (themeClass.includes('pirate-caribbean')) {
+    const len = name.length;
+    const mid = Math.floor(name.length / 2);
+    // Flag for 3 characters in the middle
+    const flagStart = Math.max(0, mid - 1);
+    const flagEnd = Math.min(len, flagStart + 3);
 
+    const chunks: { text: string; type: 'flag' | 'black' }[] = [];
+
+    if (flagStart > 0) chunks.push({ text: name.substring(0, flagStart), type: 'black' });
+    chunks.push({ text: name.substring(flagStart, flagEnd), type: 'flag' });
+    if (flagEnd < len) chunks.push({ text: name.substring(flagEnd), type: 'black' });
+
+    return (
+      <div className={themeClass + ' segmented-nick-wrapper'} style={{ ...style, fontSize }}>
+        {chunks.map((c, idx) => (
+          <span key={idx} className={`nick-segment segment-${c.type}`}>
+            {c.text}
+          </span>
+        ))}
+      </div>
+    );
+  }
 
   return (
-    <div key={p.id || String(i)} className={`player-item ${pulse ? 'color-updated' : ''}`}>
+    <span className={themeClass + (!showHighlight ? ' no-highlight' : '')} style={{ ...style, fontSize }}>
+      {name}
+    </span>
+  );
+};
+
+const PlayerItem = memo(({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, crownImage, showColorPicker }: any) => {
+  const defaultColor = AVAILABLE_COLORS[i % AVAILABLE_COLORS.length];
+  const activeColor = isMe && playerColor ? playerColor : (p.color || defaultColor);
+
+  return (
+    <div key={p.id || String(i)} className="player-item">
       <div className="player-name-wrapper">
         {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
-        <span
-          className={`${getNicknameClassName(activeColor)} ${!showColorPicker ? 'no-highlight' : ''}`}
-          style={{
-            ...(showColorPicker ? getNicknameStyle(activeColor) : { color: '#000000', textShadow: 'none' }),
-            fontSize: getFontSize(p.nickname),
-            lineHeight: '1.1'
-          }}
-        >
-          {p.nickname}
-        </span>
+        {renderThemedNickname(p.nickname, activeColor, 36, showColorPicker)}
         {isMe && showColorPicker && (
           <div className="inline-color-picker">
             <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
@@ -286,7 +306,7 @@ const safeApiCall = async (apiFunc: any, payload: any) => {
   } catch (err: any) {
     // If it's a "column not found" error, try again without the 'color' property
     if (err && (String(err.message).includes('column') || String(err.message).includes('schema cache'))) {
-      const { color, ...fallbackPayload } = payload;
+      const { color, ...fallbackPayload } = (payload || {});
       console.warn("Retrying API call without 'color' column due to DB error:", err.message);
       return await apiFunc(fallbackPayload);
     }
@@ -610,10 +630,14 @@ function App() {
         joinedCount: 0,
         answeredRoundId: null
       }));
-    } else if (String(latestRound.id) === String(currentRoundId) || isStory) {
+    }
+    if (String(latestRound.id) === String(currentRoundId) || isStory) {
       if (session?.session_status === 'completed' && phase !== Phases.End && phase !== Phases.History) {
-        fetchFinalStoryResult();
-        setAppState(prev => ({ ...prev, phase: Phases.End }));
+        // Guard against multiple calls while already transitioning or if already at End
+        if (!transitionLockRef.current) {
+          fetchFinalStoryResult();
+          setAppState(prev => ({ ...prev, phase: Phases.End }));
+        }
       } else if (phase === Phases.Main && !isStory && (currentAnswers.some(a => {
         const aPlayerId = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : a.player_id;
         const aRoundId = typeof a.round_id === 'object' && a.round_id !== null ? (a.round_id as any).id : a.round_id;
@@ -621,8 +645,10 @@ function App() {
       }) || String(answeredRoundId) === String(currentRoundId))) {
         setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
       } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
-        fetchFinalStoryResult();
-        setAppState(prev => ({ ...prev, phase: Phases.End }));
+        if (!transitionLockRef.current) {
+          fetchFinalStoryResult();
+          setAppState(prev => ({ ...prev, phase: Phases.End }));
+        }
       }
     }
   }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, currentAnswers, rounds, isTransitioning, fetchFinalStoryResult, dataReady, answeredRoundId]);
@@ -1493,15 +1519,7 @@ function App() {
               <h2 className="lobby-text label-and-nick">
                 <span className="label-part">{t('YOUR_NICK')}</span>
                 <div className="nick-scroll-container">
-                  <span
-                    className={`${getNicknameClassName(playerColor)} ${!parsedColorHighlight ? 'no-highlight' : ''}`}
-                    style={{
-                      ...(parsedColorHighlight ? getNicknameStyle(playerColor) : { color: '#000000', textShadow: 'none' }),
-                      fontSize: getFontSize(nickname, 54)
-                    }}
-                  >
-                    {nickname}
-                  </span>
+                  {renderThemedNickname(nickname, playerColor, 64, parsedColorHighlight)}
                 </div>
               </h2>
               <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
