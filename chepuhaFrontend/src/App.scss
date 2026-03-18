@@ -2978,6 +2978,29 @@
   animation: rainbow-text-animation 2s linear infinite;
   font-weight: bold;
   text-shadow: 0 0 10px rgba(255, 0, 0, 0.5) !important;
+  position: relative;
+  background: #000 !important; // Black background box
+  padding: 4px 12px;
+  border-radius: 8px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1.8em;
+    height: 1.8em;
+    background: url('./assets/images/samurai_2077.png') no-repeat center/contain;
+    opacity: 0.35;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  >* {
+    position: relative;
+    z-index: 1;
+  }
 }
 
 .pirate-caribbean-text {
@@ -2989,8 +3012,8 @@
   -webkit-text-stroke: 1px #000;
   position: relative;
   background: #000;
-  padding: 4px 8px;
-  border-radius: 6px;
+  padding: 4px 12px; // Adjusted padding for "black sides" feel
+  border-radius: 8px;
 
   &::before {
     content: '';
@@ -2998,9 +3021,9 @@
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 1.8em;
-    height: 1.8em;
-    background: url('./assets/pirate_icon.png') no-repeat center/contain;
+    width: 2em;
+    height: 2em;
+    background: url('./assets/images/PiratesofCaribianjpg.jpg') no-repeat center/contain;
     opacity: 0.5;
     z-index: 0;
     pointer-events: none;
@@ -3012,6 +3035,37 @@
     z-index: 1;
   }
 }
+
+.pirate-bw-text {
+  background: linear-gradient(to right, #ffffff, #d3d3d3, #808080, #000000);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  display: inline-block;
+  font-weight: bold;
+  position: relative;
+  background-color: #000 !important; // Background box
+  padding: 4px 20px; // Larger sides for "black squares" feel
+  border-radius: 8px;
+  // White shadow to keep it visible on black even when gradient is dark
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.4) !important;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 1.8em;
+    height: 1.8em;
+    background: url('./assets/images/PiratesofCaribianjpg.jpg') no-repeat center/contain;
+    opacity: 0.3;
+    z-index: 0;
+    pointer-events: none;
+  }
+}
+
+// Source: https://images.steamusercontent.com/ugc/782984638953970989/025C8B4A40F125091418AB81D8CA5B127138A6F9/?imw=637&imh=358&ima=fit&impolicy=Letterbox&imcolor=%23000000&letterbox=true
 
 .flag-intersex-text {
   background: radial-gradient(circle, transparent 35%, #7902aa 36%, #7902aa 50%, transparent 51%), #ffd800;
@@ -3036,7 +3090,7 @@
 }
 
 .flag-polysexual-text {
-  background: linear-gradient(to bottom, #f714ba 33.3%, #01d66a 33.3%, #01d66a 66.6%, #1594f6 66.6%);
+  background: linear-gradient(to bottom, #f71ebb 33.3%, #b73ee7 33.3%, #b73ee7 66.6%, #00d38d 66.6%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent !important;
@@ -3044,6 +3098,97 @@
   display: inline-block;
   text-shadow: none !important;
   font-weight: bold;
+}
+
+// PREMIUM GRADIENTS
+.stellar-text {
+  background: linear-gradient(45deg, #1e3c72, #2a5298, #70e1f5);
+  animation: rainbow-text-animation 3s linear infinite;
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.deep-purple-text {
+  background: linear-gradient(45deg, #4b0082, #8a2be2, #000);
+  animation: rainbow-text-animation 4s linear infinite;
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.cyan-burst-text {
+  background: linear-gradient(45deg, #00ffff, #008080, #fff);
+  animation: rainbow-text-animation 2s linear infinite;
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.golden-rod-text {
+  background: linear-gradient(45deg, #daa520, #ffd700, #fff);
+  animation: rainbow-text-animation 3s linear infinite;
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.mint-fresh-text {
+  background: linear-gradient(45deg, #00ffca, #05bfdb, #088395);
+  animation: rainbow-text-animation 5s linear infinite;
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.royal-red-text {
+  background: linear-gradient(45deg, #800000, #ff0000, #ffd700);
+  animation: rainbow-text-animation 3s linear infinite;
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.electric-blue-text {
+  background: linear-gradient(45deg, #0000ff, #00ffff, #000);
+  animation: rainbow-text-animation 2s linear infinite;
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.neon-pink-text {
+  background: linear-gradient(45deg, #ff00ff, #ff69b4, #fff);
+  animation: rainbow-text-animation 2s linear infinite;
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.silver-streak-text {
+  background: linear-gradient(45deg, #c0c0c0, #ffffff, #808080);
+  animation: rainbow-text-animation 4s linear infinite;
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.bronze-age-text {
+  background: linear-gradient(45deg, #cd7f32, #a0522d, #8b4513);
+  animation: rainbow-text-animation 3s linear infinite;
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 // SEGMENTED NICKNAMES (Pirate, Samurai update)

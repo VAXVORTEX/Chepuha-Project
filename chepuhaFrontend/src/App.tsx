@@ -194,7 +194,11 @@ export const AVAILABLE_COLORS = [
   'special:flag-cyber-samurai', 'special:flag-cyber-samurai-2', 'special:cyber-samurai-iconic',
   'special:flag-bi', 'special:flag-pan', 'special:flag-ace', 'special:flag-nonbinary',
   'special:gender-pride', 'special:gender-trans', 'special:flag-lesbian',
-  'special:flag-intersex', 'special:flag-genderqueer', 'special:flag-polysexual'
+  'special:flag-intersex', 'special:flag-genderqueer', 'special:flag-polysexual',
+  // NEW PREMIUM GRADIENTS
+  'special:pirate-bw', 'special:stellar', 'special:deep-purple', 'special:cyan-burst', 'special:golden-rod',
+  'special:mint-fresh', 'special:royal-red', 'special:electric-blue', 'special:neon-pink', 'special:silver-streak',
+  'special:bronze-age'
 ];
 
 const GAME_LENGTH_INDICES: Record<number, number[]> = {

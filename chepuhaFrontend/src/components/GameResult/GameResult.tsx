@@ -136,7 +136,7 @@ const GameResult: React.FC<ResultProps> = ({
           {(phase === Phases.End || phase === Phases.History) && (
             <div className={styles.actions}>
               <button className={styles.GoBackButton} onClick={onHome}>
-                {t('BACK_TO_MENU')}
+                {phase === Phases.History ? (language === 'uk' ? 'Назад' : 'Back') : t('BACK_TO_MENU')}
               </button>
               {onSave && (
                 <button
