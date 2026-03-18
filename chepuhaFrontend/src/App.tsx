@@ -251,26 +251,13 @@ const renderThemedNickname = (name: string, color: string, defaultSize: number =
   const style = showHighlight ? getNicknameStyle(color) : { color: '#000000', textShadow: 'none' };
   const fontSize = getFontSize(name, defaultSize);
 
-  const isSegmented = color === 'special:pirate-caribbean' || color === 'special:pirate-bw' || color === 'special:cyber-samurai-iconic';
-
-  if (isSegmented && showHighlight) {
-    return (
-      <span className={`segmented-nick-wrapper ${themeClass}`} style={{ fontSize }}>
-        {name.split('').map((char, index) => (
-          <span key={index} className="nick-segment" style={style}>
-            {char === ' ' ? '\u00A0' : char}
-          </span>
-        ))}
-      </span>
-    );
-  }
-
   return (
     <span className={themeClass + (!showHighlight ? ' no-highlight' : '')} style={{ ...style, fontSize }}>
       {name}
     </span>
   );
 };
+
 
 const PlayerItem = memo(({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, crownImage, showColorPicker }: any) => {
   const defaultColor = AVAILABLE_COLORS[i % AVAILABLE_COLORS.length];

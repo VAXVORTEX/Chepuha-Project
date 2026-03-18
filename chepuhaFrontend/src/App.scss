@@ -867,6 +867,68 @@
   &.flag-polysexual {
     background: linear-gradient(to bottom, #f714ba 33.3%, #01d66a 33.3%, #01d66a 66.6%, #1594f6 66.6%) !important;
   }
+
+  // --- New Pirate/Samurai variants ---
+  &.pirate-bw {
+    background: linear-gradient(to right, #ffffff, #888888, #000000) !important;
+  }
+
+  &.flag-pirates-2 {
+    background: repeating-linear-gradient(135deg, #333, #333 5px, #8b4513 5px, #8b4513 10px) !important;
+  }
+
+  &.flag-pirates-3 {
+    background: linear-gradient(to right, #1a1a1a, #444, #1a1a1a) !important;
+  }
+
+  &.cyber-samurai {
+    background: linear-gradient(45deg, #ff2200, #ff8c00) !important;
+  }
+
+  &.cyber-samurai-2 {
+    background: linear-gradient(45deg, #800000, #ff0000) !important;
+  }
+
+  // --- Premium Gradients ---
+  &.stellar {
+    background: linear-gradient(45deg, #1e3c72, #2a5298, #70e1f5) !important;
+  }
+
+  &.deep-purple {
+    background: linear-gradient(45deg, #4b0082, #8a2be2, #1a0033) !important;
+  }
+
+  &.cyan-burst {
+    background: linear-gradient(45deg, #00ffff, #008080, #004444) !important;
+  }
+
+  &.golden-rod {
+    background: linear-gradient(45deg, #daa520, #ffd700, #b8860b) !important;
+  }
+
+  &.mint-fresh {
+    background: linear-gradient(45deg, #00ffca, #05bfdb, #088395) !important;
+  }
+
+  &.royal-red {
+    background: linear-gradient(45deg, #800000, #ff0000, #ffd700) !important;
+  }
+
+  &.electric-blue {
+    background: linear-gradient(45deg, #0000ff, #00ffff, #000080) !important;
+  }
+
+  &.neon-pink {
+    background: linear-gradient(45deg, #ff00ff, #ff69b4, #880088) !important;
+  }
+
+  &.silver-streak {
+    background: linear-gradient(45deg, #c0c0c0, #ffffff, #808080) !important;
+  }
+
+  &.bronze-age {
+    background: linear-gradient(45deg, #cd7f32, #a0522d, #8b4513) !important;
+  }
 }
 
 // Story mode desc
@@ -2285,83 +2347,7 @@
   text-shadow: none !important;
 }
 
-// SEGMENTED NICKNAMES (Pirate, Samurai update)
-.segmented-nick-wrapper {
-  display: inline-flex;
-  gap: 4px;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  padding: 4px 16px; // Extra padding for the icon area
 
-  &::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 2.2em;
-    height: 2.2em;
-    z-index: 5; // Above the segments
-    pointer-events: none;
-    opacity: 0.8;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: contain;
-  }
-
-  &.pirate-caribbean-text::after,
-  &.pirate-bw-text::after {
-    background-image: url('./assets/images/PiratesofCaribianjpg.jpg');
-  }
-
-  &.cyber-samurai-iconic-text::after {
-    background-image: url('./assets/images/samurai_2077.png');
-    width: 2.5em;
-    height: 2.5em;
-    opacity: 0.9;
-  }
-
-  .nick-segment {
-    position: relative;
-    z-index: 2; // Text level
-    background: rgba(0, 0, 0, 0.85); // Slightly transparent to let icon peek through
-    padding: 6px 10px;
-    border-radius: 6px;
-    min-width: 1.2em;
-    display: inline-block;
-    font-weight: bold;
-    text-align: center;
-    box-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
-
-    .pirate-caribbean-text & {
-      color: #fff !important;
-      -webkit-text-fill-color: #fff !important;
-      text-shadow: 0 0 8px #fff, 0 0 12px #fff, -1px -1px 0 #000 !important;
-      -webkit-text-stroke: 1px #000;
-    }
-
-    .pirate-bw-text & {
-      background: linear-gradient(to right, #fff, #aaa, #444, #aaa, #fff);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent !important;
-      animation: pirate-bw-anim 2s linear infinite;
-      text-shadow: 0 0 5px rgba(255, 255, 255, 0.6) !important;
-    }
-
-    .cyber-samurai-iconic-text & {
-      background: linear-gradient(to right, #000, #ff8c00, #ff4500, #000);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent !important;
-      animation: samurai-fire-anim 1.5s linear infinite;
-      text-shadow: 0 0 10px rgba(255, 69, 0, 0.8), 0 0 15px rgba(255, 0, 0, 0.4) !important;
-    }
-  }
-}
 
 .midnight-text {
   background: linear-gradient(90deg, #232526, #414345);
@@ -3045,14 +3031,103 @@
   font-weight: bold;
 }
 
-.cyber-samurai-iconic-text {}
+// --- Cyber Samurai (Black-Orange-Red Fire theme) ---
+.cyber-samurai-iconic-text {
+  position: relative;
+  display: inline-block;
+  padding: 4px 12px 4px 2.4em; // left padding for icon
+  background: linear-gradient(to right, #1a0000, #ff8c00, #ff2200, #ff8c00, #1a0000);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  animation: samurai-fire-anim 2s linear infinite;
+  text-shadow: none !important;
+  font-weight: bold;
+  border-radius: 8px;
+  box-shadow: 0 0 0 2px #000 inset, 0 0 14px rgba(255, 69, 0, 0.55);
+  filter: drop-shadow(0 0 6px rgba(255, 40, 0, 0.5));
 
-.pirate-caribbean-text {}
+  &::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.6em;
+    height: 1.6em;
+    background: url('./assets/images/samurai_2077.png') no-repeat center / contain;
+    opacity: 1;
+    filter: drop-shadow(0 0 5px rgba(255, 100, 0, 0.9));
+    pointer-events: none;
+  }
+}
 
-.pirate-bw-text {}
+// --- Pirate Caribbean (white text with flag icon) ---
+.pirate-caribbean-text {
+  position: relative;
+  display: inline-block;
+  padding: 4px 12px 4px 2.4em; // left padding for icon
+  background: #0a0a0a;
+  color: #efefef !important;
+  -webkit-text-fill-color: #efefef !important;
+  text-shadow:
+    0 0 6px #fff,
+    0 0 12px rgba(255, 255, 255, 0.55),
+    -1px -1px 0 #000,
+    1px 1px 0 #000 !important;
+  -webkit-text-stroke: 0.5px #000;
+  font-weight: bold;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2), 0 0 0 1px #333 inset;
 
+  &::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.6em;
+    height: 1.6em;
+    background: url('./assets/images/PiratesofCaribianjpg.jpg') no-repeat center / contain;
+    opacity: 0.92;
+    border-radius: 2px;
+    pointer-events: none;
+  }
+}
+
+// --- Pirate BW (animated white-gray-black gradient) ---
 .pirate-bw-text {
-  // Now handled by .nick-segment within .segmented-nick-wrapper
+  position: relative;
+  display: inline-block;
+  padding: 4px 12px 4px 2.4em; // left padding for icon
+  background: linear-gradient(to right, #fff, #ccc, #555, #111, #555, #ccc, #fff);
+  background-size: 300% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  animation: pirate-bw-anim 2.5s linear infinite;
+  text-shadow: none !important;
+  font-weight: bold;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.15), 0 0 0 2px #111 inset;
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.3));
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1.6em;
+    height: 1.6em;
+    background: url('./assets/images/PiratesofCaribianjpg.jpg') no-repeat center / contain;
+    opacity: 0.92;
+    border-radius: 2px;
+    pointer-events: none;
+  }
 }
 
 
@@ -3182,103 +3257,7 @@
   -webkit-text-fill-color: transparent;
 }
 
-// SEGMENTED NICKNAMES (Pirate, Samurai update)
-.segmented-nick-wrapper {
-  display: inline-flex;
-  gap: 4px;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  padding: 4px 16px; // Space for icons
 
-  &::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 2.2em;
-    height: 2.2em;
-    z-index: 5; // Layered ON TOP of the black boxes
-    pointer-events: none;
-    opacity: 0.8;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: contain;
-  }
-
-  &.pirate-caribbean-text::after,
-  &.pirate-bw-text::after {
-    background-image: url('./assets/images/PiratesofCaribianjpg.jpg');
-  }
-
-  &.cyber-samurai-iconic-text::after {
-    background-image: url('./assets/images/samurai_2077.png');
-    width: 2.6em;
-    height: 2.6em;
-    opacity: 0.95;
-  }
-
-  .nick-segment {
-    position: relative;
-    z-index: 6; // Above the icon for clear text
-    background: rgba(0, 0, 0, 0.88); // Deep black box with slight transparency
-    padding: 6px 10px;
-    border-radius: 6px;
-    min-width: 1.25em;
-    display: inline-block;
-    font-weight: bold;
-    text-align: center;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.9);
-
-    .pirate-caribbean-text & {
-      color: #fff !important;
-      -webkit-text-fill-color: #fff !important;
-      text-shadow: 0 0 10px #fff, 0 0 20px #fff, -2px -2px 0 #000 !important;
-      -webkit-text-stroke: 1.5px #000;
-    }
-
-    .pirate-bw-text & {
-      background: linear-gradient(to right, #ffffff, #888888, #000000, #888888, #ffffff);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent !important;
-      animation: pirate-bw-anim 2.5s linear infinite;
-      text-shadow: 0 0 6px rgba(255, 255, 255, 0.7) !important;
-    }
-
-    .cyber-samurai-iconic-text & {
-      background: linear-gradient(to right, #000000, #ff8c00, #ff0000, #000000);
-      background-size: 200% auto;
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent !important;
-      animation: samurai-fire-anim 2s linear infinite;
-      text-shadow: 0 0 12px rgba(255, 69, 0, 0.9), 0 0 20px rgba(255, 0, 0, 0.6) !important;
-    }
-  }
-}
-
-@keyframes pirate-bw-anim {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  100% {
-    background-position: 200% 50%;
-  }
-}
-
-@keyframes samurai-fire-anim {
-  0% {
-    background-position: 0% 50%;
-  }
-
-  100% {
-    background-position: 200% 50%;
-  }
-}
 
 .history-stories {
   border: 2px solid rgba(0, 0, 0, 0.1);
