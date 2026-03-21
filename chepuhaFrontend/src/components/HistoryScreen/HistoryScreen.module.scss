@@ -155,15 +155,15 @@
 
 @media (max-width: 768px) {
     .wrapper {
-        padding: 5px 5px; // Reduced from 50px
+        padding: 5px 5px;
     }
 
     .box {
         padding: 20px 10px;
         border-width: 5px;
         height: auto;
-        min-height: 80vh; // Reduced from 85vh to lift it higher
-        margin-top: -140px; // LIFTED: Push card higher from -80px
+        min-height: 80vh;
+        margin-top: -140px;
     }
 
     .title {

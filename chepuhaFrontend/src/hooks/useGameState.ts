@@ -35,7 +35,7 @@ export function useGameState(sessionId: string | null) {
     const fetchState = useCallback(async () => {
         if (!sessionId) return;
         try {
-            // Parallel fetching for speed (~200ms vs ~800ms sequential)
+
             const [sessionData, playersData, roundsData] = await Promise.all([
                 getGameSession(sessionId).catch(() => gameState.session),
                 getPlayersBySession(sessionId).catch(() => gameState.players),
@@ -47,7 +47,7 @@ export function useGameState(sessionId: string | null) {
             const activeRound = sortedByNum.length > 0 ? sortedByNum[0] : null;
 
             if (activeRound) {
-                // If round changed, don't carry over old answers
+
                 if (activeRound.id !== gameState.activeRoundId) {
                     activeRoundAnswers = [];
                 }
@@ -57,7 +57,7 @@ export function useGameState(sessionId: string | null) {
                 }
             }
 
-            // Aggressive fallback: if fetch failed, use previous state data to avoid flashing empty screens
+
             setGameState((prev) => ({
                 session: sessionData || prev.session,
                 players: playersData || prev.players,
@@ -68,7 +68,7 @@ export function useGameState(sessionId: string | null) {
                 dataReady: true,
             }));
         } catch (err: any) {
-            // Overall failure (e.g. initial connection)
+
             if (err instanceof TypeError || String(err).includes('Failed to fetch')) {
                 setGameState((prev) => ({ ...prev, error: 'NETWORK_ERROR' }));
             }
@@ -76,7 +76,7 @@ export function useGameState(sessionId: string | null) {
     }, [sessionId]);
 
     useEffect(() => {
-        // Reset state immediately when sessionId changes to avoid data leaking between sessions
+
         setGameState({
             session: null,
             players: [],
@@ -138,9 +138,9 @@ export function useGameState(sessionId: string | null) {
                     (payload) => {
                         if (payload?.new && payload?.eventType === 'INSERT') {
                             const newAnswer = payload.new as any;
-                            // Verify if this answer belongs to the active round of our session
-                            // Note: Since we don't have session_id directly in 'answers' table, 
-                            // we cross-reference with activeRoundId
+
+
+
                             setGameState(prev => {
                                 if (prev.activeRoundId && String(newAnswer.round_id) === String(prev.activeRoundId)) {
                                     const exists = prev.currentAnswers.some(a => a.id === newAnswer.id);
@@ -152,7 +152,7 @@ export function useGameState(sessionId: string | null) {
                                 return prev;
                             });
                         }
-                        if (Date.now() % 5 === 0) fetchState(); // Throttled re-sync
+                        if (Date.now() % 5 === 0) fetchState();
                     }
                 )
                 .subscribe((status) => {
@@ -160,7 +160,7 @@ export function useGameState(sessionId: string | null) {
 
             const pollInterval = setInterval(() => {
                 fetchState();
-            }, 1000); // 1s fallback polling
+            }, 1000);
 
             return () => {
                 supabase.removeChannel(sessionChannel);

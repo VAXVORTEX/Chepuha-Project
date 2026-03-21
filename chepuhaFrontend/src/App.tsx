@@ -125,8 +125,8 @@ const getInitialState = (): AppState => {
     if (saved) {
       const parsed = JSON.parse(saved);
       if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
-        // We only restore identifiers, not the game state (phase/didGameStart)
-        // so that refresh always lands on the Home screen.
+
+
         return {
           ...defaultState,
           sessionId: parsed.sessionId || null,
@@ -153,36 +153,36 @@ const getInitialState = (): AppState => {
 };
 
 export const AVAILABLE_COLORS = [
-  // REDS
+
   '#e52929', '#ff0000', '#8b0000', '#ff4500', '#ff6347',
-  // ORANGES
+
   '#ff8c00', '#ffa500', '#e5a629', '#ffd700',
-  // YELLOWS
+
   '#ffff00', '#fafad2', '#ffffed',
-  // GREENS
+
   '#29a62b', '#00ff00', '#32cd32', '#008000', '#adff2f', '#98fb98', '#00fa9a',
-  // BLUES
+
   '#2962e5', '#00bfff', '#0000ff', '#00008b', '#4682b4', '#87ceeb', '#add8e6',
-  // PURPLES
+
   '#9c29e5', '#8a2be2', '#4b0082', '#9932cc', '#ba55d3', '#e6e6fa',
-  // PINKS
+
   '#e529b3', '#ff69b4', '#ff1493', '#ffc0cb', '#db7093',
-  // CYANS/TEALS
+
   '#29e5d0', '#00ffff', '#20b2aa', '#40e0d0',
-  // VIBRANT ADDITIONS
+
   '#ff00ff', '#00ffea', '#ffae00', '#7b00ff', '#00ff1a',
-  // GRAYS / BLACK
+
   '#ffffff', '#808080', '#c0c0c0', '#dcdcdc', '#000000',
-  // SPECIALS
+
   'special:rainbow', 'special:fire-gradient', 'special:ice-gradient', 'special:gold',
   'special:nebula', 'special:sunset', 'special:solar', 'special:cyberpunk',
-  // FLAGS & CUSTOM
+
   'special:flag-ua', 'special:flag-de', 'special:flag-jp', 'special:flag-pl',
   'special:flag-it', 'special:flag-es', 'special:flag-br', 'special:flag-ca',
   'special:flag-bi', 'special:flag-pan', 'special:flag-ace', 'special:flag-nonbinary',
   'special:gender-pride', 'special:gender-trans', 'special:flag-lesbian',
   'special:flag-intersex', 'special:flag-genderqueer', 'special:flag-polysexual',
-  // NEW PREMIUM GRADIENTS
+
   'special:pirate-caribbean', 'special:cyber-samurai-iconic',
   'special:stellar', 'special:deep-purple', 'special:cyan-burst', 'special:golden-rod',
   'special:mint-fresh', 'special:royal-red', 'special:electric-blue', 'special:neon-pink', 'special:silver-streak',
@@ -217,19 +217,19 @@ const getNicknameClassName = (color: string) => {
   return 'player-name';
 };
 
-// Dynamic font-size calculation (Shrink-to-fit)
+
 const getFontSize = (text: string, baseSizeArg: number = 24) => {
   if (!text) return undefined;
   const len = text.length;
   const isPC = window.innerWidth > 768;
-  // Increase base size: 90 for PC, 36 for mobile
+
   const baseSize = isPC ? 90 : 36;
 
   if (len <= 6) return `${baseSize}px`;
 
-  // Scale factor: how much to shrink compared to 6 chars
+
   const scaleFactor = 6 / len;
-  // min size 36 on PC, 18 on Mobile
+
   const minSize = isPC ? 36 : 18;
   const calculatedSize = Math.max(minSize, Math.floor(baseSize * Math.pow(scaleFactor, 0.6)));
   return `${calculatedSize}px`;
@@ -260,7 +260,7 @@ const PlayerItem = memo(({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS
   const activeColor = isMe && playerColor ? playerColor : (p.color || defaultColor);
 
   return (
-    <div key={p.id || String(i)} className="player-item">
+    <div key={p.id || String(i)} className="player-item" data-player-id={p.id}>
       <div className="player-name-wrapper">
         {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
         {renderThemedNickname(p.nickname, activeColor, 36, showColorPicker)}
@@ -276,12 +276,12 @@ const PlayerItem = memo(({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS
   );
 });
 
-// Helper to safely call API functions that might fail due to missing columns (like 'color')
+
 const safeApiCall = async (apiFunc: any, payload: any) => {
   try {
     return await apiFunc(payload);
   } catch (err: any) {
-    // If it's a "column not found" error, try again without the 'color' property
+
     if (err && (String(err.message).includes('column') || String(err.message).includes('schema cache'))) {
       const { color, ...fallbackPayload } = (payload || {});
       console.warn("Retrying API call without 'color' column due to DB error:", err.message);
@@ -295,6 +295,7 @@ function App() {
   const [appState, setAppState] = useState<AppState>(getInitialState);
 
   const [serverTimeOffset, setServerTimeOffset] = useState(0);
+  const playersListRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -320,6 +321,16 @@ function App() {
 
   const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets, lobbyCreatedAt, answeredRoundId, gameLength, storyMode, hintsEnabled, colorHighlight, playerColor } = appState;
   const { session, players, rounds, currentAnswers, activeRoundId: hookActiveRoundId, error: pollError, refreshState, dataReady } = useGameState(sessionId);
+
+  useEffect(() => {
+    if (players && players.length > 0 && playerId && playersListRef.current && isLobby) {
+
+      const myItem = playersListRef.current.querySelector(`[data-player-id="${playerId}"]`);
+      if (myItem) {
+        myItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+  }, [players?.length, playerId, isLobby]);
   const hookMatch = hookActiveRoundId && currentRoundId && hookActiveRoundId === currentRoundId;
   const rawTemplateConfig = session?.template || selectedTemplate || "";
   const tParts = rawTemplateConfig.split('|');
@@ -347,12 +358,12 @@ function App() {
   const activeTemplate = TEMPLATES[actualTemplateKey] || TEMPLATES.classic;
   const { savedGames, saveGameToHistory } = useHistory();
 
-  // Carousel state — list starts with 'random', then all templates
+
   const CAROUSEL_TEMPLATES = ['random', ...Object.keys(TEMPLATES)];
   const [carouselIndex, setCarouselIndex] = useState<number>(() => {
     const savedIdx = localStorage.getItem('chepuhaCarouselIdx');
     if (savedIdx !== null) return parseInt(savedIdx, 10);
-    return 0; // Default: show 'random' in center
+    return 0;
   });
   const carouselRef = useRef<HTMLDivElement>(null);
 
@@ -372,7 +383,7 @@ function App() {
       const currentIdx = idx === -1 ? 0 : idx;
       let nextIdx = (currentIdx + direction + AVAILABLE_COLORS.length) % AVAILABLE_COLORS.length;
 
-      // Locking: prevent picking a color that another player already has
+
       const takenColors = (players || []).map(p => p.color).filter(c => c && c !== prev.playerColor);
       let attempts = 0;
       while (takenColors.includes(AVAILABLE_COLORS[nextIdx]) && attempts < AVAILABLE_COLORS.length) {
@@ -382,7 +393,7 @@ function App() {
 
       const newColor = AVAILABLE_COLORS[nextIdx];
       if (playerId) {
-        // Use a background call to update the player in DB
+
         updatePlayer(playerId, { color: newColor }).catch((err) => {
           if (String(err.message).includes('column') || String(err.message).includes('schema cache')) {
             console.warn("DB 'color' column missing, skipping sync.");
@@ -393,7 +404,7 @@ function App() {
     });
   };
 
-  // Touch/swipe handling for carousel
+
   const touchStartY = useRef<number>(0);
   const handleCarouselTouchStart = (e: React.TouchEvent) => { touchStartY.current = e.touches[0].clientY; };
   const handleCarouselTouchEnd = (e: React.TouchEvent) => {
@@ -401,7 +412,7 @@ function App() {
     if (Math.abs(delta) > 30) moveCarousel(delta > 0 ? 1 : -1);
   };
 
-  // Wheel scrolling for carousel
+
   const handleCarouselWheel = (e: React.WheelEvent) => {
     moveCarousel(e.deltaY > 0 ? 1 : -1);
   };
@@ -433,7 +444,7 @@ function App() {
     }
   }, [sessionId, playerId, nickname, roomCode, isHost, selectedTemplate, answeredRoundId, currentRoundId, currentRound, didGameStart, phase, roundStartedAt, gameLength, storyMode, hintsEnabled, colorHighlight, playerColor]);
 
-  // Sync settings to DB (Host only)
+
   useEffect(() => {
     if (isHost && sessionId && isLobby) {
       const packedTemplate = `${selectedTemplate}|${gameLength}|${storyMode ? '1' : '0'}|${hintsEnabled ? '1' : '0'}|${colorHighlight ? '1' : '0'}`;
@@ -441,12 +452,12 @@ function App() {
     }
   }, [isHost, sessionId, isLobby, selectedTemplate, gameLength, storyMode, hintsEnabled, colorHighlight]);
 
-  // Sync player color to DB
+
   useEffect(() => {
     if (sessionId && playerId && playerColor) {
       updatePlayer(playerId, { color: playerColor }).catch((err) => {
         if (String(err.message).includes('column') || String(err.message).includes('schema cache')) {
-          // Robustness: if column is missing, stop trying to sync to DB but keep local color
+
         }
       });
     }
@@ -480,11 +491,11 @@ function App() {
     try {
       const sheets = await getStorySheetsBySession(sessionId);
       const built = (sheets || [])
-        // We now include sheets even if they have no answers yet (they will be filled by fallbacks)
+
         .map(s => {
           const sorted = [...(s.answers || [])].sort((a, b) => a.position_in_sheet - b.position_in_sheet);
           const p = s.player_id as any;
-          // Fallback to name from the player list if not in the sheet object
+
           const sheetOwnerId = typeof s.player_id === 'object' ? s.player_id.id : s.player_id;
           const ownerFromList = players.find(p => String(p.id) === String(sheetOwnerId));
           const nick = p?.nickname || ownerFromList?.nickname || 'Гравець';
@@ -504,12 +515,18 @@ function App() {
 
           const coloredAnswers = fullAnswers.map((ans, idx) => {
             if (!parsedColorHighlight) return ans;
-            const originalAnswer = (s.answers || []).find((a: any) => a.position_in_sheet === (idx + 1));
-            // No player answer for this slot (filled by fallback) → plain text, no color
-            if (!originalAnswer) return ans;
+            const roundIndex = indices.indexOf(idx);
+            const originalAnswer = roundIndex !== -1
+              ? (s.answers || []).find((a: any) => a.position_in_sheet === (roundIndex + 1))
+              : null;
+
+
+            if (!originalAnswer) {
+              return `<span style="color: #ffffff; font-weight: normal; text-shadow: none; -webkit-text-stroke: none; opacity: 0.9;">${ans}</span>`;
+            }
             const ansOwnerId = typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id.id : originalAnswer.player_id;
-            const owner = players.find(p => String(p.id) === String(ansOwnerId));
-            const color = owner?.color || (String(ansOwnerId) === String(playerId) ? playerColor : '#000');
+            const ansOwner = typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id : players.find(p => String(p.id) === String(ansOwnerId));
+            const color = ansOwner?.color || (String(ansOwnerId) === String(playerId) ? playerColor : '#e52929');
             const isSpecial = color?.startsWith('special:');
             let style = `color: ${isSpecial ? 'transparent' : color}; font-weight: bold;`;
             let className = '';
@@ -517,7 +534,7 @@ function App() {
             if (isSpecial) {
               const theme = color.replace('special:', '');
               className = ` class="${theme}-text"`;
-              style = ''; // Handled by class in SCSS
+              style = '';
               if (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic') {
                  return `<span class="${theme}-bg inline-wrapper"><span${className} style="font-weight: bold;">${ans}</span></span>`;
               }
@@ -543,12 +560,12 @@ function App() {
         });
 
       if (built.length > 0) {
-        // Validation: skip if NO SHEETS were found at all (shouldn't happen if game started)
+
         const hasAnySheets = built.length > 0;
         if (!hasAnySheets) return;
 
         setAppState(prev => ({ ...prev, allStories: built }));
-        // Mark session as completed in DB to avoid collisions and "tails"
+
         updateGameSession(sessionId, { session_status: 'completed' }).catch(() => { });
         const hostPlayer = players.find(p => p.player_order === 1) || players[0];
         const hostName = hostPlayer ? hostPlayer.nickname : 'Невідомо';
@@ -604,7 +621,7 @@ function App() {
     }
     if (String(latestRound.id) === String(currentRoundId) || isStory) {
       if (session?.session_status === 'completed' && phase !== Phases.End && phase !== Phases.History) {
-        // Guard against multiple calls while already transitioning or if already at End
+
         if (!transitionLockRef.current) {
           fetchFinalStoryResult();
           setAppState(prev => ({ ...prev, phase: Phases.End }));
@@ -645,11 +662,11 @@ function App() {
         }
       }
 
-      // In Story Mode, we might want to start at the round we are actually on
+
       let targetRound = latestRound;
       let targetRoundNumber = latestRound?.round_number || 1;
       if (parsedStoryMode && (rounds || []).length > 0) {
-        // Find the first round the player hasn't answered yet
+
         const playerAnswers = (currentAnswers || []).filter(a =>
           (typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)) === playerId
         );
@@ -763,15 +780,20 @@ function App() {
 
         let maxTime = 130;
         if (storyMode) {
-          if (gameLength === 6) maxTime = 480;      // 8 mins
-          else if (gameLength === 9) maxTime = 720; // 12 mins
-          else if (gameLength === 12) maxTime = 900; // 15 mins
+          if (gameLength === 6) maxTime = 480;
+          else if (gameLength === 9) maxTime = 720;
+          else if (gameLength === 12) maxTime = 900;
         }
 
         const isStory = !!(session?.template?.split('|')[2] === '1' || storyMode);
         const allFinished = isStory && freshPlayers.every(p => p.players_status === 'finished');
 
-        if ((curAnswers.length >= total && !isStory) || allFinished || (isHost && timePassed > maxTime)) {
+
+
+        const shouldTransition = (!isStory && (curAnswers.length >= total || (isHost && timePassed > maxTime))) ||
+          (isStory && (allFinished || (isHost && timePassed > 1800)));
+
+        if (shouldTransition) {
           if (!isHost) return;
           setIsTransitioning(true);
           transitionLockRef.current = true;
@@ -830,11 +852,11 @@ function App() {
             }
           } else {
             if (isHost) {
-              // Ensure all players are marked as finished and session is completed
+
               await updatePlayersBySession(sessionId, { players_status: 'finished' });
               await updateGameSession(sessionId, { session_status: 'completed' });
 
-              // Give Supabase a moment to propagate
+
               await new Promise(r => setTimeout(r, 500));
               await fetchFinalStoryResult();
 
@@ -997,8 +1019,8 @@ function App() {
         return setAppState(prev => ({ ...prev, isJoining: false, error: String(t('ERR_NOT_FOUND' as any)) }));
       }
 
-      // Set nickname, roomCode early for UX but DON'T set sessionId yet to avoid triggering
-      // useGameState refetch before we have the full rejoin state ready
+
+
       setAppState(prev => ({ ...prev, nickname: nick, roomCode: code }));
 
       const existingPlayers = await getPlayersBySession(targetSession.id);
@@ -1035,9 +1057,9 @@ function App() {
           }
         }
 
-        // Set all state atomically in a single call — including sessionId — to prevent
-        // the sync useEffect from running mid-update with stale state
-        // Enforce a minimum duration for the "Joining" message (3 seconds)
+
+
+
         const finishJoin = () => {
           setAppState(prev => ({
             ...prev,
@@ -1110,6 +1132,15 @@ function App() {
   const doGameStart = async () => {
     if (!sessionId) return;
     try {
+      let gameTemplate = activeTemplate;
+      if (selectedTemplate === 'random') {
+        const keys = Object.keys(TEMPLATES);
+        const randomKey = keys[Math.floor(Math.random() * keys.length)];
+        gameTemplate = TEMPLATES[randomKey];
+        const packed = `${randomKey}|${gameLength}|${storyMode ? '1' : '0'}|${hintsEnabled ? '1' : '0'}|${colorHighlight ? '1' : '0'}`;
+        await updateGameSession(sessionId, { template: packed });
+      }
+
       const sheetsToCreate = players.map(p => ({
         game_session_id: sessionId,
         player_id: p.id,
@@ -1130,18 +1161,18 @@ function App() {
       setAppState(prev => ({ ...prev, allStorySheets: newSheets }));
 
       const ts = new Date().toISOString();
-      // Need to use the correctly parsed length rather than the pre-sync gameLength
+
       const targetGameLength = session?.template ? (parseInt(session.template.split('|')[1]) as 6 | 9 | 12) : gameLength;
 
       let firstRoundId = "";
       if (storyMode) {
-        // Create all rounds upfront for story mode to allow async progress
+
         const targetIndices = GAME_LENGTH_INDICES[targetGameLength] || GAME_LENGTH_INDICES[12];
         for (let i = 0; i < targetGameLength; i++) {
           const created = await createRound({
             session_id: sessionId,
             round_number: i + 1,
-            question_type: activeTemplate.questionTypes[targetIndices[i] ?? i],
+            question_type: gameTemplate.questions[targetIndices[i] ?? i] as QuestionType,
             rounds_status: 'active',
             started_at: ts,
           });
@@ -1151,7 +1182,7 @@ function App() {
         const firstRound = await createRound({
           session_id: sessionId,
           round_number: 1,
-          question_type: activeTemplate.questionTypes[GAME_LENGTH_INDICES[targetGameLength]?.[0] ?? 0],
+          question_type: gameTemplate.questions[GAME_LENGTH_INDICES[targetGameLength]?.[0] ?? 0] as QuestionType,
           rounds_status: 'active',
           started_at: ts,
         });
@@ -1207,7 +1238,7 @@ function App() {
     setAppState(prev => ({ ...prev, userAnswers: updatedAnswers }));
     if (!currentRoundId || !playerId || !sessionId) {
       setIsTransitioning(false);
-      // Solo mode
+
       if (currentRound < gameLength) {
         setAppState(prev => ({ ...prev, phase: Phases.Main, currentRound: prev.currentRound + 1 }));
       } else {
@@ -1268,17 +1299,17 @@ function App() {
       setAppState(prev => ({ ...prev, totalCount: playerCount > 0 ? playerCount : players.length }));
       setIsTransitioning(false);
 
-      // Story Mode OR Single-player: advance immediately to next question without waiting
+
       if ((parsedStoryMode || totalCount <= 1) && currentRound < gameLength) {
         const nextRoundNum = currentRound + 1;
-        // Find the next round that should have been pre-created
+
         const nextRound = (rounds || []).find(r => r.round_number === nextRoundNum);
 
         setAppState(prev => ({
           ...prev,
           phase: Phases.Main,
           currentRound: nextRoundNum,
-          currentRoundId: nextRound?.id || prev.currentRoundId, // Fallback to current if not found yet (refresh will fix)
+          currentRoundId: nextRound?.id || prev.currentRoundId,
           answeredRoundId: currentRoundId,
           error: ""
         }));
@@ -1375,10 +1406,10 @@ function App() {
             </div>
             <span className="error-message" style={{ minHeight: '24px', display: 'block', pointerEvents: 'auto' }}>{error || '\u00A0'}</span>
 
-            {/* ── Row: Carousel + Game Length + Options ── */}
+            {}
             <div className="create-options-row" style={{ pointerEvents: 'auto' }}>
 
-              {/* Carousel */}
+              {}
               <div className="carousel-section">
                 <h3 className="template-title" style={{ marginBottom: "15px", whiteSpace: "nowrap", textAlign: "center" }}>{t('CHOOSE_STORY')}</h3>
                 <div
@@ -1413,11 +1444,11 @@ function App() {
                 </div>
               </div>
 
-              {/* Game Length + Extra Options */}
+              {}
               <div className="game-settings-container">
                 <div className="game-settings-section">
 
-                  {/* Game Length */}
+                  {}
                   <div className="game-length-picker">
                     <h3 className="template-title">{t('GAME_LENGTH_TITLE' as any)}</h3>
                     {([6, 9, 12] as Array<6 | 9 | 12>).map(len => (
@@ -1431,9 +1462,9 @@ function App() {
                     ))}
                   </div>
 
-                  {/* Extra Options */}
+                  {}
                   <div className="extra-options">
-                    {/* Color Highlight */}
+                    {}
                     <label className={`toggle-option ${colorHighlight ? 'toggle-option--active' : ''}`} onClick={() => setAppState(prev => ({ ...prev, colorHighlight: !prev.colorHighlight }))}>
                       <span className="toggle-label">🎨 {t('OPTS_HIGHLIGHTS' as any)}</span>
                       <div className="toggle-switch">
@@ -1441,7 +1472,7 @@ function App() {
                       </div>
                     </label>
 
-                    {/* Hints */}
+                    {}
                     <label className={`toggle-option ${hintsEnabled ? 'toggle-option--active' : ''}`} onClick={() => setAppState(prev => ({ ...prev, hintsEnabled: !prev.hintsEnabled }))}>
                       <span className="toggle-label">💡 {t('OPTS_HINTS' as any)}</span>
                       <div className="toggle-switch">
@@ -1449,7 +1480,7 @@ function App() {
                       </div>
                     </label>
 
-                    {/* Story Mode */}
+                    {}
                     <div style={{ position: 'relative', width: '100%' }}>
                       <label className={`toggle-option ${storyMode ? 'toggle-option--active' : ''}`} onClick={() => setAppState(prev => ({ ...prev, storyMode: !prev.storyMode }))}>
                         <span className="toggle-label">🕹 {t('STORY_MODE' as any)}</span>
@@ -1494,7 +1525,10 @@ function App() {
                 </div>
               </h2>
               <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
-              <div className={`players-list ${(players.length >= 4) ? 'has-many-players' : ''}`}>
+              <div 
+                ref={playersListRef}
+                className={`players-list ${(players.length >= 4) ? 'has-many-players' : ''}`}
+              >
                 {players.length > 0 ? (
                   players.map((p, i) => (
                     <PlayerItem
@@ -1652,9 +1686,9 @@ function App() {
         />
       )}
 
-      {/* Global Background Characters & Home Button Sync */}
-      {/* Global Background Characters & Home Button Sync */}
-      {/* Boys: Lobby, Create, Join, and Waiting for Answers during game */}
+      {}
+      {}
+      {}
       {(isCreatingLobby || isLobby || phase === Phases.Join || (didGameStart && phase === Phases.Waiting)) && phase !== Phases.End && phase !== Phases.History && (
         <>
           <div className="yellow-guy-bg" onClick={playSecretMusic} />
@@ -1662,7 +1696,7 @@ function App() {
         </>
       )}
 
-      {/* Home Button: Lobby, Create, Join ONLY */}
+      {}
       {(isCreatingLobby || isLobby || phase === Phases.Join) && phase !== Phases.End && phase !== Phases.History && (
         <HomeIcon onClick={goHome} className="homeIconPos" />
       )}

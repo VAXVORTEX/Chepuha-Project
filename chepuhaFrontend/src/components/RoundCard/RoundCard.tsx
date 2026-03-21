@@ -59,7 +59,7 @@ export const RoundCard = ({
         }
     }, [hints]);
 
-    // Dynamic font-size calculation (Shrink-to-fit)
+
     const getFontSize = (text: string) => {
         if (!text) return undefined;
         const len = text.length;

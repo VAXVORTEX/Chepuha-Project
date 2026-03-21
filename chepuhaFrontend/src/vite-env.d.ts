@@ -1,4 +1,4 @@
-/// <reference types="vite/client" />
+
 
 declare module '*.png' {
     const value: string;
@@ -21,4 +21,3 @@ interface ImportMetaEnv {
 interface ImportMeta {
     readonly env: ImportMetaEnv
 }
-

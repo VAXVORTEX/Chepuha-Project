@@ -10,7 +10,7 @@
   width: 100%;
   box-sizing: border-box;
   padding: 20px;
-  background: transparent !important; // Ensure bg matches App
+  background: transparent !important;
 }
 
 .container {
@@ -42,7 +42,7 @@
   align-items: flex-start;
   margin: 0 auto;
   position: relative;
-  min-height: 120px; // Reserve space for input + error
+  min-height: 120px;
 }
 
 .input {
@@ -78,7 +78,7 @@
 
 .errorText {
   display: block;
-  min-height: 28px; // Always reserve this height
+  min-height: 28px;
   color: $red;
   -webkit-text-stroke: 1px $black;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
@@ -95,7 +95,7 @@
   .container {
     padding: 0;
     max-width: 95vw;
-    margin-top: -15vh; // Raised even further (from -10vh)
+    margin-top: -15vh;
   }
 
   .inputWrapper {

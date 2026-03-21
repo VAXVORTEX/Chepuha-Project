@@ -33,7 +33,7 @@
 
   @media (max-width: 768px) {
     &:active {
-      transform: scale(0.98); // Subtle feedback but no "lighten" color change if requested
+      transform: scale(0.98);
     }
   }
 
@@ -84,8 +84,8 @@
 
 .dots {
   display: inline-flex;
-  margin-left: 10px; // More space after text
-  @include font-pangolin(80); // Bigger dots for better visibility
+  margin-left: 10px;
+  @include font-pangolin(80);
 
   span {
     animation: dot-blink 1.5s infinite both;

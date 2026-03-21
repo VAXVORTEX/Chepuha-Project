@@ -26,7 +26,7 @@ interface ResultProps {
 const downloadAsTxt = (text: string, playerName: string) => {
   const safe = playerName.replace(/[^a-zA-Z0-9\u0400-\u04ff]/g, "_");
   const filename = `${safe}_ChepuhaGame.txt`;
-  const plainText = text.replace(/<\/?[^>]+(>|$)/g, ""); // Always plain text for TXT download
+  const plainText = text.replace(/<\/?[^>]+(>|$)/g, "");
   const blob = new Blob([plainText], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -49,7 +49,7 @@ const GameResult: React.FC<ResultProps> = ({
   const { t, language } = useLanguage();
   const current = stories[storyIndex];
 
-  // Memoize content to prevent CSS animation restarts on re-render
+
   const content = useMemo(() => {
     let c = current?.story ?? "";
     let finalAnswers = current?.answers;
@@ -68,7 +68,7 @@ const GameResult: React.FC<ResultProps> = ({
       }
     }
 
-    // Strip colors ONLY if showColors is explicitly disabled
+
     if (!showColors) {
       c = c.replace(/<\/?[^>]+(>|$)/g, "");
     }
@@ -86,17 +86,17 @@ const GameResult: React.FC<ResultProps> = ({
       textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)'
     };
 
-  // Dynamic font-size calculation (Shrink-to-fit)
+
   const getFontSize = (text: string) => {
     if (!text) return undefined;
     const len = text.length;
     const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
-    // Base size 90 on PC to match "YOUR NICK" label, 36 on Mobile
+
     const baseSize = isPC ? 90 : 36;
 
     if (len <= 6) return `${baseSize}px`;
     const scaleFactor = 6 / len;
-    // min size 36 on PC, 18 on Mobile
+
     const minSize = isPC ? 36 : 18;
     const calculatedSize = Math.max(minSize, Math.floor(baseSize * Math.pow(scaleFactor, 0.6)));
     return `${calculatedSize}px`;

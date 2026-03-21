@@ -8,7 +8,7 @@
   height: calc(100vh + 40px);
   max-height: calc(100vh + 40px);
   overflow: hidden;
-  padding: 40px 15px 15px; // Increased top padding to lower content
+  padding: 40px 15px 15px;
   background-color: $red;
   border-radius: 50px;
   color: $white;
@@ -62,7 +62,7 @@
   }
 
   .text {
-    @include font-pangolin(55); // Increased from 45 for better optics
+    @include font-pangolin(55);
     text-align: left;
     width: 100%;
     max-width: 100%;
@@ -146,7 +146,7 @@
   margin: 0;
   box-sizing: border-box;
   overflow-x: hidden;
-  padding: 10vh 20px; // Increased top padding
+  padding: 10vh 20px;
 }
 
 @media (max-width: 768px) {
