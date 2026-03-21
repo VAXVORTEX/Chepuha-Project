@@ -175,28 +175,16 @@ export const AVAILABLE_COLORS = [
   '#ffffff', '#808080', '#c0c0c0', '#dcdcdc', '#000000',
   // SPECIALS
   'special:rainbow', 'special:fire-gradient', 'special:ice-gradient', 'special:gold',
-  'special:pirates', 'special:cyberpunk', 'special:legendary',
-  // 50 NEW GRADIENTS
-  'special:solar', 'special:deep-sea', 'special:sunset', 'special:nebula', 'special:forest',
-  'special:volcano', 'special:arctic', 'special:neon-night', 'special:toxic', 'special:candy',
-  'special:midnight', 'special:emerald', 'special:ruby', 'special:sapphire', 'special:amethyst',
-  'special:citrine', 'special:topaz', 'special:obsidian', 'special:pearl', 'special:phantom',
-  'special:galaxy', 'special:supernova', 'special:black-hole', 'special:stardust', 'special:comet',
-  'special:aurora', 'special:horizon', 'special:twilight', 'special:glitch', 'special:matrix',
-  'special:plasma', 'special:magma', 'special:frost', 'special:oasis', 'special:savanna',
-  'special:mesa', 'special:tundra', 'special:reef', 'special:abyss', 'special:void',
-  'special:chrome', 'special:copper', 'special:bronze', 'special:silver', 'special:platinum',
-  'special:titanium', 'special:carbon', 'special:quartz', 'special:amber', 'special:jade',
+  'special:nebula', 'special:sunset', 'special:solar', 'special:cyberpunk',
   // FLAGS & CUSTOM
-  'special:flag-ua', 'special:flag-usa', 'special:flag-uk', 'special:flag-de', 'special:flag-fr', 'special:flag-jp', 'special:flag-pl',
-  'special:flag-it', 'special:flag-es', 'special:flag-br', 'special:flag-ca', 'special:flag-cn', 'special:flag-kr', 'special:flag-au',
-  'special:flag-pirates', 'special:flag-pirates-2', 'special:flag-pirates-3', 'special:pirate-caribbean',
-  'special:flag-cyber-samurai', 'special:flag-cyber-samurai-2', 'special:cyber-samurai-iconic',
+  'special:flag-ua', 'special:flag-de', 'special:flag-jp', 'special:flag-pl',
+  'special:flag-it', 'special:flag-es', 'special:flag-br', 'special:flag-ca',
   'special:flag-bi', 'special:flag-pan', 'special:flag-ace', 'special:flag-nonbinary',
   'special:gender-pride', 'special:gender-trans', 'special:flag-lesbian',
   'special:flag-intersex', 'special:flag-genderqueer', 'special:flag-polysexual',
   // NEW PREMIUM GRADIENTS
-  'special:pirate-bw', 'special:stellar', 'special:deep-purple', 'special:cyan-burst', 'special:golden-rod',
+  'special:pirate-caribbean', 'special:cyber-samurai-iconic',
+  'special:stellar', 'special:deep-purple', 'special:cyan-burst', 'special:golden-rod',
   'special:mint-fresh', 'special:royal-red', 'special:electric-blue', 'special:neon-pink', 'special:silver-streak',
   'special:bronze-age'
 ];
@@ -208,7 +196,7 @@ const GAME_LENGTH_INDICES: Record<number, number[]> = {
 };
 
 const getNicknameStyle = (color: string) => {
-  const isBlack = color === '#000000' || color === '#000';
+  const isDark = color === '#000000' || color === '#000' || color === '#8b0000' || color === '#4b0082';
   const isSpecial = color?.startsWith('special:');
 
   if (isSpecial) {
@@ -217,8 +205,9 @@ const getNicknameStyle = (color: string) => {
 
   return {
     color: color || '#000000',
-    textShadow: isBlack ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
-  };
+    textShadow: isDark ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000',
+    WebkitTextStroke: isDark ? 'none' : '1.5px black'
+  } as React.CSSProperties;
 };
 
 const getNicknameClassName = (color: string) => {
@@ -251,11 +240,18 @@ const renderThemedNickname = (name: string, color: string, defaultSize: number =
   const style = showHighlight ? getNicknameStyle(color) : { color: '#000000', textShadow: 'none' };
   const fontSize = getFontSize(name, defaultSize);
 
-  return (
+  const content = (
     <span className={themeClass + (!showHighlight ? ' no-highlight' : '')} style={{ ...style, fontSize }}>
       {name}
     </span>
   );
+
+  if (showHighlight && (color === 'special:pirate-caribbean' || color === 'special:cyber-samurai-iconic')) {
+    const wrapClass = `${color.replace('special:', '')}-bg inline-wrapper`;
+    return <span className={wrapClass}>{content}</span>;
+  }
+
+  return content;
 };
 
 
@@ -513,31 +509,23 @@ function App() {
             if (!originalAnswer) return ans;
             const ansOwnerId = typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id.id : originalAnswer.player_id;
             const owner = players.find(p => String(p.id) === String(ansOwnerId));
-            const color = owner?.color || (String(ansOwnerId) === String(playerId) ? playerColor : '#fff');
-
-            if (color === 'special:flag-ua') {
-              return `<span class="flag-ua-text">${ans}</span>`;
-            }
-            if (color === 'special:flag-usa') {
-              return `<span class="flag-usa-text">${ans}</span>`;
-            }
-            if (color === 'special:flag-uk') {
-              return `<span class="flag-uk-text">${ans}</span>`;
-            }
-            if (color === 'special:rainbow') {
-              return `<span class="rainbow-text">${ans}</span>`;
-            }
-
+            const color = owner?.color || (String(ansOwnerId) === String(playerId) ? playerColor : '#000');
             const isSpecial = color?.startsWith('special:');
-            let style = `color: ${color}; font-weight: bold;`;
+            let style = `color: ${isSpecial ? 'transparent' : color}; font-weight: bold;`;
             let className = '';
 
             if (isSpecial) {
-              className = ` class="${color.replace('special:', '')}-text"`;
-              style = ''; // Handled by class
+              const theme = color.replace('special:', '');
+              className = ` class="${theme}-text"`;
+              style = ''; // Handled by class in SCSS
+              if (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic') {
+                 return `<span class="${theme}-bg inline-wrapper"><span${className} style="font-weight: bold;">${ans}</span></span>`;
+              }
             } else {
-              const shadow = (color === '#000000' || color === '#000') ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)';
-              style += ` text-shadow: ${shadow};`;
+              const isDark = color === '#000000' || color === '#000' || color === '#8b0000' || color === '#4b0082';
+              const shadow = isDark ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)';
+              const stroke = isDark ? 'none' : '-webkit-text-stroke: 1.5px black;';
+              style += ` text-shadow: ${shadow}; ${stroke}`;
             }
             return `<span${className} style="${style}">${ans}</span>`;
           });

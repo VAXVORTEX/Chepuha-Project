@@ -1,0 +1,10 @@
+
+> blah_frontend@0.0.0 lint
+> eslint .
+
+
+C:\Users\Arsenii Trofymenko\Downloads\My Projects\Chepuha-Project\chepuhaFrontend\src\fix_css.js
+  1:12  error  'require' is not defined  no-undef
+
+✖ 1 problem (1 error, 0 warnings)
+
