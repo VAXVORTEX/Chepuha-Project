@@ -10,7 +10,7 @@ interface InputProps {
     onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
     className?: string;
 }
-const Input: React.FC<InputProps> = ({
+const Input: React.FC<InputProps> = React.memo(({
     value,
     onChange,
     placeholder,
@@ -35,5 +35,5 @@ const Input: React.FC<InputProps> = ({
             onKeyDown={onKeyDown}
         />
     );
-};
+});
 export default Input;

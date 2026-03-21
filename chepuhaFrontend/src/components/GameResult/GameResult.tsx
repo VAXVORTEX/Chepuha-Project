@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import classNames from "classnames";
 import styles from "./GameResult.module.scss";
 import { Phases } from "../../types/phaseVariant";
@@ -21,11 +21,13 @@ interface ResultProps {
   onSave?: () => void;
   onPrev: () => void;
   onNext: () => void;
+  showColors?: boolean;
 }
-function downloadAsTxt(text: string, playerName: string) {
+const downloadAsTxt = (text: string, playerName: string) => {
   const safe = playerName.replace(/[^a-zA-Z0-9\u0400-\u04ff]/g, "_");
   const filename = `${safe}_ChepuhaGame.txt`;
-  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+  const plainText = text.replace(/<\/?[^>]+(>|$)/g, "");
+  const blob = new Blob([plainText], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -42,43 +44,70 @@ const GameResult: React.FC<ResultProps> = ({
   onSave,
   onPrev,
   onNext,
+  showColors = true
 }) => {
   const { t, language } = useLanguage();
   const current = stories[storyIndex];
 
-  let content = current?.story ?? "";
-  let finalAnswers = current?.answers;
-  let finalTemplateId = current?.templateId;
-  if (!finalAnswers || !finalTemplateId) {
-    const legacyParsed = parseLegacyStory(content);
-    if (legacyParsed) {
-      finalAnswers = legacyParsed.answers;
-      finalTemplateId = legacyParsed.templateId;
-    }
-  }
-  if (finalAnswers && finalTemplateId && !content.includes('</span>')) {
-    const tmpl = TEMPLATES[finalTemplateId];
-    if (tmpl) {
-      content = tmpl.buildStory(finalAnswers, language);
-    }
-  }
 
-  // Strip colors if in History view
-  if (phase === Phases.History) {
-    content = content.replace(/<\/?[^>]+(>|$)/g, "");
-  }
+  const content = useMemo(() => {
+    let c = current?.story ?? "";
+    let finalAnswers = current?.answers;
+    let finalTemplateId = current?.templateId;
+    if (!finalAnswers || !finalTemplateId) {
+      const legacyParsed = parseLegacyStory(c);
+      if (legacyParsed) {
+        finalAnswers = legacyParsed.answers;
+        finalTemplateId = legacyParsed.templateId;
+      }
+    }
+    if (finalAnswers && finalTemplateId && !c.includes('</span>')) {
+      const tmpl = TEMPLATES[finalTemplateId];
+      if (tmpl) {
+        c = tmpl.buildStory(finalAnswers, language);
+      }
+    }
+
+
+    if (!showColors) {
+      c = c.replace(/<\/?[^>]+(>|$)/g, "");
+    }
+    return c;
+  }, [current?.story, current?.answers, current?.templateId, language, showColors]);
 
   const pColor = current?.playerColor;
-  const nameIsSpecial = pColor?.startsWith('special:') ?? false;
+  const showNameColor = showColors && pColor;
+  const nameIsSpecial = showNameColor && pColor?.startsWith('special:');
   const nameClass = nameIsSpecial ? `${pColor?.replace('special:', '')}-text` : '';
-  const nameStyle = !nameIsSpecial && pColor ? { color: pColor } : {};
+  const nameStyle = !nameIsSpecial && showNameColor
+    ? { color: pColor }
+    : {
+      color: '#FFFFFF',
+      textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)'
+    };
+
+
+  const getFontSize = (text: string) => {
+    if (!text) return undefined;
+    const len = text.length;
+    const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
+
+    const baseSize = isPC ? 90 : 36;
+
+    if (len <= 6) return `${baseSize}px`;
+    const scaleFactor = 6 / len;
+
+    const minSize = isPC ? 36 : 18;
+    const calculatedSize = Math.max(minSize, Math.floor(baseSize * Math.pow(scaleFactor, 0.6)));
+    return `${calculatedSize}px`;
+  };
 
   return (
     <div className={classNames(styles.wrapper, styles[phase])}>
       <div className={styles.container}>
         <div className={classNames(styles.box, styles[phase])}>
           <h2 className={styles.title}>
-            {t('STORY_OF')} <span className={nameClass} style={nameStyle}>{current?.playerName || t('LOADING')}</span>
+            {t('STORY_OF')} <span className={nameClass} style={{ ...nameStyle, fontSize: getFontSize(current?.playerName) }}>{current?.playerName || t('LOADING')}</span>
           </h2>
           <div className={styles.storyNav}>
             <button
@@ -107,7 +136,7 @@ const GameResult: React.FC<ResultProps> = ({
           {(phase === Phases.End || phase === Phases.History) && (
             <div className={styles.actions}>
               <button className={styles.GoBackButton} onClick={onHome}>
-                {t('BACK_TO_MENU')}
+                {phase === Phases.History ? (language === 'uk' ? 'Назад' : 'Back') : t('BACK_TO_MENU')}
               </button>
               {onSave && (
                 <button

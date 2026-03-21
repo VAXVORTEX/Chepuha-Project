@@ -5,7 +5,7 @@ interface GameCodeProps {
     code: string;
     className?: string;
 }
-const GameCode: React.FC<GameCodeProps> = ({ code, className = "" }) => {
+const GameCode: React.FC<GameCodeProps> = React.memo(({ code, className = "" }) => {
     const { t } = useLanguage();
     const [copied, setCopied] = useState(false);
 
@@ -25,5 +25,5 @@ const GameCode: React.FC<GameCodeProps> = ({ code, className = "" }) => {
             <span className={styles.code}>{code}</span>
         </div>
     );
-}
+});
 export default GameCode;

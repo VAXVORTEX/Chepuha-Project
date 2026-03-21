@@ -43,29 +43,6 @@ const JoinCard: React.FC<JoinCardProps> = ({
         <div className={styles.form}>
           <div className={styles.inputWrapper}>
             <Input
-              value={roomInputValue}
-              onChange={(val) => {
-                const upper = val.toUpperCase();
-                if (upper.length <= 8) {
-                  setRoomInputValue(upper);
-                  setIsSubmitted(false);
-                }
-              }}
-              onKeyDown={(e) => e.key === 'Enter' && doJoinClick()}
-              placeholder={t('ENTER_ROOM_PLACEHOLDER')}
-              className={styles.input}
-            />
-            <span
-              className={styles.errorText}
-              style={{ visibility: (errors?.room || (isSubmitted && !roomInputValue.trim())) ? 'visible' : 'hidden' }}
-            >
-              {(errors?.room || (isSubmitted && !roomInputValue.trim()))
-                ? (errors?.room || t('ROOM_NOT_FOUND'))
-                : 'ERROR'}
-            </span>
-          </div>
-          <div className={styles.inputWrapper}>
-            <Input
               value={nickInputValue}
               onChange={(value) => {
                 if (value.length <= 25) {
@@ -86,6 +63,29 @@ const JoinCard: React.FC<JoinCardProps> = ({
                 : (errors?.nick || (isSubmitted && !nickInputValue.trim())
                   ? (errors?.nick || t('NICKNAME_REQUIRED'))
                   : 'ERROR')}
+            </span>
+          </div>
+          <div className={styles.inputWrapper}>
+            <Input
+              value={roomInputValue}
+              onChange={(val) => {
+                const upper = val.toUpperCase();
+                if (upper.length <= 8) {
+                  setRoomInputValue(upper);
+                  setIsSubmitted(false);
+                }
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && doJoinClick()}
+              placeholder={t('ENTER_ROOM_PLACEHOLDER')}
+              className={styles.input}
+            />
+            <span
+              className={styles.errorText}
+              style={{ visibility: (errors?.room || (isSubmitted && !roomInputValue.trim())) ? 'visible' : 'hidden' }}
+            >
+              {(errors?.room || (isSubmitted && !roomInputValue.trim()))
+                ? (errors?.room || t('ROOM_NOT_FOUND'))
+                : 'ERROR'}
             </span>
           </div>
           <div className={styles.submitBlock}>

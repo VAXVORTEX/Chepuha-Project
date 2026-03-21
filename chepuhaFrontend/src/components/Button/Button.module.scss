@@ -24,9 +24,17 @@
     font-size: 44px;
   }
 
-  &:hover {
-    opacity: 0.8;
-    transform: scale(1.06);
+  @media (hover: hover) {
+    &:hover {
+      opacity: 0.8;
+      transform: scale(1.06);
+    }
+  }
+
+  @media (max-width: 768px) {
+    &:active {
+      transform: scale(0.98);
+    }
   }
 
   &.main {
@@ -76,8 +84,8 @@
 
 .dots {
   display: inline-flex;
-  margin-left: 10px; // More space after text
-  @include font-pangolin(80); // Bigger dots for better visibility
+  margin-left: 10px;
+  @include font-pangolin(80);
 
   span {
     animation: dot-blink 1.5s infinite both;

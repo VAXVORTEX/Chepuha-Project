@@ -14,8 +14,10 @@ interface RoundCardProps {
     playerTotal?: number;
     onSubmitAnswer?: (answer: string) => void;
     hints?: string[];
+    showColors?: boolean;
 }
-const getNicknameStyle = (color: string) => {
+const getNicknameStyle = (color: string, showColors: boolean = true) => {
+    if (!showColors) return { color: '#000000', textShadow: 'none' };
     if (color?.startsWith('special:')) return {};
     const isBlack = !color || color === '#000000' || color === '#000';
     return {
@@ -24,7 +26,8 @@ const getNicknameStyle = (color: string) => {
     };
 };
 
-const getNicknameClassName = (color: string) => {
+const getNicknameClassName = (color: string, showColors: boolean = true) => {
+    if (!showColors) return styles.playerName;
     if (color?.startsWith('special:')) {
         return `${styles.playerName} ${color.replace('special:', '')}-text`;
     }
@@ -39,7 +42,8 @@ export const RoundCard = ({
     playerReady = 0,
     playerTotal = 0,
     onSubmitAnswer,
-    hints
+    hints,
+    showColors = true
 }: RoundCardProps) => {
     const [answer, setAnswer] = useState('');
     const [showHints, setShowHints] = useState(false);
@@ -55,6 +59,17 @@ export const RoundCard = ({
         }
     }, [hints]);
 
+
+    const getFontSize = (text: string) => {
+        if (!text) return undefined;
+        const len = text.length;
+        if (len <= 10) return "45px";
+        const baseSize = 45;
+        const scaleFactor = 10 / len;
+        const calculatedSize = Math.max(22, Math.floor(baseSize * Math.pow(scaleFactor, 1.1)));
+        return `${calculatedSize}px`;
+    };
+
     const isWaiting = phase === Phases.Waiting;
     const handleSubmit = () => {
         if (onSubmitAnswer && answer.trim() !== '') {
@@ -62,10 +77,19 @@ export const RoundCard = ({
             setAnswer('');
         }
     };
+
     return (
         <div className={`${styles.roundCard} ${isWaiting ? styles.waiting : ''}`}>
             <div className={styles.header}>
-                <h2 className={getNicknameClassName(playerColor || '')} style={getNicknameStyle(playerColor || '')}>{playerName}</h2>
+                <h2
+                    className={getNicknameClassName(playerColor || '', showColors)}
+                    style={{
+                        ...getNicknameStyle(playerColor || '', showColors),
+                        fontSize: getFontSize(playerName)
+                    }}
+                >
+                    {playerName}
+                </h2>
             </div>
             <div className={styles.body}>
                 {isWaiting ? (

@@ -155,14 +155,15 @@
 
 @media (max-width: 768px) {
     .wrapper {
-        padding: 5px 5px; // Reduced from 50px
+        padding: 5px 5px;
     }
 
     .box {
         padding: 20px 10px;
         border-width: 5px;
         height: auto;
-        min-height: 85vh;
+        min-height: 80vh;
+        margin-top: -140px;
     }
 
     .title {

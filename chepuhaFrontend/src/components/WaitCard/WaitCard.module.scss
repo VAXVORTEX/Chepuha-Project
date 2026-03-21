@@ -26,12 +26,18 @@
   margin-top: -100px;
 }
 
+.nickLabel {
+  @include font-pangolin(48);
+  color: $black;
+  margin: 0;
+  margin-bottom: 10px;
+}
+
 .nickText {
   @include font-pangolin(64);
   color: $black;
   text-transform: uppercase;
   margin: 0;
-  margin-bottom: 20px;
 }
 
 .countText {
@@ -114,7 +120,7 @@
 
 @media (max-width: 768px) {
   .container {
-    margin-top: 50px; // Raised slightly (from 100px)
+    margin-top: 50px;
     gap: 20px;
   }
 

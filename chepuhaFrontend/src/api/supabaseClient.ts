@@ -9,7 +9,7 @@ if (!supabaseUrl || !supabaseAnonKey) {
 const fetchWithRetry = async (url: string | URL | Request, options?: RequestInit, retries = 5): Promise<Response> => {
     try {
         const response = await fetch(url, options);
-        // Retry on 5xx (server error) AND 403/406 (common DPI/ISP block codes)
+
         if (!response.ok && (response.status >= 500 || response.status === 403 || response.status === 406) && retries > 0) {
             const delay = Math.pow(2, 5 - retries) * 1000;
             await new Promise(resolve => setTimeout(resolve, delay));
@@ -17,7 +17,7 @@ const fetchWithRetry = async (url: string | URL | Request, options?: RequestInit
         }
         return response;
     } catch (err) {
-        // TypeError is often a network timeout or CORS block
+
         if (retries > 0) {
             const delay = Math.pow(2, 5 - retries) * 1000;
             await new Promise(resolve => setTimeout(resolve, delay));
