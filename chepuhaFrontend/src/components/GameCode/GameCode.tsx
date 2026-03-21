@@ -22,7 +22,7 @@ const GameCode: React.FC<GameCodeProps> = React.memo(({ code, className = "" }) 
             title={t('CLICK_TO_COPY' as any)}
         >
             <span className={styles.label}>{copied ? t('COPIED' as any) : t('GAME_CODE_LABEL')}</span>
-            <span className={styles.code}>{code}</span>
+            <span className={`${styles.code} notranslate`} translate="no">{code}</span>
         </div>
     );
 });

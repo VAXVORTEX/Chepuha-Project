@@ -241,7 +241,7 @@ const renderThemedNickname = (name: string, color: string, defaultSize: number =
   const fontSize = getFontSize(name, defaultSize);
 
   const content = (
-    <span className={themeClass + (!showHighlight ? ' no-highlight' : '')} style={{ ...style, fontSize }}>
+    <span className={themeClass + (!showHighlight ? ' no-highlight' : '') + " notranslate"} translate="no" style={{ ...style, fontSize }}>
       {name}
     </span>
   );
@@ -350,6 +350,10 @@ function App() {
     );
 
   const { t, language, setLanguage } = useLanguage();
+
+  useEffect(() => {
+    document.documentElement.lang = language || 'uk';
+  }, [language]);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transitionLockRef = useRef(false);
   const currentRoundIdRef = useRef(currentRoundId);
@@ -1440,6 +1444,12 @@ function App() {
                       );
                     })}
                   </div>
+                  <h2 className="room-code-display notranslate" translate="no">
+                <span className="room-code-label">КОД ХАТЫ:</span>
+                <div className="room-code-value">
+                  {roomCode}
+                </div>
+              </h2>
                   <button className="carousel-arrow carousel-arrow-down" onClick={() => moveCarousel(1)}>▼</button>
                 </div>
               </div>

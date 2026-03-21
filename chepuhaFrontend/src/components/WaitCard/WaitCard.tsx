@@ -40,7 +40,7 @@ const WaitCard: React.FC<WaitCardProps> = ({
     <div className={styles.wrapper}>
       <div className={styles.container}>
         <h2 className={styles.nickLabel}>
-          {t('YOUR_NICK')} <span className={getNicknameClassName(playerColor || '')} style={getNicknameStyle(playerColor || '')}>{nick}</span>
+          {t('YOUR_NICK')} <span className={getNicknameClassName(playerColor || '') + " notranslate"} translate="no" style={getNicknameStyle(playerColor || '')}>{nick}</span>
         </h2>
         <p className={styles.countText}>
           {joinedCount} / {totalCount} {t('PLAYERS_READY')}

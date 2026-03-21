@@ -107,7 +107,7 @@ const GameResult: React.FC<ResultProps> = ({
       <div className={styles.container}>
         <div className={classNames(styles.box, styles[phase])}>
           <h2 className={styles.title}>
-            {t('STORY_OF')} <span className={nameClass} style={{ ...nameStyle, fontSize: getFontSize(current?.playerName) }}>{current?.playerName || t('LOADING')}</span>
+            {t('STORY_OF')} <span className={classNames(nameClass, "notranslate")} translate="no" style={{ ...nameStyle, fontSize: getFontSize(current?.playerName) }}>{current?.playerName || t('LOADING')}</span>
           </h2>
           <div className={styles.storyNav}>
             <button
