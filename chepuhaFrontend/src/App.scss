@@ -220,6 +220,9 @@
   padding-right: 10px;
   scrollbar-width: thin;
   scrollbar-color: $red transparent;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
 
   &.has-many-players {
     overflow-y: auto;
@@ -243,7 +246,7 @@
   justify-content: center;
   width: 100%;
   margin-bottom: 20px;
-  transition: transform 0.3s ease;
+  /* transition: transform 0.3s ease; -- removed to prevent "lifting" during scroll */
 
   &.color-updated {
     animation: color-pulse 1s ease-out;

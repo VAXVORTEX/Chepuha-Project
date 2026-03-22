@@ -110,7 +110,7 @@ const getInitialState = (): AppState => {
     storyMode: false,
     hintsEnabled: false,
     colorHighlight: true,
-    playerColor: AVAILABLE_COLORS[0]
+    playerColor: '',
   };
 
   try {
@@ -552,7 +552,7 @@ function App() {
           });
 
           const sheetOwner = players.find(p => String(p.id) === String(sheetOwnerId));
-          const sheetOwnerColor = sheetOwner?.color || (String(sheetOwnerId) === String(playerId) ? playerColor : '#000');
+          const sheetOwnerColor = sheetOwner?.color || (String(sheetOwnerId) === String(playerId) ? (playerColor || '#000') : '#000');
 
           return {
             playerName: nick,
@@ -1121,6 +1121,7 @@ function App() {
             storyMode: targetSession.template ? targetSession.template.split('|')[2] === '1' : false,
             hintsEnabled: targetSession.template ? targetSession.template.split('|')[3] === '1' : true,
             colorHighlight: targetSession.template ? targetSession.template.split('|')[4] === '1' : true,
+            playerColor: guest.color,
           }));
           refreshState();
         };
@@ -1526,7 +1527,7 @@ function App() {
           </div>
           <div className="lobby-container">
             <div className="lobby-info">
-              <h2 className="lobby-text label-and-nick">
+              <h2 className="lobby-text label-and-nick notranslate" translate="no">
                 <span className="label-part">{t('YOUR_NICK')}</span>
                 <div className="nick-scroll-container">
                   {renderThemedNickname(nickname, playerColor, 64, parsedColorHighlight)}
