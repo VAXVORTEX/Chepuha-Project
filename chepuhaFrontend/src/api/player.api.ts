@@ -13,7 +13,7 @@ export async function createPlayer(payload: CreatePlayerPayload): Promise<Player
     const { data, error } = await supabase
         .from('players')
         .insert(payload)
-        .select()
+        .select('id, nickname, session_id, players_status, player_order, color, joined_at')
         .single();
 
     if (error) throw error;
@@ -23,7 +23,7 @@ export async function createPlayer(payload: CreatePlayerPayload): Promise<Player
 export async function getPlayer(id: string): Promise<Player> {
     const { data, error } = await supabase
         .from('players')
-        .select('*')
+        .select('id, nickname, session_id, players_status, player_order, color, joined_at')
         .eq('id', id)
         .single();
 
@@ -34,7 +34,7 @@ export async function getPlayer(id: string): Promise<Player> {
 export async function getPlayersBySession(sessionId: string): Promise<Player[]> {
     const { data, error } = await supabase
         .from('players')
-        .select('*')
+        .select('id, nickname, session_id, players_status, player_order, color, joined_at')
         .eq('session_id', sessionId)
         .order('id', { ascending: true });
 
@@ -47,7 +47,7 @@ export async function updatePlayer(id: string, payload: Partial<CreatePlayerPayl
         .from('players')
         .update(payload)
         .eq('id', id)
-        .select()
+        .select('id, nickname, session_id, players_status, player_order, color, joined_at')
         .single();
 
     if (error) throw error;

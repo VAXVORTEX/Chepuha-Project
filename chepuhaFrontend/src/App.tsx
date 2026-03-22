@@ -154,7 +154,7 @@ const getInitialState = (): AppState => {
 
 export const AVAILABLE_COLORS = [
 
-  '#e52929', '#ff0000', '#8b0000', '#ff4500', '#ff6347',
+  '#e52929', '#29a62b', '#2962e5', '#ffd700', '#9c29e5',
 
   '#ff8c00', '#ffa500', '#e5a629', '#ffd700',
 
@@ -1093,7 +1093,8 @@ function App() {
         finishJoin();
       } else {
         const currentLocalColor = appState.playerColor;
-        const takenColors = existingPlayers.map((p: Player) => p.color?.toLowerCase()).filter(Boolean);
+        const takenColors = (existingPlayers || []).map((p: Player) => p.color?.toLowerCase()).filter(Boolean);
+        console.log("Existing players count:", existingPlayers?.length, "Taken colors:", takenColors);
         const availableUnique = AVAILABLE_COLORS.filter(c => !takenColors.includes(c.toLowerCase()));
         
         let guestColor = availableUnique.length > 0 ? availableUnique[0] : AVAILABLE_COLORS[0];
@@ -1124,7 +1125,7 @@ function App() {
             storyMode: targetSession.template ? targetSession.template.split('|')[2] === '1' : false,
             hintsEnabled: targetSession.template ? targetSession.template.split('|')[3] === '1' : true,
             colorHighlight: targetSession.template ? targetSession.template.split('|')[4] === '1' : true,
-            playerColor: guest.color,
+            playerColor: guest.color || guestColor,
           }));
           refreshState();
         };
