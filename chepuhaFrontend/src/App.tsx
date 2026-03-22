@@ -1086,17 +1086,20 @@ function App() {
             storyMode: targetSession.template ? targetSession.template.split('|')[2] === '1' : false,
             hintsEnabled: targetSession.template ? targetSession.template.split('|')[3] === '1' : true,
             colorHighlight: targetSession.template ? targetSession.template.split('|')[4] === '1' : true,
-            playerColor: existingPlayer.color || AVAILABLE_COLORS[0],
+            playerColor: existingPlayer.color || (appState.playerColor && appState.playerColor !== '' ? appState.playerColor : AVAILABLE_COLORS[0]),
           }));
           refreshState();
         };
         finishJoin();
       } else {
+        const currentLocalColor = appState.playerColor;
         const takenColors = existingPlayers.map((p: Player) => p.color?.toLowerCase()).filter(Boolean);
         const availableUnique = AVAILABLE_COLORS.filter(c => !takenColors.includes(c.toLowerCase()));
-        const guestColor = availableUnique.length > 0
-          ? availableUnique[0]
-          : AVAILABLE_COLORS[existingPlayers.length % AVAILABLE_COLORS.length];
+        
+        let guestColor = availableUnique.length > 0 ? availableUnique[0] : AVAILABLE_COLORS[0];
+        if (currentLocalColor && !takenColors.includes(currentLocalColor.toLowerCase())) {
+          guestColor = currentLocalColor;
+        }
 
         const guest = await safeApiCall(createPlayer, {
           nickname: nick,
