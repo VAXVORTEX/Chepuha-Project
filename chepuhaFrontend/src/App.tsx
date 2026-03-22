@@ -526,7 +526,7 @@ function App() {
 
 
             if (!originalAnswer) {
-              return `<span style="color: #ffffff; font-weight: normal; text-shadow: none; -webkit-text-stroke: none; opacity: 0.9;">${ans}</span>`;
+              return `<span lang="uk" style="color: #ffffff; font-weight: normal; text-shadow: none; -webkit-text-stroke: none; opacity: 0.9;">${ans}</span>`;
             }
             const ansOwnerId = typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id.id : originalAnswer.player_id;
             const ansOwner = typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id : players.find(p => String(p.id) === String(ansOwnerId));
@@ -540,7 +540,7 @@ function App() {
               className = ` class="${theme}-text"`;
               style = '';
               if (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic') {
-                 return `<span class="${theme}-bg inline-wrapper"><span${className} style="font-weight: bold;">${ans}</span></span>`;
+                 return `<span lang="uk" class="${theme}-bg inline-wrapper"><span${className} style="font-weight: bold;">${ans}</span></span>`;
               }
             } else {
               const isDark = color === '#000000' || color === '#000' || color === '#8b0000' || color === '#4b0082';
@@ -548,7 +548,7 @@ function App() {
               const stroke = isDark ? 'none' : '-webkit-text-stroke: 1.5px black;';
               style += ` text-shadow: ${shadow}; ${stroke}`;
             }
-            return `<span${className} style="${style}">${ans}</span>`;
+            return `<span lang="uk"${className} style="${style}">${ans}</span>`;
           });
 
           const sheetOwner = players.find(p => String(p.id) === String(sheetOwnerId));
