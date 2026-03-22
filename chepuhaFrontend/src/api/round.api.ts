@@ -22,7 +22,7 @@ export async function createRound(payload: CreateRoundPayload): Promise<Round> {
 export async function getRound(id: string): Promise<Round> {
     const { data, error } = await supabase
         .from('rounds')
-        .select('*, answers(*)')
+        .select('*')
         .eq('id', id)
         .single();
     if (error) throw error;

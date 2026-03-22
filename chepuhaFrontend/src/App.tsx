@@ -1090,8 +1090,8 @@ function App() {
         };
         finishJoin();
       } else {
-        const takenColors = existingPlayers.map((p: Player) => p.color).filter(Boolean);
-        const availableUnique = AVAILABLE_COLORS.filter(c => !takenColors.includes(c));
+        const takenColors = existingPlayers.map((p: Player) => p.color?.toLowerCase()).filter(Boolean);
+        const availableUnique = AVAILABLE_COLORS.filter(c => !takenColors.includes(c.toLowerCase()));
         const guestColor = availableUnique.length > 0
           ? availableUnique[0]
           : AVAILABLE_COLORS[existingPlayers.length % AVAILABLE_COLORS.length];
@@ -1444,12 +1444,6 @@ function App() {
                       );
                     })}
                   </div>
-                  <h2 className="room-code-display notranslate" translate="no">
-                <span className="room-code-label">КОД ХАТЫ:</span>
-                <div className="room-code-value">
-                  {roomCode}
-                </div>
-              </h2>
                   <button className="carousel-arrow carousel-arrow-down" onClick={() => moveCarousel(1)}>▼</button>
                 </div>
               </div>

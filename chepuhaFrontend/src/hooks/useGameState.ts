@@ -105,14 +105,15 @@ export function useGameState(sessionId: string | null) {
                     'postgres_changes',
                     { event: '*', schema: 'public', table: 'players', filter: `session_id=eq.${sessionId}` },
                     (payload) => {
-                        if (payload?.new) {
+                        if (!payload) return;
+                        if (payload.new) {
                             setGameState(prev => {
                                 const newPlayer = payload.new as any;
                                 const exists = prev.players.some(p => p.id === newPlayer.id);
                                 return { ...prev, players: exists ? prev.players.map(p => p.id === newPlayer.id ? newPlayer : p) : [...prev.players, newPlayer] };
                             });
                         }
-                        if (payload?.eventType === 'DELETE' && payload?.old) {
+                        if (payload.eventType === 'DELETE' && payload.old) {
                             setGameState(prev => ({ ...prev, players: prev.players.filter(p => p.id !== (payload.old as any).id) }));
                         }
                         fetchState();
@@ -129,7 +130,7 @@ export function useGameState(sessionId: string | null) {
                                 return { ...prev, rounds: exists ? prev.rounds.map(r => r.id === newRound.id ? newRound : r) : [...prev.rounds, newRound] };
                             });
                         }
-                        fetchState();
+                        if (payload) fetchState();
                     }
                 )
                 .on(
@@ -138,9 +139,6 @@ export function useGameState(sessionId: string | null) {
                     (payload) => {
                         if (payload?.new && payload?.eventType === 'INSERT') {
                             const newAnswer = payload.new as any;
-
-
-
                             setGameState(prev => {
                                 if (prev.activeRoundId && String(newAnswer.round_id) === String(prev.activeRoundId)) {
                                     const exists = prev.currentAnswers.some(a => a.id === newAnswer.id);
@@ -152,7 +150,7 @@ export function useGameState(sessionId: string | null) {
                                 return prev;
                             });
                         }
-                        if (Date.now() % 5 === 0) fetchState();
+                        if (payload && Date.now() % 5 === 0) fetchState();
                     }
                 )
                 .subscribe((status) => {
