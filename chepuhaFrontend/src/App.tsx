@@ -1085,6 +1085,7 @@ function App() {
             storyMode: targetSession.template ? targetSession.template.split('|')[2] === '1' : false,
             hintsEnabled: targetSession.template ? targetSession.template.split('|')[3] === '1' : true,
             colorHighlight: targetSession.template ? targetSession.template.split('|')[4] === '1' : true,
+            playerColor: existingPlayer.color || AVAILABLE_COLORS[0],
           }));
           refreshState();
         };
