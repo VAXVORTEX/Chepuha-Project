@@ -13,7 +13,7 @@ export async function createRound(payload: CreateRoundPayload): Promise<Round> {
     const { data, error } = await supabase
         .from('rounds')
         .insert(payload)
-        .select()
+        .select('id, round_number, question_type, rounds_status, started_at, completed_at, session_id')
         .single();
     if (error) throw error;
     return data as Round;
@@ -47,7 +47,7 @@ export async function updateRound(
         .from('rounds')
         .update(payload)
         .eq('id', id)
-        .select()
+        .select('id, round_number, question_type, rounds_status, started_at, completed_at, session_id')
         .single();
     if (error) throw error;
     return data as Round;

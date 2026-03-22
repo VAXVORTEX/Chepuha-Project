@@ -831,13 +831,14 @@ function App() {
             if (isHost) {
               const ts = new Date().toISOString();
               const nextRoundNum = currentRound + 1;
-              const nextRound = await createRound({
+              const nextRound = await safeApiCall(createRound, {
                 session_id: sessionId,
                 round_number: nextRoundNum,
                 question_type: activeTemplate.questionTypes[GAME_LENGTH_INDICES[gameLength]?.[nextRoundNum - 1] ?? (nextRoundNum - 1)],
                 rounds_status: 'active',
                 started_at: ts,
               });
+              if (!nextRound) return;
               updatePlayersBySession(sessionId, { players_status: 'playing' }).catch(() => { });
               currentRoundIdRef.current = nextRound.id;
               currentRoundRef.current = nextRoundNum;
@@ -1174,23 +1175,25 @@ function App() {
 
         const targetIndices = GAME_LENGTH_INDICES[targetGameLength] || GAME_LENGTH_INDICES[12];
         for (let i = 0; i < targetGameLength; i++) {
-          const created = await createRound({
+          const created = await safeApiCall(createRound, {
             session_id: sessionId,
             round_number: i + 1,
-            question_type: gameTemplate.questions[targetIndices[i] ?? i] as QuestionType,
+            question_type: gameTemplate.questionTypes[targetIndices[i] ?? i] as QuestionType,
             rounds_status: 'active',
             started_at: ts,
           });
+          if (!created) return;
           if (i === 0) firstRoundId = created.id;
         }
       } else {
-        const firstRound = await createRound({
+        const firstRound = await safeApiCall(createRound, {
           session_id: sessionId,
           round_number: 1,
-          question_type: gameTemplate.questions[GAME_LENGTH_INDICES[targetGameLength]?.[0] ?? 0] as QuestionType,
+          question_type: gameTemplate.questionTypes[GAME_LENGTH_INDICES[targetGameLength]?.[0] ?? 0] as QuestionType,
           rounds_status: 'active',
           started_at: ts,
         });
+        if (!firstRound) return;
         firstRoundId = firstRound.id;
       }
 
