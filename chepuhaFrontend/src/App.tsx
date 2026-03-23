@@ -190,8 +190,8 @@ export const AVAILABLE_COLORS = [
 ];
 
 const GAME_LENGTH_INDICES: Record<number, number[]> = {
-  6: [0, 1, 2, 4, 6, 11],
-  9: [0, 1, 2, 3, 4, 6, 7, 9, 11],
+  6: [0, 1, 2, 3, 4, 5],
+  9: [0, 1, 2, 3, 4, 5, 6, 7, 8],
   12: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 };
 
@@ -245,11 +245,6 @@ const renderThemedNickname = (name: string, color: string, defaultSize: number =
       {name}
     </span>
   );
-
-  if (showHighlight && (color === 'special:pirate-caribbean' || color === 'special:cyber-samurai-iconic')) {
-    const wrapClass = `${color.replace('special:', '')}-bg inline-wrapper`;
-    return <span className={wrapClass}>{content}</span>;
-  }
 
   return content;
 };
@@ -539,9 +534,6 @@ function App() {
               const theme = color.replace('special:', '');
               className = ` class="${theme}-text"`;
               style = '';
-              if (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic') {
-                 return `<span lang="uk" class="${theme}-bg inline-wrapper"><span${className} style="font-weight: bold;">${ans}</span></span>`;
-              }
             } else {
               const isDark = color === '#000000' || color === '#000' || color === '#8b0000' || color === '#4b0082';
               const shadow = isDark ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)';
@@ -1313,27 +1305,12 @@ function App() {
       setIsTransitioning(false);
 
 
-      if ((parsedStoryMode || totalCount <= 1) && currentRound < gameLength) {
-        const nextRoundNum = currentRound + 1;
-
-        const nextRound = (rounds || []).find(r => r.round_number === nextRoundNum);
-
-        setAppState(prev => ({
-          ...prev,
-          phase: Phases.Main,
-          currentRound: nextRoundNum,
-          currentRoundId: nextRound?.id || prev.currentRoundId,
-          answeredRoundId: currentRoundId,
-          error: ""
-        }));
-      } else {
-        setAppState(prev => ({
-          ...prev,
-          phase: Phases.Waiting,
-          answeredRoundId: currentRoundId,
-          error: ""
-        }));
-      }
+      setAppState(prev => ({
+        ...prev,
+        phase: Phases.Waiting,
+        answeredRoundId: currentRoundId,
+        error: ""
+      }));
     } catch (err: any) {
       setIsTransitioning(false);
       setAppState(prev => ({
@@ -1602,6 +1579,8 @@ function App() {
             playerColor={playerColor}
             joinedCount={derivedJoinedCount}
             totalCount={derivedTotalCount}
+            currentRound={currentRound}
+            totalRounds={parsedGameLength}
             message={t('WAITING_ANSWERS')}
           />
         </>
