@@ -103,11 +103,11 @@ const GameResult: React.FC<ResultProps> = ({
   };
 
   return (
-    <div className={classNames(styles.wrapper, styles[phase])}>
+    <div className={classNames(styles.wrapper, styles[phase], "results-view")}>
       <div className={styles.container}>
         <div className={classNames(styles.box, styles[phase])}>
           <h2 className={styles.title}>
-            {t('STORY_OF')} <span className={classNames(nameClass, "notranslate")} translate="no" style={{ ...nameStyle, fontSize: getFontSize(current?.playerName) }}>{current?.playerName || t('LOADING')}</span>
+            {t('STORY_OF')} <span className={classNames("player-name", nameClass, "notranslate")} translate="no" style={{ ...nameStyle, fontSize: getFontSize(current?.playerName) }}>{current?.playerName || t('LOADING')}</span>
           </h2>
           <div className={styles.storyNav}>
             <button

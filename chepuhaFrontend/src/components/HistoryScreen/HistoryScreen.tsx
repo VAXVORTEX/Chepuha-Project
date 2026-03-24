@@ -17,7 +17,7 @@ const HistoryScreen: React.FC<HistoryScreenProps> = ({
 }) => {
     const { t } = useLanguage();
     return (
-        <div className={classNames(styles.wrapper, styles.historyPhase)}>
+        <div className={classNames(styles.wrapper, styles.historyPhase, "history-view")}>
             <div className={styles.container}>
                 <div className={styles.box}>
                     <h2 className={styles.title}>{t('HISTORY_24H')}</h2>
@@ -31,7 +31,7 @@ const HistoryScreen: React.FC<HistoryScreenProps> = ({
                                         <span className={styles.date}>{g.date}</span>
                                         <span className={styles.room}>{t('ROOM')}: {g.roomCode}</span>
                                         <span className="host">
-                                            {t('HOST')}: <span className="notranslate" translate="no" style={g.hostColor?.startsWith('special:') ? {} : { color: g.hostColor || '#000' }}>{g.hostName}</span>
+                                            {t('HOST')}: <span className={classNames("notranslate", "player-name", g.hostColor?.startsWith('special:') ? `${g.hostColor.replace('special:', '')}-text` : '')} translate="no" style={g.hostColor?.startsWith('special:') ? {} : { color: g.hostColor || '#000' }}>{g.hostName}</span>
                                         </span>
                                     </div>
                                     <div className={styles.arrow}>▶</div>

@@ -186,7 +186,15 @@ export const AVAILABLE_COLORS = [
   'special:pirate-caribbean', 'special:cyber-samurai-iconic',
   'special:stellar', 'special:deep-purple', 'special:cyan-burst', 'special:golden-rod',
   'special:mint-fresh', 'special:royal-red', 'special:electric-blue', 'special:neon-pink', 'special:silver-streak',
-  'special:bronze-age'
+  'special:bronze-age',
+  'special:obsidian', 'special:galaxy', 'special:supernova', 'special:black-hole', 
+  'special:stardust', 'special:comet', 'special:aurora', 'special:horizon', 
+  'special:twilight', 'special:glitch', 'special:matrix', 'special:plasma', 
+  'special:magma', 'special:frost', 'special:oasis', 'special:savanna', 
+  'special:mesa', 'special:tundra', 'special:reef', 'special:abyss', 
+  'special:void', 'special:chrome', 'special:copper', 'special:bronze', 
+  'special:silver', 'special:platinum', 'special:titanium', 'special:carbon', 
+  'special:quartz', 'special:amber', 'special:jade'
 ];
 
 const GAME_LENGTH_INDICES: Record<number, number[]> = {
@@ -198,6 +206,7 @@ const GAME_LENGTH_INDICES: Record<number, number[]> = {
 const getNicknameStyle = (color: string) => {
   const isDark = color === '#000000' || color === '#000' || color === '#8b0000' || color === '#4b0082';
   const isSpecial = color?.startsWith('special:');
+  const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
 
   if (isSpecial) {
     return { textShadow: 'none' };
@@ -206,7 +215,7 @@ const getNicknameStyle = (color: string) => {
   return {
     color: color || '#000000',
     textShadow: isDark ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000',
-    WebkitTextStroke: isDark ? 'none' : '1.5px black'
+    WebkitTextStroke: isDark ? 'none' : (isPC ? '1.5px black' : '0.8px black')
   } as React.CSSProperties;
 };
 
@@ -236,7 +245,7 @@ const getFontSize = (text: string, baseSizeArg: number = 24) => {
 };
 
 const renderThemedNickname = (name: string, color: string, defaultSize: number = 36, showHighlight: boolean = true) => {
-  const themeClass = showHighlight ? getNicknameClassName(color) : 'player-name';
+  const themeClass = getNicknameClassName(color);
   const theme = color.startsWith('special:') ? color.replace('special:', '') : '';
   const style = showHighlight ? getNicknameStyle(color) : { color: '#000000', textShadow: 'none' };
   const fontSize = getFontSize(name, defaultSize);

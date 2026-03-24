@@ -1807,6 +1807,41 @@
     background: linear-gradient(to bottom, #5bcefa 20%, #f5a9b8 20%, #f5a9b8 40%, #fff 40%, #fff 60%, #f5a9b8 60%, #f5a9b8 80%, #5bcefa 80%);
   }
 
+  &.topaz { background: linear-gradient(90deg, #ffc87c, #ff7e5f); }
+  &.obsidian { background: linear-gradient(90deg, #2c3e50, #000000); }
+  &.pearl { background: radial-gradient(circle, #fff, #dbdbdb); }
+  &.phantom { background: linear-gradient(90deg, #d3d3d3, #708090); }
+  &.galaxy { background: radial-gradient(circle, #20002c, #cbb4d4); }
+  &.supernova { background: radial-gradient(circle, #fdbb2d, #22c1c3); }
+  &.black-hole { background: radial-gradient(circle, #000, #353535); }
+  &.stardust { background: linear-gradient(90deg, #0f2027, #203a43, #2c5364); }
+  &.comet { background: linear-gradient(to right, #2b5876, #4e4376); }
+  &.aurora { background: linear-gradient(90deg, #00c9ff, #92fe9d); }
+  &.horizon { background: linear-gradient(90deg, #485563, #29323c); }
+  &.twilight { background: linear-gradient(90deg, #0f0c29, #302b63, #24243e); }
+  &.glitch { background: linear-gradient(90deg, #ff0000, #00ff00, #0000ff); }
+  &.matrix { background: linear-gradient(90deg, #000, #0f0, #000); }
+  &.plasma { background: radial-gradient(circle, #eb3349, #f45c43); }
+  &.magma { background: linear-gradient(90deg, #ed213a, #93291e); }
+  &.frost { background: linear-gradient(90deg, #00d2ff, #3a7bd5); }
+  &.oasis { background: linear-gradient(90deg, #1d976c, #93f9b9); }
+  &.savanna { background: linear-gradient(90deg, #f12711, #f5af19); }
+  &.mesa { background: linear-gradient(90deg, #5a3f37, #2c7744); }
+  &.tundra { background: linear-gradient(90deg, #304352, #d7d2cc); }
+  &.reef { background: linear-gradient(90deg, #00b4db, #0083b0); }
+  &.abyss { background: linear-gradient(90deg, #000, #434343); }
+  &.void { background: linear-gradient(90deg, #0f0c29, #000); }
+  &.chrome { background: linear-gradient(to bottom, #7d7e7d 0%, #0e0e0e 100%); }
+  &.copper { background: linear-gradient(90deg, #b87333, #c58249); }
+  &.bronze { background: linear-gradient(90deg, #cd7f32, #a57164); }
+  &.silver { background: linear-gradient(90deg, #c0c0c0, #e0e0e0); }
+  &.platinum { background: linear-gradient(90deg, #e5e4e2, #b7b7b7); }
+  &.titanium { background: linear-gradient(90deg, #a0a0a0, #505050); }
+  &.carbon { background: repeating-linear-gradient(45deg, #111, #111 2px, #333 2px, #333 4px); }
+  &.quartz { background: linear-gradient(90deg, #fefefe, #f4f4f4); }
+  &.amber { background: linear-gradient(90deg, #ffbf00, #ff7e00); }
+  &.jade { background: linear-gradient(90deg, #00a86b, #0081d5); }
+
 
 
   &.solar {
@@ -2948,7 +2983,15 @@
   display: inline-block;
   font-weight: bold;
   -webkit-text-stroke: 1.5px black;
+  @media (max-width: 768px) {
+    -webkit-text-stroke: 0.8px black;
+  }
   filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.5));
+
+  // Lag optimization for History and Results
+  .history-view &, .results-view & {
+    animation: none !important;
+  }
 }
 
 
