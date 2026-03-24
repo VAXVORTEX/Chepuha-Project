@@ -237,6 +237,7 @@ const getFontSize = (text: string, baseSizeArg: number = 24) => {
 
 const renderThemedNickname = (name: string, color: string, defaultSize: number = 36, showHighlight: boolean = true) => {
   const themeClass = getNicknameClassName(color);
+  const theme = color.startsWith('special:') ? color.replace('special:', '') : '';
   const style = showHighlight ? getNicknameStyle(color) : { color: '#000000', textShadow: 'none' };
   const fontSize = getFontSize(name, defaultSize);
 
@@ -245,6 +246,14 @@ const renderThemedNickname = (name: string, color: string, defaultSize: number =
       {name}
     </span>
   );
+
+  if (showHighlight && (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic')) {
+    return (
+      <span className={`${theme}-bg inline-wrapper`}>
+        {content}
+      </span>
+    );
+  }
 
   return content;
 };
@@ -1574,6 +1583,7 @@ function App() {
 
       {didGameStart && phase === Phases.Waiting && (
         <>
+          <Round currentRound={currentRound} totalRounds={parsedGameLength} className="roundPos" />
           <WaitCard
             nick={nickname}
             playerColor={playerColor}

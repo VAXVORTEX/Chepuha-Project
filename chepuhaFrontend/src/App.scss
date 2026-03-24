@@ -2907,14 +2907,14 @@
 
 
 
-.flag-ua-text { background: linear-gradient(to bottom, #0057b7 45%, #ffd700 45%); }
-.flag-de-text { background: linear-gradient(to bottom, #000000 30%, #FF0000 30% 60%, #FFcc00 60%); }
-.flag-jp-text { background: radial-gradient(circle at center, #BC002D 35%, #FFFFFF 35.1%); }
-.flag-pl-text { background: linear-gradient(to bottom, #FFFFFF 45%, #DC143C 45%); }
-.flag-it-text { background: linear-gradient(to right, #009246 33.33%, #FFFFFF 33.33% 66.66%, #CE2B37 66.66%); }
-.flag-es-text { background: linear-gradient(to bottom, #AA151B 25%, #F1BF00 25% 75%, #AA151B 75%); }
-.flag-br-text { background: linear-gradient(to bottom, #009C3B 30%, #FFDF00 30% 60%, #002776 60% 75%, #009C3B 75%); }
-.flag-ca-text { background: linear-gradient(to right, #FF0000 25%, #FFFFFF 25% 75%, #FF0000 75%); }
+.flag-ua-text { background: linear-gradient(to bottom, #0057b7 45%, #ffd700 45%); -webkit-background-clip: text !important; background-clip: text !important; }
+.flag-de-text { background: linear-gradient(to bottom, #000000 30%, #FF0000 30% 60%, #FFcc00 60%); -webkit-background-clip: text !important; background-clip: text !important; }
+.flag-jp-text { background: radial-gradient(circle at center, #BC002D 35%, #FFFFFF 35.1%); -webkit-background-clip: text !important; background-clip: text !important; }
+.flag-pl-text { background: linear-gradient(to bottom, #FFFFFF 45%, #DC143C 45%); -webkit-background-clip: text !important; background-clip: text !important; }
+.flag-it-text { background: linear-gradient(to right, #009246 33.33%, #FFFFFF 33.33% 66.66%, #CE2B37 66.66%); -webkit-background-clip: text !important; background-clip: text !important; }
+.flag-es-text { background: linear-gradient(to bottom, #AA151B 25%, #F1BF00 25% 75%, #AA151B 75%); -webkit-background-clip: text !important; background-clip: text !important; }
+.flag-br-text { background: linear-gradient(to bottom, #009C3B 30%, #FFDF00 30% 60%, #002776 60% 75%, #009C3B 75%); -webkit-background-clip: text !important; background-clip: text !important; }
+.flag-ca-text { background: linear-gradient(to right, #FF0000 25%, #FFFFFF 25% 75%, #FF0000 75%); -webkit-background-clip: text !important; background-clip: text !important; }
 
 
 .flag-bi-text { background: linear-gradient(to bottom, #D00070 35%, #8C4799 35% 55%, #0032A0 55%); }
