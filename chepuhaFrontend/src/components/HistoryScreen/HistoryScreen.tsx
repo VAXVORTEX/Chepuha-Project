@@ -30,9 +30,9 @@ const HistoryScreen: React.FC<HistoryScreenProps> = ({
                                     <div className={styles.gameInfo}>
                                         <span className={styles.date}>{g.date}</span>
                                         <span className={styles.room}>{t('ROOM')}: {g.roomCode}</span>
-                                        <span className="host">
-                                            {t('HOST')}: <span className={classNames("notranslate", "player-name", g.hostColor?.startsWith('special:') ? `${g.hostColor.replace('special:', '')}-text` : '')} translate="no" style={g.hostColor?.startsWith('special:') ? {} : { color: g.hostColor || '#000' }}>{g.hostName}</span>
-                                        </span>
+                                        <div className={styles.host}>
+                                            {t('HOST')}: <span className="notranslate" translate="no" style={{ color: '#000' }}>{g.hostName}</span>
+                                        </div>
                                     </div>
                                     <div className={styles.arrow}>▶</div>
                                 </div>

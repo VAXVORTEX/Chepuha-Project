@@ -1791,13 +1791,13 @@
     background: linear-gradient(135deg, #00ffff, #fff, #00c6ff);
   }
 
-  &.flag-ua { background: linear-gradient(to bottom, #0057b7 50%, #ffd700 50%); background-clip: text; -webkit-background-clip: text; color: transparent; }
-  &.flag-usa { background: linear-gradient(to bottom, #bf0a30 33%, #ffffff 33%, #ffffff 66%, #00247d 66%); background-clip: text; -webkit-background-clip: text; color: transparent; }
-  &.flag-uk { background: linear-gradient(90deg, #00247d 33%, #cf142b 33%, #cf142b 66%, #00247d 66%); background-clip: text; -webkit-background-clip: text; color: transparent; }
-  &.flag-de { background: linear-gradient(to bottom, #000 33%, #f00 33%, #f00 66%, #ff0 66%); background-clip: text; -webkit-background-clip: text; color: transparent; }
-  &.flag-fr { background: linear-gradient(to right, #002395 33%, #fff 33%, #fff 66%, #ed2939 66%); background-clip: text; -webkit-background-clip: text; color: transparent; }
-  &.flag-jp { background: radial-gradient(circle, #bc002d 40%, #fff 41%); border: 1px solid #ccc; background-clip: text; -webkit-background-clip: text; color: transparent; }
-  &.flag-pl { background: linear-gradient(to bottom, #fff 50%, #dc143c 50%); background-clip: text; -webkit-background-clip: text; color: transparent; border: 1px solid #ccc; }
+  &.flag-ua { background: linear-gradient(to bottom, #0057b7 50%, #ffd700 50%); }
+  &.flag-usa { background: linear-gradient(to bottom, #bf0a30 33%, #ffffff 33%, #ffffff 66%, #00247d 66%); }
+  &.flag-uk { background: linear-gradient(90deg, #00247d 33%, #cf142b 33%, #cf142b 66%, #00247d 66%); }
+  &.flag-de { background: linear-gradient(to bottom, #000 33%, #f00 33%, #f00 66%, #ff0 66%); }
+  &.flag-fr { background: linear-gradient(to right, #002395 33%, #fff 33%, #fff 66%, #ed2939 66%); }
+  &.flag-jp { background: radial-gradient(circle, #bc002d 40%, #fff 41%); border: 1px solid #ccc; }
+  &.flag-pl { background: linear-gradient(to bottom, #fff 50%, #dc143c 50%); border: 1px solid #ccc; }
 
   &.gender-pride {
     background: linear-gradient(to bottom, #e40303, #ff8c00, #ffed00, #008026, #004dff, #750787);
@@ -1805,6 +1805,13 @@
 
   &.gender-trans {
     background: linear-gradient(to bottom, #5bcefa 20%, #f5a9b8 20%, #f5a9b8 40%, #fff 40%, #fff 60%, #f5a9b8 60%, #f5a9b8 80%, #5bcefa 80%);
+  }
+
+  &.pirate-caribbean {
+    background: url('./assets/images/PiratesofCaribianjpg.jpg') center / cover no-repeat;
+  }
+  &.cyber-samurai-iconic {
+    background: url('./assets/images/samurai_2077.png') center / cover no-repeat;
   }
 
   &.topaz { background: linear-gradient(90deg, #ffc87c, #ff7e5f); }

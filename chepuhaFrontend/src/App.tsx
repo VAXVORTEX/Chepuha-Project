@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, memo } from "react";
+import classNames from "classnames";
 import Button from "./components/Button/Button";
 import HistoryScreen from "./components/HistoryScreen/HistoryScreen";
 import { RoundCard } from "./components/RoundCard/RoundCard";
@@ -166,14 +167,7 @@ export const AVAILABLE_COLORS = [
 
   '#9c29e5', '#8a2be2', '#4b0082', '#9932cc', '#ba55d3', '#e6e6fa',
 
-  '#e529b3', '#ff69b4', '#ff1493', '#ffc0cb', '#db7093',
-
-  '#29e5d0', '#00ffff', '#20b2aa', '#40e0d0',
-
-  '#ff00ff', '#00ffea', '#ffae00', '#7b00ff', '#00ff1a',
-
-  '#ffffff', '#808080', '#c0c0c0', '#dcdcdc', '#000000',
-
+  '#e52929', '#24c431', '#2c5ed3', '#f9d423', '#ff8c00', '#8b0000', '#4b0082', '#000000',
   'special:rainbow', 'special:fire-gradient', 'special:ice-gradient', 'special:gold',
   'special:nebula', 'special:sunset', 'special:solar', 'special:cyberpunk',
 
@@ -186,15 +180,7 @@ export const AVAILABLE_COLORS = [
   'special:pirate-caribbean', 'special:cyber-samurai-iconic',
   'special:stellar', 'special:deep-purple', 'special:cyan-burst', 'special:golden-rod',
   'special:mint-fresh', 'special:royal-red', 'special:electric-blue', 'special:neon-pink', 'special:silver-streak',
-  'special:bronze-age',
-  'special:obsidian', 'special:galaxy', 'special:supernova', 'special:black-hole', 
-  'special:stardust', 'special:comet', 'special:aurora', 'special:horizon', 
-  'special:twilight', 'special:glitch', 'special:matrix', 'special:plasma', 
-  'special:magma', 'special:frost', 'special:oasis', 'special:savanna', 
-  'special:mesa', 'special:tundra', 'special:reef', 'special:abyss', 
-  'special:void', 'special:chrome', 'special:copper', 'special:bronze', 
-  'special:silver', 'special:platinum', 'special:titanium', 'special:carbon', 
-  'special:quartz', 'special:amber', 'special:jade'
+  'special:bronze-age'
 ];
 
 const GAME_LENGTH_INDICES: Record<number, number[]> = {
@@ -280,7 +266,7 @@ const PlayerItem = memo(({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS
         {isMe && showColorPicker && (
           <div className="inline-color-picker">
             <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
-            <div className={`inline-color-swatch ${activeColor?.startsWith('special:') ? activeColor.replace('special:', '') : ''}`} style={!activeColor?.startsWith('special:') ? { background: activeColor } : {}} />
+            <div className={classNames("inline-color-swatch", activeColor?.startsWith('special:') ? activeColor.replace('special:', '') : '')} style={!activeColor?.startsWith('special:') ? { background: activeColor } : {}} />
             <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
           </div>
         )}
