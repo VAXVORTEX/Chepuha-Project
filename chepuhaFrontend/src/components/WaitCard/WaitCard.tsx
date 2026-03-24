@@ -47,11 +47,6 @@ const WaitCard: React.FC<WaitCardProps> = ({
         <p className={styles.countText}>
           {joinedCount} / {totalCount} {t('PLAYERS_READY')}
         </p>
-        {currentRound && totalRounds && (
-          <p className={styles.roundText}>
-            {t('ROUND')} {currentRound} / {totalRounds}
-          </p>
-        )}
         <h1 className={styles.waitingText}>{message || t('WAITING_PLAYERS')}</h1>
       </div>
     </div>

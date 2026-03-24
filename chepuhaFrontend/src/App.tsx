@@ -236,7 +236,7 @@ const getFontSize = (text: string, baseSizeArg: number = 24) => {
 };
 
 const renderThemedNickname = (name: string, color: string, defaultSize: number = 36, showHighlight: boolean = true) => {
-  const themeClass = getNicknameClassName(color);
+  const themeClass = showHighlight ? getNicknameClassName(color) : 'player-name';
   const theme = color.startsWith('special:') ? color.replace('special:', '') : '';
   const style = showHighlight ? getNicknameStyle(color) : { color: '#000000', textShadow: 'none' };
   const fontSize = getFontSize(name, defaultSize);
