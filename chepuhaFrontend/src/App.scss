@@ -1823,11 +1823,42 @@
   }
 
   &.pirate-caribbean {
-    background: url('./assets/images/theme_pirate_bg.jpg') center / cover no-repeat;
+    background: url('./assets/images/theme_pirate_bg.jpg') center / cover no-repeat !important;
   }
   &.cyber-samurai-iconic {
-    background: url('./assets/images/theme_samurai_bg.png') center / cover no-repeat;
+    background: url('./assets/images/theme_samurai_bg.png') center / cover no-repeat !important;
   }
+
+  &.flag-gay-mlm {
+    background: linear-gradient(to bottom, #078975 16%, #26ceaa 16% 32%, #98e8c1 32% 46%, #ffffff 46% 54%, #7bade3 54% 68%, #5049cc 68% 84%, #3d1a78 84%);
+  }
+  &.flag-nonbinary {
+    background: linear-gradient(to bottom, #fcf434 25%, #ffffff 25% 50%, #9c59d1 50% 75%, #2c2c2c 75%);
+  }
+  &.flag-lesbian {
+    background: linear-gradient(to bottom, #d52d00 20%, #ff9a56 20% 40%, #ffffff 40% 60%, #d362a4 60% 80%, #a30262 80%);
+  }
+  &.flag-intersex {
+    background: #ffd800;
+    border: 2px solid #7902aa;
+  }
+  &.flag-genderqueer {
+    background: linear-gradient(to bottom, #b57edc 33%, #ffffff 33% 66%, #4a8123 66%);
+  }
+  &.flag-polysexual {
+    background: linear-gradient(to bottom, #f714ba 33%, #01d66a 33% 66%, #1594f6 66%);
+  }
+
+  &.stellar { background: linear-gradient(45deg, #1e3c72, #2a5298, #70e1f5); }
+  &.deep-purple { background: linear-gradient(45deg, #4b0082, #8a2be2, #1a0033); }
+  &.cyan-burst { background: linear-gradient(45deg, #00ffff, #008080, #004444); }
+  &.golden-rod { background: linear-gradient(45deg, #daa520, #ffd700, #b8860b); }
+  &.mint-fresh { background: linear-gradient(45deg, #00ffca, #05bfdb, #088395); }
+  &.royal-red { background: linear-gradient(45deg, #800000, #ff0000, #ffd700); }
+  &.electric-blue { background: linear-gradient(45deg, #0000ff, #00ffff, #000080); }
+  &.neon-pink { background: linear-gradient(45deg, #ff00ff, #ff69b4, #880088); }
+  &.silver-streak { background: linear-gradient(45deg, #c0c0c0, #ffffff, #808080); }
+  &.bronze-age { background: linear-gradient(45deg, #cd7f32, #a0522d, #8b4513); }
 
   &.topaz { background: linear-gradient(90deg, #ffc87c, #ff7e5f); }
   &.obsidian { background: linear-gradient(90deg, #2c3e50, #000000); }
@@ -2972,7 +3003,7 @@
     #ff0000, #ffffff, #808080, #1a1a1a, #ff0000
   );
   background-size: 200% auto !important;
-  animation: gradient-slide 8s linear infinite !important;
+  animation: gradient-slide 5.6s linear infinite !important;
 }
 
 .cyber-samurai-iconic-text {
@@ -2981,7 +3012,7 @@
     #1a1a1a, #ff0000, #ffd700, #808080, #1a1a1a
   );
   background-size: 200% auto !important;
-  animation: gradient-slide 10s linear infinite !important;
+  animation: gradient-slide 7s linear infinite !important;
   will-change: background-position;
 }
 
@@ -3012,7 +3043,7 @@
 
 .rainbow-text, .ice-gradient-text, .nebula-text, .sunset-text, .solar-text, .cyberpunk-text {
   background-size: 200% auto !important;
-  animation: gradient-slide 10s linear infinite !important;
+  animation: gradient-slide 7s linear infinite !important;
   will-change: background-position;
 }
 
@@ -3029,19 +3060,19 @@
 
 .stellar-text, .mint-fresh-text, .silver-streak-text {
   background-size: 200% auto !important;
-  animation: gradient-slide 10s linear infinite !important;
+  animation: gradient-slide 7s linear infinite !important;
 }
 .deep-purple-text, .royal-red-text, .bronze-age-text {
   background-size: 200% auto !important;
-  animation: premium-slide-2 12s linear infinite !important;
+  animation: premium-slide-2 8.4s linear infinite !important;
 }
 .cyan-burst-text, .electric-blue-text {
   background-size: 200% auto !important;
-  animation: premium-slide-3 15s linear infinite !important;
+  animation: premium-slide-3 10.5s linear infinite !important;
 }
 .golden-rod-text, .neon-pink-text {
   background-size: 200% auto !important;
-  animation: premium-slide-4 11s linear infinite !important;
+  animation: premium-slide-4 7.7s linear infinite !important;
 }
 
 .rainbow-text { background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff); }
