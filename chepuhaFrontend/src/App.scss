@@ -285,6 +285,10 @@
   max-width: 550px;
   overflow-x: hidden;
   scrollbar-width: none;
+  line-height: 1;
+  padding-block: 2px;
+  vertical-align: middle;
+  font-weight: bold;
 
   &::-webkit-scrollbar {
     display: none;

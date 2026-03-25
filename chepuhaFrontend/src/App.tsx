@@ -165,9 +165,6 @@ export const AVAILABLE_COLORS = [
   '#9c29e5', '#8a2be2', '#4b0082', '#9932cc', '#ba55d3', '#e6e6fa',
   '#000000', '#ffffff',
 
-  // Static gradients
-  'special:fire-gradient', 'special:ice-gradient', 'special:gold',
-
   // Flags
   'special:flag-ua', 'special:flag-de', 'special:flag-jp', 'special:flag-pl',
   'special:flag-it', 'special:flag-es', 'special:flag-br', 'special:flag-ca',
@@ -178,7 +175,10 @@ export const AVAILABLE_COLORS = [
   'special:flag-gay-mlm',
   'special:flag-intersex', 'special:flag-genderqueer', 'special:flag-polysexual',
 
-  // Animated gradients (grouped together)
+  // Static gradients
+  'special:fire-gradient', 'special:ice-gradient', 'special:gold',
+
+  // Animated gradients
   'special:rainbow', 'special:nebula', 'special:sunset', 'special:solar', 'special:cyberpunk',
   'special:pirate-caribbean', 'special:cyber-samurai-iconic',
 
