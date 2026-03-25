@@ -154,20 +154,14 @@ const getInitialState = (): AppState => {
 };
 
 export const AVAILABLE_COLORS = [
-
   '#e52929', '#29a62b', '#2962e5', '#ffd700', '#9c29e5',
-
-  '#ff8c00', '#ffa500', '#e5a629', '#ffd700',
-
+  '#ff8c00', '#ffa500', '#e5a629',
   '#ffff00', '#fafad2', '#ffffed',
+  '#00ff00', '#32cd32', '#008000', '#adff2f', '#98fb98', '#00fa9a',
+  '#00bfff', '#0000ff', '#00008b', '#4682b4', '#87ceeb', '#add8e6',
+  '#8a2be2', '#4b0082', '#9932cc', '#ba55d3', '#e6e6fa',
+  '#24c431', '#2c5ed3', '#f9d423', '#8b0000', '#000000',
 
-  '#29a62b', '#00ff00', '#32cd32', '#008000', '#adff2f', '#98fb98', '#00fa9a',
-
-  '#2962e5', '#00bfff', '#0000ff', '#00008b', '#4682b4', '#87ceeb', '#add8e6',
-
-  '#9c29e5', '#8a2be2', '#4b0082', '#9932cc', '#ba55d3', '#e6e6fa',
-
-  '#e52929', '#24c431', '#2c5ed3', '#f9d423', '#ff8c00', '#8b0000', '#4b0082', '#000000',
   'special:rainbow', 'special:fire-gradient', 'special:ice-gradient', 'special:gold',
   'special:nebula', 'special:sunset', 'special:solar', 'special:cyberpunk',
 
@@ -218,7 +212,7 @@ const getFontSize = (text: string, baseSizeArg: number = 24) => {
   const len = text.length;
   const isPC = window.innerWidth > 768;
 
-  const baseSize = isPC ? 90 : 36;
+  const baseSize = isPC ? 90 : 54;
 
   if (len <= 6) return `${baseSize}px`;
 
