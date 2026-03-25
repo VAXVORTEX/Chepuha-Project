@@ -12,7 +12,13 @@
   box-sizing: border-box;
   overflow-x: hidden;
   padding: 150px 20px;
-  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .wrapper {
+    padding: 0 5px;
+    min-height: 100dvh;
+  }
 }
 
 .box {
