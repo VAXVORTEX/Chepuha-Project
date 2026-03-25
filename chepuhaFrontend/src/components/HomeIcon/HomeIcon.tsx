@@ -1,4 +1,4 @@
-import homeImage from "../../assets/images/house.png";
+import homeImage from "../../assets/images/icon_home.png";
 
 interface HomeIconProps {
     onClick: () => void;

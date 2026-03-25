@@ -45,6 +45,10 @@
   text-align: center;
   -webkit-text-stroke: 1px $black;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 .part {

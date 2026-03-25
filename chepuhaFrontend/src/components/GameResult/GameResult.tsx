@@ -79,8 +79,8 @@ const GameResult: React.FC<ResultProps> = ({
   const showNameColor = showColors && pColor;
   const nameIsSpecial = showNameColor && pColor?.startsWith('special:');
   const nameClass = nameIsSpecial ? `${pColor?.replace('special:', '')}-text` : '';
-  const nameStyle = !nameIsSpecial && showNameColor
-    ? { color: pColor }
+  const nameStyle = showNameColor
+    ? { color: nameIsSpecial ? 'transparent' : pColor }
     : {
       color: '#FFFFFF',
       textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)'
@@ -103,11 +103,22 @@ const GameResult: React.FC<ResultProps> = ({
   };
 
   return (
-    <div className={classNames(styles.wrapper, styles[phase])}>
+    <div className={classNames(styles.wrapper, styles[phase], "results-view")}>
       <div className={styles.container}>
         <div className={classNames(styles.box, styles[phase])}>
           <h2 className={styles.title}>
-            {t('STORY_OF')} <span className={nameClass} style={{ ...nameStyle, fontSize: getFontSize(current?.playerName) }}>{current?.playerName || t('LOADING')}</span>
+            {t('STORY_OF')} {(() => {
+              const theme = pColor?.startsWith('special:') ? pColor.replace('special:', '') : '';
+              const content = (
+                <span className={classNames("player-name", nameClass, "notranslate")} translate="no" style={{ ...nameStyle, fontSize: getFontSize(current?.playerName) }}>
+                  {current?.playerName || t('LOADING')}
+                </span>
+              );
+              if (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic') {
+                return <span className={`${theme}-bg inline-wrapper`}>{content}</span>;
+              }
+              return content;
+            })()}
           </h2>
           <div className={styles.storyNav}>
             <button

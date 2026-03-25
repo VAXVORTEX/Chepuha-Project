@@ -13,7 +13,7 @@ export async function createRound(payload: CreateRoundPayload): Promise<Round> {
     const { data, error } = await supabase
         .from('rounds')
         .insert(payload)
-        .select()
+        .select('id, round_number, question_type, rounds_status, started_at, completed_at, session_id')
         .single();
     if (error) throw error;
     return data as Round;
@@ -22,7 +22,7 @@ export async function createRound(payload: CreateRoundPayload): Promise<Round> {
 export async function getRound(id: string): Promise<Round> {
     const { data, error } = await supabase
         .from('rounds')
-        .select('*, answers(*)')
+        .select('id, round_number, question_type, rounds_status, started_at, completed_at, session_id')
         .eq('id', id)
         .single();
     if (error) throw error;
@@ -32,7 +32,7 @@ export async function getRound(id: string): Promise<Round> {
 export async function getRoundsBySession(sessionId: string): Promise<Round[]> {
     const { data, error } = await supabase
         .from('rounds')
-        .select('*, answers(*)')
+        .select('id, round_number, question_type, rounds_status, started_at, completed_at, session_id')
         .eq('session_id', sessionId)
         .order('round_number', { ascending: true });
     if (error) throw error;
@@ -47,7 +47,7 @@ export async function updateRound(
         .from('rounds')
         .update(payload)
         .eq('id', id)
-        .select()
+        .select('id, round_number, question_type, rounds_status, started_at, completed_at, session_id')
         .single();
     if (error) throw error;
     return data as Round;

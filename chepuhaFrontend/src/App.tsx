@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, memo } from "react";
+import classNames from "classnames";
 import Button from "./components/Button/Button";
 import HistoryScreen from "./components/HistoryScreen/HistoryScreen";
 import { RoundCard } from "./components/RoundCard/RoundCard";
@@ -110,7 +111,7 @@ const getInitialState = (): AppState => {
     storyMode: false,
     hintsEnabled: false,
     colorHighlight: true,
-    playerColor: AVAILABLE_COLORS[0]
+    playerColor: '',
   };
 
   try {
@@ -147,57 +148,56 @@ const getInitialState = (): AppState => {
         };
       }
     }
-  } catch (e) { }
+  } catch (e) {
+    console.error("Failed to load state from localStorage:", e);
+  }
 
   return defaultState;
 };
 
 export const AVAILABLE_COLORS = [
-
-  '#e52929', '#ff0000', '#8b0000', '#ff4500', '#ff6347',
-
-  '#ff8c00', '#ffa500', '#e5a629', '#ffd700',
-
-  '#ffff00', '#fafad2', '#ffffed',
-
-  '#29a62b', '#00ff00', '#32cd32', '#008000', '#adff2f', '#98fb98', '#00fa9a',
-
-  '#2962e5', '#00bfff', '#0000ff', '#00008b', '#4682b4', '#87ceeb', '#add8e6',
-
+  // Plain colors ordered by hue: red -> orange -> yellow -> green -> blue -> purple -> pink -> neutrals
+  '#e52929', '#ff4e50', '#8b0000',
+  '#ff8c00', '#ffa500', '#e5a629',
+  '#ffd700', '#ffff00', '#fafad2',
+  '#29a62b', '#24c431', '#00ff00', '#32cd32', '#008000', '#adff2f', '#98fb98', '#00fa9a',
+  '#2962e5', '#2c5ed3', '#00bfff', '#0000ff', '#00008b', '#4682b4', '#87ceeb', '#add8e6',
   '#9c29e5', '#8a2be2', '#4b0082', '#9932cc', '#ba55d3', '#e6e6fa',
+  '#f9d423', '#000000', '#ffffff',
 
-  '#e529b3', '#ff69b4', '#ff1493', '#ffc0cb', '#db7093',
-
-  '#29e5d0', '#00ffff', '#20b2aa', '#40e0d0',
-
-  '#ff00ff', '#00ffea', '#ffae00', '#7b00ff', '#00ff1a',
-
-  '#ffffff', '#808080', '#c0c0c0', '#dcdcdc', '#000000',
-
+  // Animated gradients
   'special:rainbow', 'special:fire-gradient', 'special:ice-gradient', 'special:gold',
   'special:nebula', 'special:sunset', 'special:solar', 'special:cyberpunk',
 
+  // Flags
   'special:flag-ua', 'special:flag-de', 'special:flag-jp', 'special:flag-pl',
   'special:flag-it', 'special:flag-es', 'special:flag-br', 'special:flag-ca',
   'special:flag-bi', 'special:flag-pan', 'special:flag-ace', 'special:flag-nonbinary',
+
+  // Gender/pride
   'special:gender-pride', 'special:gender-trans', 'special:flag-lesbian',
+  'special:flag-gay-mlm',
   'special:flag-intersex', 'special:flag-genderqueer', 'special:flag-polysexual',
 
+  // Themes
   'special:pirate-caribbean', 'special:cyber-samurai-iconic',
+
+  // Premium gradients
   'special:stellar', 'special:deep-purple', 'special:cyan-burst', 'special:golden-rod',
   'special:mint-fresh', 'special:royal-red', 'special:electric-blue', 'special:neon-pink', 'special:silver-streak',
   'special:bronze-age'
 ];
 
 const GAME_LENGTH_INDICES: Record<number, number[]> = {
-  6: [0, 1, 2, 4, 6, 11],
-  9: [0, 1, 2, 3, 4, 6, 7, 9, 11],
+  6: [0, 1, 2, 3, 4, 5],
+  9: [0, 1, 2, 3, 4, 5, 6, 7, 8],
   12: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 };
 
 const getNicknameStyle = (color: string) => {
   const isDark = color === '#000000' || color === '#000' || color === '#8b0000' || color === '#4b0082';
   const isSpecial = color?.startsWith('special:');
+  const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
 
   if (isSpecial) {
     return { textShadow: 'none' };
@@ -206,7 +206,7 @@ const getNicknameStyle = (color: string) => {
   return {
     color: color || '#000000',
     textShadow: isDark ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000',
-    WebkitTextStroke: isDark ? 'none' : '1.5px black'
+    WebkitTextStroke: isDark ? 'none' : (isPC ? '1.5px black' : '0.8px black')
   } as React.CSSProperties;
 };
 
@@ -223,7 +223,7 @@ const getFontSize = (text: string, baseSizeArg: number = 24) => {
   const len = text.length;
   const isPC = window.innerWidth > 768;
 
-  const baseSize = isPC ? 90 : 36;
+  const baseSize = isPC ? 90 : 54;
 
   if (len <= 6) return `${baseSize}px`;
 
@@ -237,18 +237,22 @@ const getFontSize = (text: string, baseSizeArg: number = 24) => {
 
 const renderThemedNickname = (name: string, color: string, defaultSize: number = 36, showHighlight: boolean = true) => {
   const themeClass = getNicknameClassName(color);
+  const theme = color.startsWith('special:') ? color.replace('special:', '') : '';
   const style = showHighlight ? getNicknameStyle(color) : { color: '#000000', textShadow: 'none' };
   const fontSize = getFontSize(name, defaultSize);
 
   const content = (
-    <span className={themeClass + (!showHighlight ? ' no-highlight' : '')} style={{ ...style, fontSize }}>
+    <span className={themeClass + (!showHighlight ? ' no-highlight' : '') + " notranslate"} translate="no" style={{ ...style, fontSize }}>
       {name}
     </span>
   );
 
-  if (showHighlight && (color === 'special:pirate-caribbean' || color === 'special:cyber-samurai-iconic')) {
-    const wrapClass = `${color.replace('special:', '')}-bg inline-wrapper`;
-    return <span className={wrapClass}>{content}</span>;
+  if (showHighlight && (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic')) {
+    return (
+      <span className={`${theme}-bg inline-wrapper`}>
+        {content}
+      </span>
+    );
   }
 
   return content;
@@ -267,7 +271,7 @@ const PlayerItem = memo(({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS
         {isMe && showColorPicker && (
           <div className="inline-color-picker">
             <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
-            <div className={`inline-color-swatch ${activeColor?.startsWith('special:') ? activeColor.replace('special:', '') : ''}`} style={!activeColor?.startsWith('special:') ? { background: activeColor } : {}} />
+            <div className={classNames("inline-color-swatch", activeColor?.startsWith('special:') ? activeColor.replace('special:', '') : '')} style={!activeColor?.startsWith('special:') ? { background: activeColor } : {}} />
             <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
           </div>
         )}
@@ -316,7 +320,9 @@ function App() {
           }
         }
       })
-      .catch(() => { });
+      .catch(err => {
+        console.warn("Failed to fetch server time offset:", err);
+      });
   }, []);
 
   const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets, lobbyCreatedAt, answeredRoundId, gameLength, storyMode, hintsEnabled, colorHighlight, playerColor } = appState;
@@ -350,6 +356,10 @@ function App() {
     );
 
   const { t, language, setLanguage } = useLanguage();
+
+  useEffect(() => {
+    document.documentElement.lang = language || 'uk';
+  }, [language]);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transitionLockRef = useRef(false);
   const currentRoundIdRef = useRef(currentRoundId);
@@ -448,7 +458,9 @@ function App() {
   useEffect(() => {
     if (isHost && sessionId && isLobby) {
       const packedTemplate = `${selectedTemplate}|${gameLength}|${storyMode ? '1' : '0'}|${hintsEnabled ? '1' : '0'}|${colorHighlight ? '1' : '0'}`;
-      updateGameSession(sessionId, { template: packedTemplate }).catch(() => { });
+      updateGameSession(sessionId, { template: packedTemplate }).catch(err => {
+        console.error("Failed to update game session template:", err);
+      });
     }
   }, [isHost, sessionId, isLobby, selectedTemplate, gameLength, storyMode, hintsEnabled, colorHighlight]);
 
@@ -457,7 +469,9 @@ function App() {
     if (sessionId && playerId && playerColor) {
       updatePlayer(playerId, { color: playerColor }).catch((err) => {
         if (String(err.message).includes('column') || String(err.message).includes('schema cache')) {
-
+          // Expected during DB migration
+        } else {
+          console.error("Failed to update player color sync:", err);
         }
       });
     }
@@ -472,8 +486,8 @@ function App() {
   useEffect(() => {
     const imagesToPreload = [
       logoImage, logoImageEng, crownImage, flagUk, flagEn,
-      "/assets/images/yellowGuy.png",
-      "/assets/images/RedGuyRemoved.png",
+      "/assets/images/main_character_yellow.png",
+      "/assets/images/main_character_red.png",
       "/assets/images/gameBackground.jpg"
     ];
     imagesToPreload.forEach(src => {
@@ -522,7 +536,7 @@ function App() {
 
 
             if (!originalAnswer) {
-              return `<span style="color: #ffffff; font-weight: normal; text-shadow: none; -webkit-text-stroke: none; opacity: 0.9;">${ans}</span>`;
+              return `<span lang="uk" style="color: #ffffff; font-weight: normal; text-shadow: none; -webkit-text-stroke: none; opacity: 0.9;">${ans}</span>`;
             }
             const ansOwnerId = typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id.id : originalAnswer.player_id;
             const ansOwner = typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id : players.find(p => String(p.id) === String(ansOwnerId));
@@ -534,21 +548,23 @@ function App() {
             if (isSpecial) {
               const theme = color.replace('special:', '');
               className = ` class="${theme}-text"`;
-              style = '';
+              style = 'color: transparent;';
               if (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic') {
-                 return `<span class="${theme}-bg inline-wrapper"><span${className} style="font-weight: bold;">${ans}</span></span>`;
+                return `<span class="${theme}-bg inline-wrapper"><span lang="uk"${className}>${ans}</span></span>`;
               }
             } else {
               const isDark = color === '#000000' || color === '#000' || color === '#8b0000' || color === '#4b0082';
-              const shadow = isDark ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)';
-              const stroke = isDark ? 'none' : '-webkit-text-stroke: 1.5px black;';
+              const shadow = isDark 
+                ? '0 0 2px #fff, 0 0 5px rgba(255,255,255,0.5)' 
+                : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)';
+              const stroke = isDark ? '-webkit-text-stroke: 0.5px #fff;' : '-webkit-text-stroke: 1.5px black;';
               style += ` text-shadow: ${shadow}; ${stroke}`;
             }
-            return `<span${className} style="${style}">${ans}</span>`;
+            return `<span lang="uk"${className} style="${style}">${ans}</span>`;
           });
 
           const sheetOwner = players.find(p => String(p.id) === String(sheetOwnerId));
-          const sheetOwnerColor = sheetOwner?.color || (String(sheetOwnerId) === String(playerId) ? playerColor : '#000');
+          const sheetOwnerColor = sheetOwner?.color || (String(sheetOwnerId) === String(playerId) ? (playerColor || '#ffffff') : '#ffffff');
 
           return {
             playerName: nick,
@@ -580,7 +596,9 @@ function App() {
           stories: built
         });
       }
-    } catch (err) { }
+    } catch (err) {
+      console.error("Error fetching final story result:", err);
+    }
   }, [sessionId, players, session, roomCode, language, activeTemplate, parsedColorHighlight, playerId, playerColor, gameLength]);
 
   useEffect(() => {
@@ -827,13 +845,14 @@ function App() {
             if (isHost) {
               const ts = new Date().toISOString();
               const nextRoundNum = currentRound + 1;
-              const nextRound = await createRound({
+              const nextRound = await safeApiCall(createRound, {
                 session_id: sessionId,
                 round_number: nextRoundNum,
                 question_type: activeTemplate.questionTypes[GAME_LENGTH_INDICES[gameLength]?.[nextRoundNum - 1] ?? (nextRoundNum - 1)],
                 rounds_status: 'active',
                 started_at: ts,
               });
+              if (!nextRound) return;
               updatePlayersBySession(sessionId, { players_status: 'playing' }).catch(() => { });
               currentRoundIdRef.current = nextRound.id;
               currentRoundRef.current = nextRoundNum;
@@ -1081,16 +1100,20 @@ function App() {
             storyMode: targetSession.template ? targetSession.template.split('|')[2] === '1' : false,
             hintsEnabled: targetSession.template ? targetSession.template.split('|')[3] === '1' : true,
             colorHighlight: targetSession.template ? targetSession.template.split('|')[4] === '1' : true,
+            playerColor: existingPlayer.color || (appState.playerColor && appState.playerColor !== '' ? appState.playerColor : AVAILABLE_COLORS[0]),
           }));
           refreshState();
         };
         finishJoin();
       } else {
-        const takenColors = existingPlayers.map((p: Player) => p.color).filter(Boolean);
-        const availableUnique = AVAILABLE_COLORS.filter(c => !takenColors.includes(c));
-        const guestColor = availableUnique.length > 0
-          ? availableUnique[0]
-          : AVAILABLE_COLORS[existingPlayers.length % AVAILABLE_COLORS.length];
+        const currentLocalColor = appState.playerColor;
+        const takenColors = (existingPlayers || []).map((p: Player) => p.color?.toLowerCase()).filter(Boolean);
+        const availableUnique = AVAILABLE_COLORS.filter(c => !takenColors.includes(c.toLowerCase()));
+        
+        let guestColor = availableUnique.length > 0 ? availableUnique[0] : AVAILABLE_COLORS[0];
+        if (currentLocalColor && !takenColors.includes(currentLocalColor.toLowerCase())) {
+          guestColor = currentLocalColor;
+        }
 
         const guest = await safeApiCall(createPlayer, {
           nickname: nick,
@@ -1115,6 +1138,7 @@ function App() {
             storyMode: targetSession.template ? targetSession.template.split('|')[2] === '1' : false,
             hintsEnabled: targetSession.template ? targetSession.template.split('|')[3] === '1' : true,
             colorHighlight: targetSession.template ? targetSession.template.split('|')[4] === '1' : true,
+            playerColor: guest.color || guestColor,
           }));
           refreshState();
         };
@@ -1169,23 +1193,25 @@ function App() {
 
         const targetIndices = GAME_LENGTH_INDICES[targetGameLength] || GAME_LENGTH_INDICES[12];
         for (let i = 0; i < targetGameLength; i++) {
-          const created = await createRound({
+          const created = await safeApiCall(createRound, {
             session_id: sessionId,
             round_number: i + 1,
-            question_type: gameTemplate.questions[targetIndices[i] ?? i] as QuestionType,
+            question_type: gameTemplate.questionTypes[targetIndices[i] ?? i] as QuestionType,
             rounds_status: 'active',
             started_at: ts,
           });
+          if (!created) return;
           if (i === 0) firstRoundId = created.id;
         }
       } else {
-        const firstRound = await createRound({
+        const firstRound = await safeApiCall(createRound, {
           session_id: sessionId,
           round_number: 1,
-          question_type: gameTemplate.questions[GAME_LENGTH_INDICES[targetGameLength]?.[0] ?? 0] as QuestionType,
+          question_type: gameTemplate.questionTypes[GAME_LENGTH_INDICES[targetGameLength]?.[0] ?? 0] as QuestionType,
           rounds_status: 'active',
           started_at: ts,
         });
+        if (!firstRound) return;
         firstRoundId = firstRound.id;
       }
 
@@ -1300,27 +1326,12 @@ function App() {
       setIsTransitioning(false);
 
 
-      if ((parsedStoryMode || totalCount <= 1) && currentRound < gameLength) {
-        const nextRoundNum = currentRound + 1;
-
-        const nextRound = (rounds || []).find(r => r.round_number === nextRoundNum);
-
-        setAppState(prev => ({
-          ...prev,
-          phase: Phases.Main,
-          currentRound: nextRoundNum,
-          currentRoundId: nextRound?.id || prev.currentRoundId,
-          answeredRoundId: currentRoundId,
-          error: ""
-        }));
-      } else {
-        setAppState(prev => ({
-          ...prev,
-          phase: Phases.Waiting,
-          answeredRoundId: currentRoundId,
-          error: ""
-        }));
-      }
+      setAppState(prev => ({
+        ...prev,
+        phase: Phases.Waiting,
+        answeredRoundId: currentRoundId,
+        error: ""
+      }));
     } catch (err: any) {
       setIsTransitioning(false);
       setAppState(prev => ({
@@ -1346,11 +1357,11 @@ function App() {
 
       {!didGameStart && !isCreatingLobby && phase === Phases.Main && !isLobby && (
         <>
-          <div className="logo-wrapper">
+          <div className="logo-wrapper" onClick={playSecretMusic} style={{ cursor: 'pointer' }}>
             <img src={language === 'en' ? logoImageEng : logoImage} alt="Чепуха Лого" className="logo" />
-            <div className="logo-boy-hitbox hitbox-1" onClick={playSecretMusic} />
-            <div className="logo-boy-hitbox hitbox-2" onClick={playSecretMusic} />
-            <div className="logo-boy-hitbox hitbox-3" onClick={playSecretMusic} />
+            <div className="logo-boy-hitbox hitbox-1" />
+            <div className="logo-boy-hitbox hitbox-2" />
+            <div className="logo-boy-hitbox hitbox-3" />
           </div>
           <div className="menu-buttons">
             <Button
@@ -1518,7 +1529,7 @@ function App() {
           </div>
           <div className="lobby-container">
             <div className="lobby-info">
-              <h2 className="lobby-text label-and-nick">
+              <h2 className="lobby-text label-and-nick notranslate" translate="no">
                 <span className="label-part">{t('YOUR_NICK')}</span>
                 <div className="nick-scroll-container">
                   {renderThemedNickname(nickname, playerColor, 64, parsedColorHighlight)}
@@ -1584,11 +1595,14 @@ function App() {
 
       {didGameStart && phase === Phases.Waiting && (
         <>
+          <Round currentRound={currentRound} totalRounds={parsedGameLength} className="roundPos" />
           <WaitCard
             nick={nickname}
             playerColor={playerColor}
             joinedCount={derivedJoinedCount}
             totalCount={derivedTotalCount}
+            currentRound={currentRound}
+            totalRounds={parsedGameLength}
             message={t('WAITING_ANSWERS')}
           />
         </>
@@ -1686,9 +1700,6 @@ function App() {
         />
       )}
 
-      {}
-      {}
-      {}
       {(isCreatingLobby || isLobby || phase === Phases.Join || (didGameStart && phase === Phases.Waiting)) && phase !== Phases.End && phase !== Phases.History && (
         <>
           <div className="yellow-guy-bg" onClick={playSecretMusic} />
