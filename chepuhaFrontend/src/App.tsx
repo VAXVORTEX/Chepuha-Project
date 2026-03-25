@@ -175,17 +175,17 @@ export const AVAILABLE_COLORS = [
   'special:flag-gay-mlm',
   'special:flag-intersex', 'special:flag-genderqueer', 'special:flag-polysexual',
 
-  // Static gradients
-  'special:fire-gradient', 'special:ice-gradient', 'special:gold',
+  // Static gradients (ordered by warmth: fire → gold → ice)
+  'special:fire-gradient', 'special:gold', 'special:ice-gradient',
 
-  // Animated gradients
-  'special:rainbow', 'special:nebula', 'special:sunset', 'special:solar', 'special:cyberpunk',
+  // Animated gradients (ordered by hue: warm → cool)
+  'special:rainbow', 'special:solar', 'special:nebula', 'special:cyberpunk',
   'special:pirate-caribbean', 'special:cyber-samurai-iconic',
 
-  // Premium animated gradients
-  'special:stellar', 'special:deep-purple', 'special:cyan-burst', 'special:golden-rod',
-  'special:mint-fresh', 'special:royal-red', 'special:electric-blue', 'special:neon-pink', 'special:silver-streak',
-  'special:bronze-age'
+  // Premium animated gradients (ordered: warm reds → golds → greens → blues → pinks → neutrals)
+  'special:royal-red', 'special:golden-rod', 'special:bronze-age',
+  'special:mint-fresh', 'special:stellar', 'special:cyan-burst', 'special:electric-blue', 'special:deep-purple',
+  'special:neon-pink', 'special:silver-streak'
 ];
 
 const GAME_LENGTH_INDICES: Record<number, number[]> = {
