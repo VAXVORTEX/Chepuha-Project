@@ -155,15 +155,20 @@
 
 @media (max-width: 768px) {
   .wrapper {
-    padding: 2vh 5px;
+    padding: 0 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100dvh;
   }
 
   .box {
     padding: 15px 5px;
     border-radius: 20px;
     border-width: 5px;
-    height: 80vh;
-    max-height: 80dvh;
+    height: 85dvh;
+    max-height: 85dvh;
+    margin: auto 0;
   }
 
   .container {
