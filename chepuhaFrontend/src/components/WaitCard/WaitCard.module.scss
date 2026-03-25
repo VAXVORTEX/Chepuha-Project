@@ -74,7 +74,7 @@
 .yellowGuy {
   bottom: -200px;
   right: -70px;
-  background-image: url("../../assets/images/yellowGuy.png");
+  background-image: url("../../assets/images/main_character_yellow.png");
   display: block;
   width: 670px;
   height: 670px;
@@ -84,7 +84,7 @@
 .redGuy {
   left: -85px;
   bottom: -200px;
-  background-image: url("../../assets/images/RedGuyRemoved.png");
+  background-image: url("../../assets/images/main_character_red.png");
   width: 670px;
   height: 670px;
   transform: rotate(-3deg);
@@ -111,7 +111,7 @@
   .homeSign {
     width: 90px;
     height: 90px;
-    background-image: url("../../assets/images/house.png");
+    background-image: url("../../assets/images/icon_home.png");
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;

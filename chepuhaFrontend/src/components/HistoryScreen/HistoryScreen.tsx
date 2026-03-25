@@ -1,20 +1,16 @@
 import React from "react";
 import classNames from "classnames";
 import styles from "./HistoryScreen.module.scss";
-import { Phases } from "../../types/phaseVariant";
-import HomeIcon from "../HomeIcon/HomeIcon";
 import { SavedGame } from "../../hooks/useHistory";
 import { useLanguage } from "../../contexts/LanguageContext";
+
 interface HistoryScreenProps {
     games: SavedGame[];
     onSelectGame: (game: SavedGame) => void;
     onHome: () => void;
 }
-const HistoryScreen: React.FC<HistoryScreenProps> = ({
-    games,
-    onSelectGame,
-    onHome,
-}) => {
+
+const HistoryScreen: React.FC<HistoryScreenProps> = ({ games, onSelectGame, onHome }) => {
     const { t } = useLanguage();
     return (
         <div className={classNames(styles.wrapper, styles.historyPhase, "history-view")}>
@@ -50,4 +46,5 @@ const HistoryScreen: React.FC<HistoryScreenProps> = ({
         </div>
     );
 };
+
 export default HistoryScreen;

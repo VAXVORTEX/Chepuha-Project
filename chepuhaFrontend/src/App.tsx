@@ -148,30 +148,41 @@ const getInitialState = (): AppState => {
         };
       }
     }
-  } catch (e) { }
+  } catch (e) {
+    console.error("Failed to load state from localStorage:", e);
+  }
 
   return defaultState;
 };
 
 export const AVAILABLE_COLORS = [
-  '#e52929', '#29a62b', '#2962e5', '#ffd700', '#9c29e5',
+  // Plain colors ordered by hue: red -> orange -> yellow -> green -> blue -> purple -> pink -> neutrals
+  '#e52929', '#ff4e50', '#8b0000',
   '#ff8c00', '#ffa500', '#e5a629',
-  '#ffff00', '#fafad2', '#ffffed',
-  '#00ff00', '#32cd32', '#008000', '#adff2f', '#98fb98', '#00fa9a',
-  '#00bfff', '#0000ff', '#00008b', '#4682b4', '#87ceeb', '#add8e6',
-  '#8a2be2', '#4b0082', '#9932cc', '#ba55d3', '#e6e6fa',
-  '#24c431', '#2c5ed3', '#f9d423', '#8b0000', '#000000',
+  '#ffd700', '#ffff00', '#fafad2',
+  '#29a62b', '#24c431', '#00ff00', '#32cd32', '#008000', '#adff2f', '#98fb98', '#00fa9a',
+  '#2962e5', '#2c5ed3', '#00bfff', '#0000ff', '#00008b', '#4682b4', '#87ceeb', '#add8e6',
+  '#9c29e5', '#8a2be2', '#4b0082', '#9932cc', '#ba55d3', '#e6e6fa',
+  '#f9d423', '#000000', '#ffffff',
 
+  // Animated gradients
   'special:rainbow', 'special:fire-gradient', 'special:ice-gradient', 'special:gold',
   'special:nebula', 'special:sunset', 'special:solar', 'special:cyberpunk',
 
+  // Flags
   'special:flag-ua', 'special:flag-de', 'special:flag-jp', 'special:flag-pl',
   'special:flag-it', 'special:flag-es', 'special:flag-br', 'special:flag-ca',
   'special:flag-bi', 'special:flag-pan', 'special:flag-ace', 'special:flag-nonbinary',
+
+  // Gender/pride
   'special:gender-pride', 'special:gender-trans', 'special:flag-lesbian',
+  'special:flag-gay-mlm',
   'special:flag-intersex', 'special:flag-genderqueer', 'special:flag-polysexual',
 
+  // Themes
   'special:pirate-caribbean', 'special:cyber-samurai-iconic',
+
+  // Premium gradients
   'special:stellar', 'special:deep-purple', 'special:cyan-burst', 'special:golden-rod',
   'special:mint-fresh', 'special:royal-red', 'special:electric-blue', 'special:neon-pink', 'special:silver-streak',
   'special:bronze-age'
@@ -309,7 +320,9 @@ function App() {
           }
         }
       })
-      .catch(() => { });
+      .catch(err => {
+        console.warn("Failed to fetch server time offset:", err);
+      });
   }, []);
 
   const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets, lobbyCreatedAt, answeredRoundId, gameLength, storyMode, hintsEnabled, colorHighlight, playerColor } = appState;
@@ -445,7 +458,9 @@ function App() {
   useEffect(() => {
     if (isHost && sessionId && isLobby) {
       const packedTemplate = `${selectedTemplate}|${gameLength}|${storyMode ? '1' : '0'}|${hintsEnabled ? '1' : '0'}|${colorHighlight ? '1' : '0'}`;
-      updateGameSession(sessionId, { template: packedTemplate }).catch(() => { });
+      updateGameSession(sessionId, { template: packedTemplate }).catch(err => {
+        console.error("Failed to update game session template:", err);
+      });
     }
   }, [isHost, sessionId, isLobby, selectedTemplate, gameLength, storyMode, hintsEnabled, colorHighlight]);
 
@@ -454,7 +469,9 @@ function App() {
     if (sessionId && playerId && playerColor) {
       updatePlayer(playerId, { color: playerColor }).catch((err) => {
         if (String(err.message).includes('column') || String(err.message).includes('schema cache')) {
-
+          // Expected during DB migration
+        } else {
+          console.error("Failed to update player color sync:", err);
         }
       });
     }
@@ -469,8 +486,8 @@ function App() {
   useEffect(() => {
     const imagesToPreload = [
       logoImage, logoImageEng, crownImage, flagUk, flagEn,
-      "/assets/images/yellowGuy.png",
-      "/assets/images/RedGuyRemoved.png",
+      "/assets/images/main_character_yellow.png",
+      "/assets/images/main_character_red.png",
       "/assets/images/gameBackground.jpg"
     ];
     imagesToPreload.forEach(src => {
@@ -531,18 +548,23 @@ function App() {
             if (isSpecial) {
               const theme = color.replace('special:', '');
               className = ` class="${theme}-text"`;
-              style = '';
+              style = 'color: transparent;';
+              if (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic') {
+                return `<span class="${theme}-bg inline-wrapper"><span lang="uk"${className}>${ans}</span></span>`;
+              }
             } else {
               const isDark = color === '#000000' || color === '#000' || color === '#8b0000' || color === '#4b0082';
-              const shadow = isDark ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)';
-              const stroke = isDark ? 'none' : '-webkit-text-stroke: 1.5px black;';
+              const shadow = isDark 
+                ? '0 0 2px #fff, 0 0 5px rgba(255,255,255,0.5)' 
+                : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)';
+              const stroke = isDark ? '-webkit-text-stroke: 0.5px #fff;' : '-webkit-text-stroke: 1.5px black;';
               style += ` text-shadow: ${shadow}; ${stroke}`;
             }
             return `<span lang="uk"${className} style="${style}">${ans}</span>`;
           });
 
           const sheetOwner = players.find(p => String(p.id) === String(sheetOwnerId));
-          const sheetOwnerColor = sheetOwner?.color || (String(sheetOwnerId) === String(playerId) ? (playerColor || '#000') : '#000');
+          const sheetOwnerColor = sheetOwner?.color || (String(sheetOwnerId) === String(playerId) ? (playerColor || '#ffffff') : '#ffffff');
 
           return {
             playerName: nick,
@@ -574,7 +596,9 @@ function App() {
           stories: built
         });
       }
-    } catch (err) { }
+    } catch (err) {
+      console.error("Error fetching final story result:", err);
+    }
   }, [sessionId, players, session, roomCode, language, activeTemplate, parsedColorHighlight, playerId, playerColor, gameLength]);
 
   useEffect(() => {
@@ -1084,7 +1108,6 @@ function App() {
       } else {
         const currentLocalColor = appState.playerColor;
         const takenColors = (existingPlayers || []).map((p: Player) => p.color?.toLowerCase()).filter(Boolean);
-        console.log("Existing players count:", existingPlayers?.length, "Taken colors:", takenColors);
         const availableUnique = AVAILABLE_COLORS.filter(c => !takenColors.includes(c.toLowerCase()));
         
         let guestColor = availableUnique.length > 0 ? availableUnique[0] : AVAILABLE_COLORS[0];
@@ -1334,11 +1357,11 @@ function App() {
 
       {!didGameStart && !isCreatingLobby && phase === Phases.Main && !isLobby && (
         <>
-          <div className="logo-wrapper">
+          <div className="logo-wrapper" onClick={playSecretMusic} style={{ cursor: 'pointer' }}>
             <img src={language === 'en' ? logoImageEng : logoImage} alt="Чепуха Лого" className="logo" />
-            <div className="logo-boy-hitbox hitbox-1" onClick={playSecretMusic} />
-            <div className="logo-boy-hitbox hitbox-2" onClick={playSecretMusic} />
-            <div className="logo-boy-hitbox hitbox-3" onClick={playSecretMusic} />
+            <div className="logo-boy-hitbox hitbox-1" />
+            <div className="logo-boy-hitbox hitbox-2" />
+            <div className="logo-boy-hitbox hitbox-3" />
           </div>
           <div className="menu-buttons">
             <Button
@@ -1677,9 +1700,6 @@ function App() {
         />
       )}
 
-      {}
-      {}
-      {}
       {(isCreatingLobby || isLobby || phase === Phases.Join || (didGameStart && phase === Phases.Waiting)) && phase !== Phases.End && phase !== Phases.History && (
         <>
           <div className="yellow-guy-bg" onClick={playSecretMusic} />
