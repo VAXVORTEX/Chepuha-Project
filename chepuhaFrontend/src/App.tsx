@@ -156,18 +156,17 @@ const getInitialState = (): AppState => {
 };
 
 export const AVAILABLE_COLORS = [
-  // Plain colors ordered by hue: red -> orange -> yellow -> green -> blue -> purple -> pink -> neutrals
+  // Plain colors by hue: red → orange → yellow → green → blue → purple → neutrals
   '#e52929', '#ff4e50', '#8b0000',
   '#ff8c00', '#ffa500', '#e5a629',
-  '#ffd700', '#ffff00', '#fafad2',
+  '#ffd700', '#ffff00', '#f9d423', '#fafad2',
   '#29a62b', '#24c431', '#00ff00', '#32cd32', '#008000', '#adff2f', '#98fb98', '#00fa9a',
   '#2962e5', '#2c5ed3', '#00bfff', '#0000ff', '#00008b', '#4682b4', '#87ceeb', '#add8e6',
   '#9c29e5', '#8a2be2', '#4b0082', '#9932cc', '#ba55d3', '#e6e6fa',
-  '#f9d423', '#000000', '#ffffff',
+  '#000000', '#ffffff',
 
-  // Animated gradients
-  'special:rainbow', 'special:fire-gradient', 'special:ice-gradient', 'special:gold',
-  'special:nebula', 'special:sunset', 'special:solar', 'special:cyberpunk',
+  // Static gradients
+  'special:fire-gradient', 'special:ice-gradient', 'special:gold',
 
   // Flags
   'special:flag-ua', 'special:flag-de', 'special:flag-jp', 'special:flag-pl',
@@ -179,10 +178,11 @@ export const AVAILABLE_COLORS = [
   'special:flag-gay-mlm',
   'special:flag-intersex', 'special:flag-genderqueer', 'special:flag-polysexual',
 
-  // Themes
+  // Animated gradients (grouped together)
+  'special:rainbow', 'special:nebula', 'special:sunset', 'special:solar', 'special:cyberpunk',
   'special:pirate-caribbean', 'special:cyber-samurai-iconic',
 
-  // Premium gradients
+  // Premium animated gradients
   'special:stellar', 'special:deep-purple', 'special:cyan-burst', 'special:golden-rod',
   'special:mint-fresh', 'special:royal-red', 'special:electric-blue', 'special:neon-pink', 'special:silver-streak',
   'special:bronze-age'
@@ -1357,11 +1357,11 @@ function App() {
 
       {!didGameStart && !isCreatingLobby && phase === Phases.Main && !isLobby && (
         <>
-          <div className="logo-wrapper" onClick={playSecretMusic} style={{ cursor: 'pointer' }}>
+          <div className="logo-wrapper">
             <img src={language === 'en' ? logoImageEng : logoImage} alt="Чепуха Лого" className="logo" />
-            <div className="logo-boy-hitbox hitbox-1" />
-            <div className="logo-boy-hitbox hitbox-2" />
-            <div className="logo-boy-hitbox hitbox-3" />
+            <div className="logo-boy-hitbox hitbox-1" onClick={playSecretMusic} />
+            <div className="logo-boy-hitbox hitbox-2" onClick={playSecretMusic} />
+            <div className="logo-boy-hitbox hitbox-3" onClick={playSecretMusic} />
           </div>
           <div className="menu-buttons">
             <Button
