@@ -151,36 +151,3 @@
     background-size: contain;
   }
 }
-
-@media (max-width: 768px) {
-  .wrapper {
-    padding: 0 5px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100dvh;
-  }
-
-  .box {
-    height: 85dvh;
-    max-height: 85dvh;
-    margin: auto 0;
-    padding: 15px 5px;
-    border-radius: 20px;
-    border-width: 5px;
-  }
-
-  .title {
-    font-size: 24px;
-    margin-bottom: 8px;
-  }
-
-  .part {
-    padding: 5px;
-  }
-
-  .part .text {
-    font-size: 18px;
-    line-height: 1.25;
-  }
-}
