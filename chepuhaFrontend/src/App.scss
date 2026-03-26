@@ -3002,8 +3002,8 @@
 .flag-polysexual-text { background: linear-gradient(to bottom, #f714ba 33.33%, #01d66a 33.33% 66.66%, #1594f6 66.66%); }
 
 @keyframes gradient-slide {
-  from { background-position: 0% center; }
-  to { background-position: 100% center; }
+  from { background-position: 0 center; }
+  to { background-position: -1000px center; }
 }
 
 .pirate-caribbean-text {
@@ -3052,14 +3052,14 @@
 
 
 .rainbow-text, .ice-gradient-text, .nebula-text, .sunset-text, .solar-text, .cyberpunk-text {
-  background-size: 200% auto !important;
+  background-size: 2000px auto !important;
   animation: gradient-slide 7s linear infinite !important;
   will-change: background-position;
 }
 
-@keyframes premium-slide-2 { from { background-position: 200% center; } to { background-position: 0% center; } }
-@keyframes premium-slide-3 { from { background-position: 0% center; } to { background-position: -200% center; } }
-@keyframes premium-slide-4 { from { background-position: -200% center; } to { background-position: 0% center; } }
+@keyframes premium-slide-2 { from { background-position: 1000px center; } to { background-position: 0 center; } }
+@keyframes premium-slide-3 { from { background-position: 0 center; } to { background-position: -1000px center; } }
+@keyframes premium-slide-4 { from { background-position: -1000px center; } to { background-position: 0 center; } }
 
 .stellar-text, .mint-fresh-text, .silver-streak-text,
 .deep-purple-text, .royal-red-text, .bronze-age-text,
@@ -3069,45 +3069,45 @@
 }
 
 .stellar-text, .mint-fresh-text, .silver-streak-text {
-  background-size: 200% auto !important;
+  background-size: 2000px auto !important;
   animation: gradient-slide 7s linear infinite !important;
   will-change: background-position;
 }
 .deep-purple-text, .royal-red-text, .bronze-age-text {
-  background-size: 200% auto !important;
+  background-size: 2000px auto !important;
   animation: premium-slide-2 8.4s linear infinite !important;
   will-change: background-position;
 }
 .cyan-burst-text, .electric-blue-text {
-  background-size: 200% auto !important;
+  background-size: 2000px auto !important;
   animation: premium-slide-3 10.5s linear infinite !important;
   will-change: background-position;
 }
 .golden-rod-text, .neon-pink-text {
-  background-size: 200% auto !important;
+  background-size: 2000px auto !important;
   animation: premium-slide-4 7.7s linear infinite !important;
   will-change: background-position;
 }
 
-.rainbow-text { background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff); }
-.fire-gradient-text { background: linear-gradient(to right, #ff0000, #ff7f00, #ffff00, #ff0000, #ff7f00, #ffff00); }
-.ice-gradient-text { background: linear-gradient(to right, #00ffff, #00bfff, #1e90ff, #00ffff, #00bfff, #1e90ff); }
-.gold-text { background: linear-gradient(to right, #ffd700, #ff8c00, #daa520, #ffd700, #ff8c00, #daa520); }
-.nebula-text { background: linear-gradient(to right, #8a2be2, #4b0082, #0000ff, #8a2be2, #4b0082, #0000ff); }
-.sunset-text { background: linear-gradient(to right, #ff4500, #ff8c00, #ffd700, #ff4500, #ff8c00, #ffd700); }
-.solar-text { background: linear-gradient(to right, #ffff00, #ffa500, #ff0000, #ffff00, #ffa500, #ff0000); }
-.cyberpunk-text { background: linear-gradient(to right, #ff00ff, #00ffff, #ffff00, #ff00ff, #00ffff, #ffff00); }
+.rainbow-text { background: linear-gradient(90deg, #ff0000 0%, #ff7f00 8.3%, #ffff00 16.6%, #00ff00 25%, #0000ff 33.3%, #4b0082 41.6%, #8b00ff 50%, #ff0000 50%, #ff7f00 58.3%, #ffff00 66.6%, #00ff00 75%, #0000ff 83.3%, #4b0082 91.6%, #8b00ff 100%); }
+.fire-gradient-text { background: linear-gradient(to right, #ff0000 0%, #ff7f00 25%, #ffff00 50%, #ff0000 50%, #ff7f00 75%, #ffff00 100%); }
+.ice-gradient-text { background: linear-gradient(to right, #00ffff 0%, #00bfff 25%, #1e90ff 50%, #00ffff 50%, #00bfff 75%, #1e90ff 100%); }
+.gold-text { background: linear-gradient(to right, #ffd700 0%, #ff8c00 25%, #daa520 50%, #ffd700 50%, #ff8c00 75%, #daa520 100%); }
+.nebula-text { background: linear-gradient(to right, #8a2be2 0%, #4b0082 25%, #0000ff 50%, #8a2be2 50%, #4b0082 75%, #0000ff 100%); }
+.sunset-text { background: linear-gradient(to right, #ff4500 0%, #ff8c00 25%, #ffd700 50%, #ff4500 50%, #ff8c00 75%, #ffd700 100%); }
+.solar-text { background: linear-gradient(to right, #ffff00 0%, #ffa500 25%, #ff0000 50%, #ffff00 50%, #ffa500 75%, #ff0000 100%); }
+.cyberpunk-text { background: linear-gradient(to right, #ff00ff 0%, #00ffff 33.3%, #ffff00 50%, #ff00ff 50%, #00ffff 83.3%, #ffff00 100%); }
 
-.stellar-text { background: linear-gradient(45deg, #1e3c72, #2a5298, #70e1f5, #1e3c72, #2a5298, #70e1f5); }
-.deep-purple-text { background: linear-gradient(45deg, #4b0082, #8a2be2, #1a0033, #4b0082, #8a2be2, #1a0033); }
-.cyan-burst-text { background: linear-gradient(45deg, #00ffff, #008080, #004444, #00ffff, #008080, #004444); }
-.golden-rod-text { background: linear-gradient(45deg, #daa520, #ffd700, #b8860b, #daa520, #ffd700, #b8860b); }
-.mint-fresh-text { background: linear-gradient(45deg, #00ffca, #05bfdb, #088395, #00ffca, #05bfdb, #088395); }
-.royal-red-text { background: linear-gradient(45deg, #800000, #ff0000, #ffd700, #800000, #ff0000, #ffd700); }
-.electric-blue-text { background: linear-gradient(45deg, #0000ff, #00ffff, #000080, #0000ff, #00ffff, #000080); }
-.neon-pink-text { background: linear-gradient(45deg, #ff00ff, #ff69b4, #880088, #ff00ff, #ff69b4, #880088); }
-.silver-streak-text { background: linear-gradient(45deg, #c0c0c0, #ffffff, #808080, #c0c0c0, #ffffff, #808080); }
-.bronze-age-text { background: linear-gradient(45deg, #cd7f32, #a0522d, #8b4513, #cd7f32, #a0522d, #8b4513); }
+.stellar-text { background: linear-gradient(45deg, #1e3c72 0%, #2a5298 25%, #70e1f5 50%, #1e3c72 50%, #2a5298 75%, #70e1f5 100%); }
+.deep-purple-text { background: linear-gradient(45deg, #4b0082 0%, #8a2be2 25%, #1a0033 50%, #4b0082 50%, #8a2be2 75%, #1a0033 100%); }
+.cyan-burst-text { background: linear-gradient(45deg, #00ffff 0%, #008080 25%, #004444 50%, #00ffff 50%, #008080 75%, #004444 100%); }
+.golden-rod-text { background: linear-gradient(45deg, #daa520 0%, #ffd700 25%, #b8860b 50%, #daa520 50%, #ffd700 75%, #b8860b 100%); }
+.mint-fresh-text { background: linear-gradient(45deg, #00ffca 0%, #05bfdb 25%, #088395 50%, #00ffca 50%, #05bfdb 75%, #088395 100%); }
+.royal-red-text { background: linear-gradient(45deg, #800000 0%, #ff0000 25%, #ffd700 50%, #800000 50%, #ff0000 75%, #ffd700 100%); }
+.electric-blue-text { background: linear-gradient(45deg, #0000ff 0%, #00ffff 25%, #000080 50%, #0000ff 50%, #00ffff 75%, #000080 100%); }
+.neon-pink-text { background: linear-gradient(45deg, #ff00ff 0%, #ff69b4 25%, #880088 50%, #ff00ff 50%, #ff69b4 75%, #880088 100%); }
+.silver-streak-text { background: linear-gradient(45deg, #c0c0c0 0%, #ffffff 25%, #808080 50%, #c0c0c0 50%, #ffffff 75%, #808080 100%); }
+.bronze-age-text { background: linear-gradient(45deg, #cd7f32 0%, #a0522d 25%, #8b4513 50%, #cd7f32 50%, #a0522d 75%, #8b4513 100%); }
 
 
 
