@@ -3002,8 +3002,8 @@
 .flag-polysexual-text { background: linear-gradient(to bottom, #f714ba 33.33%, #01d66a 33.33% 66.66%, #1594f6 66.66%); }
 
 @keyframes gradient-slide {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+  from { background-position: 0% center; }
+  to { background-position: 100% center; }
 }
 
 .pirate-caribbean-text {
@@ -3056,9 +3056,9 @@
   will-change: background-position;
 }
 
-@keyframes premium-slide-2 { 0% { background-position: 200% 50%; } 100% { background-position: 0% 50%; } }
-@keyframes premium-slide-3 { 0% { background-position: 0% 50%; } 100% { background-position: -200% 50%; } }
-@keyframes premium-slide-4 { 0% { background-position: -200% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes premium-slide-2 { from { background-position: 200% center; } to { background-position: 0% center; } }
+@keyframes premium-slide-3 { from { background-position: 0% center; } to { background-position: -200% center; } }
+@keyframes premium-slide-4 { from { background-position: -200% center; } to { background-position: 0% center; } }
 
 .stellar-text, .mint-fresh-text, .silver-streak-text,
 .deep-purple-text, .royal-red-text, .bronze-age-text,
@@ -3070,18 +3070,22 @@
 .stellar-text, .mint-fresh-text, .silver-streak-text {
   background-size: 200% auto !important;
   animation: gradient-slide 7s linear infinite !important;
+  will-change: background-position;
 }
 .deep-purple-text, .royal-red-text, .bronze-age-text {
   background-size: 200% auto !important;
   animation: premium-slide-2 8.4s linear infinite !important;
+  will-change: background-position;
 }
 .cyan-burst-text, .electric-blue-text {
   background-size: 200% auto !important;
   animation: premium-slide-3 10.5s linear infinite !important;
+  will-change: background-position;
 }
 .golden-rod-text, .neon-pink-text {
   background-size: 200% auto !important;
   animation: premium-slide-4 7.7s linear infinite !important;
+  will-change: background-position;
 }
 
 .rainbow-text { background: linear-gradient(90deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #8b00ff); }
