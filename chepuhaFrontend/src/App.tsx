@@ -206,7 +206,7 @@ const getNicknameStyle = (color: string) => {
   return {
     color: color || '#000000',
     textShadow: isDark ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000',
-    WebkitTextStroke: isDark ? 'none' : (isPC ? '1.5px black' : '0.8px black')
+    WebkitTextStroke: isDark ? 'none' : (isPC ? '0.5px black' : '0.3px black')
   } as React.CSSProperties;
 };
 
@@ -1317,6 +1317,7 @@ function App() {
 
       const isStory = parsedStoryMode;
       const isLastRound = currentRound === gameLength;
+      const isSolo = players.length <= 1;
 
       await updatePlayer(playerId, { players_status: isLastRound ? 'finished' : 'playing' });
       refreshState();
@@ -1326,9 +1327,25 @@ function App() {
       setIsTransitioning(false);
 
 
+      let nextPhase = Phases.Waiting;
+      if (isStory) {
+        if (isLastRound) {
+          if (isSolo) {
+            fetchFinalStoryResult();
+            nextPhase = Phases.End;
+          } else {
+            nextPhase = Phases.Waiting;
+          }
+        } else {
+          nextPhase = Phases.Main;
+        }
+      }
+
       setAppState(prev => ({
         ...prev,
-        phase: Phases.Waiting,
+        phase: nextPhase,
+        currentRound: isStory && !isLastRound ? prev.currentRound + 1 : prev.currentRound,
+        currentRoundId: isStory && !isLastRound ? (rounds.find(r => r.round_number === prev.currentRound + 1)?.id || null) : prev.currentRoundId,
         answeredRoundId: currentRoundId,
         error: ""
       }));

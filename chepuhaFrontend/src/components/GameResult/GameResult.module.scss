@@ -5,18 +5,19 @@
   position: relative;
   z-index: 2;
   width: 100%;
-  height: calc(100vh + 40px);
-  max-height: calc(100vh + 40px);
+  height: calc(100vh - 40px);
+  max-height: calc(100vh - 40px);
   overflow: hidden;
-  padding: 40px 15px 15px;
+  padding: 15px 40px; // Match HistoryScreen
   background-color: $red;
-  border-radius: 50px;
+  border-radius: 50px; // Match HistoryScreen
   color: $white;
   display: flex;
   flex-direction: column;
   align-items: center;
   box-sizing: border-box;
-  border: 10px solid $gray-medium;
+  border: 10px solid $gray-medium; // Match HistoryScreen
+  margin: 0; // Center perfectly as in HistoryScreen wrapper
 }
 
 .container {
@@ -33,9 +34,9 @@
   width: 100%;
   height: 100%;
   background-color: $gray-medium;
-  border-radius: 40px;
+  border-radius: 40px; // Match HistoryScreen
   left: 0;
-  top: 30px;
+  top: 30px; // Match HistoryScreen
 }
 
 .title {
@@ -43,7 +44,7 @@
   margin-bottom: 20px;
   margin-top: 2px;
   text-align: center;
-  -webkit-text-stroke: 1px $black;
+  -webkit-text-stroke: 0.5px $black;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
   display: flex;
   align-items: center;
@@ -150,7 +151,7 @@
   margin: 0;
   box-sizing: border-box;
   overflow-x: hidden;
-  padding: 10vh 20px;
+  padding: 5px 20px; // Match HistoryScreen wrapper padding
 }
 
 @media (max-width: 768px) {
@@ -164,21 +165,24 @@
   }
 
   .box {
-    padding: 15px 5px;
-    border-radius: 20px;
-    border-width: 5px;
-    height: 90dvh;
+    padding: 20px 10px;
+    background-color: $red;
+    border-radius: 50px;
+    border: 5px solid $gray-medium;
+    height: auto;
+    min-height: 80vh;
     max-height: 90dvh;
     width: 98%;
     display: flex;
     flex-direction: column;
-    margin: -5vh 0 0 0; // Nudge it slightly HIGHER from center
+    margin: 0; // Center perfectly
   }
 
   .container {
     padding: 0;
     width: 100%;
     margin: 0;
+    height: 100dvh; // Ensure container takes full height for centering
     display: flex;
     justify-content: center;
     align-items: center;
