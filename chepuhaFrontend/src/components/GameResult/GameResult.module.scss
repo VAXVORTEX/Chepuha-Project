@@ -157,19 +157,19 @@
   .wrapper {
     padding: 0 5px;
     display: flex;
-    align-items: center;
+    align-items: flex-start; // Lift it up
     justify-content: center;
-    height: 100dvh;
+    min-height: 100dvh;
     width: 100vw;
-    overflow: hidden;
+    padding-top: 5vh; // Nudge it higher from the top
   }
 
   .box {
     padding: 15px 5px;
     border-radius: 20px;
     border-width: 5px;
-    height: 82dvh;
-    max-height: 82dvh;
+    height: 90dvh; // Show more text
+    max-height: 90dvh;
     width: 98%;
     display: flex;
     flex-direction: column;
@@ -184,7 +184,6 @@
     justify-content: center;
     align-items: center;
     position: relative;
-    top: -15px; // Balance the shadow offset
   }
 
   .title {

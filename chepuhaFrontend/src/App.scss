@@ -3042,6 +3042,7 @@
   vertical-align: middle;
   -webkit-text-stroke: 1.5px black !important;
   filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.4));
+  transform: translateZ(0); 
 
   @media (max-width: 768px) {
     -webkit-text-stroke: 0.8px black !important;
@@ -3119,6 +3120,13 @@
   margin: 0 4px;
   min-height: 52px;
   box-sizing: border-box;
+
+  @media (max-width: 768px) {
+    padding: 2px 6px;
+    min-height: 32px;
+    border-radius: 4px;
+    margin: 0 2px;
+  }
 }
 
 .pirate-caribbean-bg {
