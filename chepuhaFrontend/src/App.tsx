@@ -185,7 +185,8 @@ export const AVAILABLE_COLORS = [
   // Premium animated gradients (ordered: warm reds → golds → greens → blues → pinks → neutrals)
   'special:royal-red', 'special:golden-rod', 'special:bronze-age',
   'special:mint-fresh', 'special:stellar', 'special:cyan-burst', 'special:electric-blue', 'special:deep-purple',
-  'special:neon-pink', 'special:silver-streak'
+  'special:neon-pink', 'special:silver-streak',
+  'special:red-gold-black'
 ];
 
 const GAME_LENGTH_INDICES: Record<number, number[]> = {
@@ -213,6 +214,10 @@ const getNicknameStyle = (color: string) => {
 const getNicknameClassName = (color: string) => {
   if (color?.startsWith('special:')) {
     return `player-name ${color.replace('special:', '')}-text`;
+  }
+  const colorIndex = AVAILABLE_COLORS.indexOf(color);
+  if (colorIndex !== -1) {
+    return `player-name plain-color-anim-${colorIndex % 6}`;
   }
   return 'player-name';
 };
@@ -247,9 +252,10 @@ const renderThemedNickname = (name: string, color: string, defaultSize: number =
     </span>
   );
 
-  if (showHighlight && (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic')) {
+  if (showHighlight && (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic' || theme === 'red-gold-black')) {
+    const bgClass = (theme === 'cyber-samurai-iconic' || theme === 'red-gold-black') ? 'cyber-samurai-iconic-bg' : `${theme}-bg`;
     return (
-      <span className={`${theme}-bg inline-wrapper`}>
+      <span className={`${bgClass} inline-wrapper`}>
         {content}
       </span>
     );
@@ -549,8 +555,9 @@ function App() {
               const theme = color.replace('special:', '');
               className = ` class="${theme}-text"`;
               style = 'color: transparent;';
-              if (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic') {
-                return `<span class="${theme}-bg inline-wrapper"><span lang="uk"${className}>${ans}</span></span>`;
+              const storyBgClass = theme === 'pirate-caribbean' ? 'story-pirate-bg' : (theme === 'cyber-samurai-iconic' || theme === 'red-gold-black' ? 'story-samurai-bg' : `${theme}-bg`);
+              if (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic' || theme === 'red-gold-black') {
+                return `<span class="${storyBgClass} inline-wrapper"><span lang="uk"${className}>${ans}</span></span>`;
               }
             } else {
               const isDark = color === '#000000' || color === '#000' || color === '#8b0000' || color === '#4b0082';

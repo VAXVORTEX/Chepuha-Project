@@ -302,24 +302,45 @@
 }
 
 @keyframes color-pulse {
-  0% {
-    transform: scale(1);
-  }
-
-  100% {
-    transform: scale(1);
-  }
+  0% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.02); filter: brightness(1.2); }
+  100% { transform: scale(1); filter: brightness(1); }
 }
 
+@keyframes subtle-float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+  100% { transform: translateY(0); }
+}
 
-.cyberpunk-samurai-iconic-text {
+@keyframes subtle-shake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(1deg); }
+  75% { transform: rotate(-1deg); }
+}
+
+@keyframes subtle-glow {
+  0%, 100% { text-shadow: 0 0 5px rgba(255,255,255,0.2); }
+  50% { text-shadow: 0 0 15px rgba(255,255,255,0.6); }
+}
+
+.plain-color-anim-0 { animation: color-pulse 3s ease-in-out infinite; }
+.plain-color-anim-1 { animation: subtle-float 4s ease-in-out infinite; }
+.plain-color-anim-2 { animation: subtle-shake 5s ease-in-out infinite; }
+.plain-color-anim-3 { animation: subtle-glow 3.5s ease-in-out infinite; }
+.plain-color-anim-4 { animation: color-pulse 4.5s ease-in-out infinite reverse; }
+.plain-color-anim-5 { animation: subtle-float 3.2s ease-in-out infinite alternate; }
+
+
+
+.cyber-samurai-iconic-text {
   @extend .cyberpunk-text;
 
   &::before {
     content: '';
     position: absolute;
-    width: 150px;
-    height: 150px;
+    width: 60px;
+    height: 60px;
     background-image: url('./assets/images/samurai_oni.png');
     background-size: contain;
     background-repeat: no-repeat;
@@ -338,8 +359,8 @@
   &::before {
     content: '';
     position: absolute;
-    width: 150px;
-    height: 150px;
+    width: 60px;
+    height: 60px;
     background-image: url('./assets/images/pirate_skull.png');
     background-size: contain;
     background-repeat: no-repeat;
@@ -1663,13 +1684,26 @@
   0% {
     background-position: 0% 50%;
   }
-
   50% {
     background-position: 100% 50%;
   }
-
   100% {
     background-position: 0% 50%;
+  }
+}
+
+@keyframes gold-pulse {
+  0% {
+    background-position: 0% 50%;
+    filter: brightness(1) saturate(1.2);
+  }
+  50% {
+    background-position: 100% 50%;
+    filter: brightness(1.3) saturate(1.5);
+  }
+  100% {
+    background-position: 0% 50%;
+    filter: brightness(1) saturate(1.2);
   }
 }
 
@@ -3007,27 +3041,37 @@
 .flag-polysexual-text { background: linear-gradient(to bottom, #f714ba 33.33%, #01d66a 33.33% 66.66%, #1594f6 66.66%); }
 
 @keyframes gradient-slide {
-  from { background-position: 0 center; }
-  to { background-position: -1000px center; }
+  0% { background-position: 0% center; }
+  100% { background-position: -200% center; }
 }
 
 .pirate-caribbean-text {
   background: linear-gradient(to right, 
-    #ff0000, #ffffff, #808080, #1a1a1a, #ff0000, 
-    #ff0000, #ffffff, #808080, #1a1a1a, #ff0000
+    #ff0000, #ffd700, #000000, #ff0000,
+    #ff0000, #ffd700, #000000, #ff0000
   );
   background-size: 200% auto !important;
-  animation: gradient-slide 30s linear infinite !important; // Slowed down
+  animation: gradient-slide 15s linear infinite !important;
 }
 
 .cyber-samurai-iconic-text {
   background: linear-gradient(to right, 
-    #1a1a1a, #ff0000, #ffd700, #808080, #1a1a1a,
-    #1a1a1a, #ff0000, #ffd700, #808080, #1a1a1a
+    #ff0000, #ffd700, #1a1a1a, #ff0000,
+    #ff0000, #ffd700, #1a1a1a, #ff0000
   );
   background-size: 200% auto !important;
-  animation: gradient-slide 35s linear infinite !important; // Slowed down
+  animation: gradient-slide 18s linear infinite !important;
   will-change: background-position;
+}
+
+.red-gold-black-text {
+  background: linear-gradient(to right, 
+    #e52929, #ffd700, #000000, #e52929,
+    #e52929, #ffd700, #000000, #e52929
+  );
+  background-size: 200% auto !important;
+  animation: gradient-slide 12s linear infinite !important;
+  font-weight: bold;
 }
 
 [class*="flag-"][class*="-text"], 
@@ -3035,7 +3079,7 @@
 .rainbow-text, .fire-gradient-text, .ice-gradient-text, .gold-text, .nebula-text, .sunset-text, .solar-text, .cyberpunk-text,
 .stellar-text, .deep-purple-text, .cyan-burst-text, .golden-rod-text, .mint-fresh-text, .royal-red-text, 
 .electric-blue-text, .neon-pink-text, .silver-streak-text, .bronze-age-text,
-.pirate-caribbean-text, .cyber-samurai-iconic-text, .flag-gay-mlm-text {
+.pirate-caribbean-text, .cyber-samurai-iconic-text, .red-gold-black-text, .flag-gay-mlm-text {
   -webkit-background-clip: text !important;
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
@@ -3075,43 +3119,92 @@
 
 .stellar-text, .mint-fresh-text, .silver-streak-text {
   background-size: 2000px auto !important;
-  animation: gradient-slide 30s linear infinite !important; // Slowed down
+  animation: gradient-slide 25s linear infinite !important;
   will-change: background-position;
 }
 .deep-purple-text, .royal-red-text, .bronze-age-text {
   background-size: 2000px auto !important;
-  animation: premium-slide-2 30s linear infinite !important; // Slowed down
+  animation: premium-slide-2 20s linear infinite !important;
   will-change: background-position;
 }
 .cyan-burst-text, .electric-blue-text {
   background-size: 2000px auto !important;
-  animation: premium-slide-3 35s linear infinite !important; // Slowed down
+  animation: premium-slide-3 28s linear infinite !important;
 }
 .golden-rod-text, .neon-pink-text {
   background-size: 2000px auto !important;
-  animation: premium-slide-4 28s linear infinite !important; // Slowed down
+  animation: premium-slide-4 22s linear infinite !important;
 }
 
 .rainbow-text, .ice-gradient-text, .nebula-text, .sunset-text, .solar-text, .cyberpunk-text,
-.stellar-text, .mint-fresh-text, .silver-streak-text, .pirate-caribbean-text, .cyber-samurai-iconic-text {
-  animation-duration: 32s !important; // Massive slowdown for standard gradients
+.stellar-text, .mint-fresh-text, .silver-streak-text, .pirate-caribbean-text, .cyber-samurai-iconic-text, .red-gold-black-text {
+  animation-duration: 20s !important;
 }
 
-.rainbow-text { background: linear-gradient(90deg, #ff0000 0%, #ff7f00 8.3%, #ffff00 16.6%, #00ff00 25%, #0000ff 33.3%, #4b0082 41.6%, #8b00ff 50%, #ff0000 50%, #ff7f00 58.3%, #ffff00 66.6%, #00ff00 75%, #0000ff 83.3%, #4b0082 91.6%, #8b00ff 100%); }
+.rainbow-text { 
+  background: linear-gradient(90deg, #ff0000 0%, #ff7f00 8.3%, #ffff00 16.6%, #00ff00 25%, #0000ff 33.3%, #4b0082 41.6%, #8b00ff 50%, #ff0000 50%, #ff7f00 58.3%, #ffff00 66.6%, #00ff00 75%, #0000ff 83.3%, #4b0082 91.6%, #8b00ff 100%); 
+  background-size: 200% auto;
+  animation: rainbow-text-animation 12s linear infinite; // Slower and clearer
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+}
 .fire-gradient-text { background: linear-gradient(to right, #ff0000 0%, #ff7f00 25%, #ffff00 50%, #ff0000 50%, #ff7f00 75%, #ffff00 100%); }
 .ice-gradient-text { background: linear-gradient(to right, #00ffff 0%, #00bfff 25%, #1e90ff 50%, #00ffff 50%, #00bfff 75%, #1e90ff 100%); }
 .gold-text { background: linear-gradient(to right, #ffd700 0%, #ff8c00 25%, #daa520 50%, #ffd700 50%, #ff8c00 75%, #daa520 100%); }
-.nebula-text { background: linear-gradient(to right, #8a2be2 0%, #4b0082 25%, #0000ff 50%, #8a2be2 50%, #4b0082 75%, #0000ff 100%); }
-.sunset-text { background: linear-gradient(to right, #ff4500 0%, #ff8c00 25%, #ffd700 50%, #ff4500 50%, #ff8c00 75%, #ffd700 100%); }
-.solar-text { background: linear-gradient(to right, #ffff00 0%, #ffa500 25%, #ff0000 50%, #ffff00 50%, #ffa500 75%, #ff0000 100%); }
-.cyberpunk-text { background: linear-gradient(to right, #ff00ff 0%, #00ffff 33.3%, #ffff00 50%, #ff00ff 50%, #00ffff 83.3%, #ffff00 100%); }
+.nebula-text { 
+  background: linear-gradient(to right, #8a2be2 0%, #4b0082 25%, #0000ff 50%, #8a2be2 50%, #4b0082 75%, #0000ff 100%); 
+  background-size: 200% auto;
+  animation: rainbow-text-animation 15s linear infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+}
+.sunset-text { 
+  background: linear-gradient(to right, #ff4500 0%, #ff8c00 25%, #ffd700 50%, #ff4500 50%, #ff8c00 75%, #ffd700 100%); 
+  background-size: 200% auto;
+  animation: rainbow-text-animation 10s linear infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+}
+.solar-text { 
+  background: linear-gradient(to right, #ffff00 0%, #ffa500 25%, #ff0000 50%, #ffff00 50%, #ffa500 75%, #ff0000 100%); 
+  background-size: 200% auto;
+  animation: rainbow-text-animation 8s linear infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+}
+.cyberpunk-text { 
+  background: linear-gradient(to right, #ff00ff 0%, #00ffff 33.3%, #ffff00 50%, #ff00ff 50%, #00ffff 83.3%, #ffff00 100%); 
+  background-size: 200% auto;
+  animation: rainbow-text-animation 6s linear infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+}
 
 .stellar-text { background: linear-gradient(45deg, #1e3c72 0%, #2a5298 25%, #70e1f5 50%, #1e3c72 50%, #2a5298 75%, #70e1f5 100%); }
 .deep-purple-text { background: linear-gradient(45deg, #4b0082 0%, #8a2be2 25%, #1a0033 50%, #4b0082 50%, #8a2be2 75%, #1a0033 100%); }
 .cyan-burst-text { background: linear-gradient(45deg, #00ffff 0%, #008080 25%, #004444 50%, #00ffff 50%, #008080 75%, #004444 100%); }
-.golden-rod-text { background: linear-gradient(45deg, #daa520 0%, #ffd700 25%, #b8860b 50%, #daa520 50%, #ffd700 75%, #b8860b 100%); }
+.golden-rod-text { 
+  background: linear-gradient(45deg, #daa520 0%, #ffd700 25%, #b8860b 50%, #daa520 50%, #ffd700 75%, #b8860b 100%);
+  background-size: 200% auto;
+  animation: gold-pulse 4s ease-in-out infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 .mint-fresh-text { background: linear-gradient(45deg, #00ffca 0%, #05bfdb 25%, #088395 50%, #00ffca 50%, #05bfdb 75%, #088395 100%); }
-.royal-red-text { background: linear-gradient(45deg, #800000 0%, #ff0000 25%, #ffd700 50%, #800000 50%, #ff0000 75%, #ffd700 100%); }
+.royal-red-text { 
+  background: linear-gradient(45deg, #800000 0%, #ff0000 25%, #ffd700 50%, #800000 50%, #ff0000 75%, #ffd700 100%);
+  background-size: 200% auto;
+  animation: gold-pulse 3s ease-in-out infinite;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
 .electric-blue-text { background: linear-gradient(45deg, #0000ff 0%, #00ffff 25%, #000080 50%, #0000ff 50%, #00ffff 75%, #000080 100%); }
 .neon-pink-text { background: linear-gradient(45deg, #ff00ff 0%, #ff69b4 25%, #880088 50%, #ff00ff 50%, #ff69b4 75%, #880088 100%); }
 .silver-streak-text { background: linear-gradient(45deg, #c0c0c0 0%, #ffffff 25%, #808080 50%, #c0c0c0 50%, #ffffff 75%, #808080 100%); }
@@ -3139,12 +3232,29 @@
 
 .pirate-caribbean-bg {
   background: 
-    url('./assets/images/theme_pirate_bg.jpg') center / cover no-repeat, #000000;
+    url('./assets/images/theme_pirate_bg.jpg') center / 65% auto no-repeat, #000000;
 }
 
 .cyber-samurai-iconic-bg {
   background: 
-    url('./assets/images/theme_samurai_bg.png') center / cover no-repeat, #000000;
+    url('./assets/images/theme_samurai_bg.png') center / 65% auto no-repeat, #000000;
+}
+
+.story-pirate-bg {
+  background: 
+    url('./assets/images/theme_pirate_bg.jpg') center / 120% auto no-repeat, #000000;
+  background-size: 120% auto;
+  animation: rainbow-text-animation 15s linear infinite; // Slower
+  display: inline-flex;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.story-samurai-bg {
+  background: 
+    url('./assets/images/theme_samurai_bg.png') center / 120% auto no-repeat, #000000;
+  background-size: 120% auto;
+  animation: rainbow-text-animation 15s linear infinite; // Slower
 }
 
 

@@ -36,7 +36,7 @@
   background-color: $gray-medium;
   border-radius: 40px; // Match HistoryScreen
   left: 0;
-  top: 30px; // Match HistoryScreen
+  top: 10px; // Reduced from 30px
 }
 
 .title {
@@ -169,13 +169,13 @@
     background-color: $red;
     border-radius: 50px;
     border: 5px solid $gray-medium;
-    height: auto;
-    min-height: 80vh;
-    max-height: 90dvh;
+    height: 80vh;
+    max-height: 85dvh;
     width: 98%;
     display: flex;
     flex-direction: column;
-    margin: 0; // Center perfectly
+    margin: 0;
+    margin-top: 0;
   }
 
   .container {
@@ -197,6 +197,8 @@
 
   .part {
     padding: 5px;
+    -webkit-overflow-scrolling: touch;
+    will-change: transform;
   }
 
   .part .text {
