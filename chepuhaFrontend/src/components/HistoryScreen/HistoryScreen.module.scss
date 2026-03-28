@@ -156,19 +156,14 @@
 @media (max-width: 768px) {
     .wrapper {
         padding: 5px 5px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
     }
 
     .box {
         padding: 20px 10px;
         border-width: 5px;
         height: 80vh;
-        max-height: 85dvh;
+        max-height: 85vh;
         margin-top: 0;
-        display: flex;
-        flex-direction: column;
     }
 
     .title {
