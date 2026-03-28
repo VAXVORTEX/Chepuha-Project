@@ -313,8 +313,6 @@
 
 
 .cyber-samurai-iconic-text {
-  @extend .cyberpunk-text;
-
   &::before {
     content: '';
     position: absolute;
@@ -333,8 +331,6 @@
 }
 
 .pirate-caribbean-text {
-  @extend .pirates-text;
-
   &::before {
     content: '';
     position: absolute;
@@ -3043,18 +3039,18 @@
 
 .pirate-caribbean-text {
   background: linear-gradient(to right, 
-    #ff0000, #ffd700, #1a1a1a, #808080, #ff0000, #ffd700, #1a1a1a, #808080
+    #ff0000 0%, #ffd700 25%, #000000 50%, #ffd700 75%, #ff0000 100%
   );
   background-size: 200% auto !important;
-  animation: gradient-slide 25s linear infinite !important;
+  animation: gradient-slide 18s linear infinite !important;
 }
 
 .cyber-samurai-iconic-text {
   background: linear-gradient(to right, 
-    #1a1a1a, #ff0000, #ffd700, #808080, #1a1a1a, #ff0000, #ffd700, #808080
+    #000000 0%, #ff0000 25%, #ffd700 50%, #ff0000 75%, #000000 100%
   );
   background-size: 200% auto !important;
-  animation: gradient-slide 28s linear infinite !important;
+  animation: gradient-slide 20s linear infinite !important;
   will-change: background-position;
 }
 
@@ -3176,12 +3172,12 @@
 }
 .mint-fresh-text { background: linear-gradient(45deg, #00ffca 0%, #05bfdb 25%, #088395 50%, #00ffca 50%, #05bfdb 75%, #088395 100%); }
 .royal-red-text { 
-  background: linear-gradient(45deg, #800000 0%, #ff0000 25%, #ffd700 30%, #ffd700 70%, #ff0000 75%, #800000 100%);
-  background-size: 200% auto;
-  animation: gradient-slide 22s linear infinite, theme-shimmer 4s ease-in-out infinite !important;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: linear-gradient(45deg, #800000 0%, #ff0000 25%, #ffd700 50%, #ff0000 75%, #800000 100%);
+  background-size: 200% auto !important;
+  animation: premium-slide-2 12s linear infinite, theme-shimmer 4s ease-in-out infinite !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
 }
 .electric-blue-text { background: linear-gradient(45deg, #0000ff 0%, #00ffff 25%, #000080 50%, #0000ff 50%, #00ffff 75%, #000080 100%); }
 .neon-pink-text { background: linear-gradient(45deg, #ff00ff 0%, #ff69b4 25%, #880088 50%, #ff00ff 50%, #ff69b4 75%, #880088 100%); }
