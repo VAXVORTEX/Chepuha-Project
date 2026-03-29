@@ -1655,17 +1655,6 @@
 }
 
 
-@keyframes rainbow-text-animation {
-  0% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-  100% {
-    background-position: 0% 50%;
-  }
-}
 
 @keyframes gold-pulse {
   0% {
@@ -1747,7 +1736,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 3s linear infinite;
+  animation: gradient-slide 3s linear infinite;
   font-weight: bold;
 }
 
@@ -1759,7 +1748,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 4s ease infinite;
+  animation: gradient-slide 4s ease infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -1772,7 +1761,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 6s linear infinite;
+  animation: gradient-slide 6s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -1785,7 +1774,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 5s linear infinite;
+  animation: gradient-slide 5s linear infinite;
   font-weight: bold;
 }
 
@@ -2196,7 +2185,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 3s linear infinite;
+  animation: gradient-slide 3s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2209,7 +2198,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 4s linear infinite;
+  animation: gradient-slide 4s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2222,7 +2211,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 5s linear infinite;
+  animation: gradient-slide 5s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2235,7 +2224,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 6s linear infinite;
+  animation: gradient-slide 6s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2248,7 +2237,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 5s linear infinite;
+  animation: gradient-slide 5s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2261,7 +2250,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 3s linear infinite;
+  animation: gradient-slide 3s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2274,7 +2263,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 4s linear infinite;
+  animation: gradient-slide 4s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2287,7 +2276,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 3s linear infinite;
+  animation: gradient-slide 3s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2300,7 +2289,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 2s linear infinite;
+  animation: gradient-slide 2s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2313,7 +2302,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 4s linear infinite;
+  animation: gradient-slide 4s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2449,7 +2438,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 8s ease infinite;
+  animation: gradient-slide 8s ease infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2462,7 +2451,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 4s ease infinite;
+  animation: gradient-slide 4s ease infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2487,7 +2476,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 6s linear infinite;
+  animation: gradient-slide 6s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2500,7 +2489,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 4s linear infinite;
+  animation: gradient-slide 4s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2513,7 +2502,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 6s linear infinite;
+  animation: gradient-slide 6s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2550,7 +2539,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 0.2s steps(2) infinite;
+  animation: gradient-slide 0.2s steps(2) infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2563,7 +2552,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 2s linear infinite;
+  animation: gradient-slide 2s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2576,7 +2565,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 3s ease infinite;
+  animation: gradient-slide 3s ease infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2589,7 +2578,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 4s linear infinite;
+  animation: gradient-slide 4s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2602,7 +2591,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 5s linear infinite;
+  animation: gradient-slide 5s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2929,7 +2918,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 2s linear infinite;
+  animation: gradient-slide 2s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -2942,7 +2931,7 @@
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   display: inline-block;
-  animation: rainbow-text-animation 4s linear infinite;
+  animation: gradient-slide 4s linear infinite;
   font-weight: bold;
   text-shadow: none !important;
 }
@@ -3050,7 +3039,7 @@
     #000000 0%, #ff0000 25%, #ffd700 50%, #ff0000 75%, #000000 100%
   );
   background-size: 200% auto !important;
-  animation: gradient-slide 20s linear infinite !important;
+  animation: gradient-slide 18s linear infinite !important;
   will-change: background-position;
 }
 
@@ -3081,8 +3070,6 @@
 
 
 .rainbow-text, .ice-gradient-text, .nebula-text, .sunset-text, .solar-text, .cyberpunk-text {
-  background-size: 200% auto !important;
-  animation: gradient-slide 15s linear infinite !important;
   will-change: background-position;
 }
 
@@ -3118,45 +3105,42 @@
 .rainbow-text { 
   background: linear-gradient(90deg, #ff0000 0%, #ff7f00 8.3%, #ffff00 16.6%, #00ff00 25%, #0000ff 33.3%, #4b0082 41.6%, #8b00ff 50%, #ff0000 50%, #ff7f00 58.3%, #ffff00 66.6%, #00ff00 75%, #0000ff 83.3%, #4b0082 91.6%, #8b00ff 100%); 
   background-size: 200% auto;
-  animation: rainbow-text-animation 12s linear infinite; // Slower and clearer
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent !important;
+  animation: gradient-slide 15s linear infinite !important;
 }
-.fire-gradient-text { background: linear-gradient(to right, #ff0000 0%, #ff7f00 25%, #ffff00 50%, #ff0000 50%, #ff7f00 75%, #ffff00 100%); }
-.ice-gradient-text { background: linear-gradient(to right, #00ffff 0%, #00bfff 25%, #1e90ff 50%, #00ffff 50%, #00bfff 75%, #1e90ff 100%); }
-.gold-text { background: linear-gradient(to right, #ffd700 0%, #ff8c00 25%, #daa520 50%, #ffd700 50%, #ff8c00 75%, #daa520 100%); }
+.fire-gradient-text { 
+  background: linear-gradient(to right, #ff0000 0%, #ff7f00 25%, #ffff00 50%, #ff0000 50%, #ff7f00 75%, #ffff00 100%); 
+  background-size: 200% auto;
+  animation: gradient-slide 15s linear infinite !important;
+}
+.ice-gradient-text { 
+  background: linear-gradient(to right, #00ffff 0%, #00bfff 25%, #1e90ff 50%, #00ffff 50%, #00bfff 75%, #1e90ff 100%); 
+  background-size: 200% auto;
+  animation: gradient-slide 15s linear infinite !important;
+}
+.gold-text { 
+  background: linear-gradient(to right, #ffd700 0%, #ff8c00 25%, #daa520 50%, #ffd700 50%, #ff8c00 75%, #daa520 100%); 
+  background-size: 200% auto;
+  animation: gradient-slide 15s linear infinite !important;
+}
 .nebula-text { 
   background: linear-gradient(to right, #8a2be2 0%, #4b0082 25%, #0000ff 50%, #8a2be2 50%, #4b0082 75%, #0000ff 100%); 
   background-size: 200% auto;
-  animation: rainbow-text-animation 15s linear infinite;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent !important;
+  animation: gradient-slide 15s linear infinite !important;
 }
 .sunset-text { 
   background: linear-gradient(to right, #ff4500 0%, #ff8c00 25%, #ffd700 50%, #ff4500 50%, #ff8c00 75%, #ffd700 100%); 
   background-size: 200% auto;
-  animation: rainbow-text-animation 10s linear infinite;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent !important;
+  animation: gradient-slide 10s linear infinite !important;
 }
 .solar-text { 
   background: linear-gradient(to right, #ffff00 0%, #ffa500 25%, #ff0000 50%, #ffff00 50%, #ffa500 75%, #ff0000 100%); 
   background-size: 200% auto;
-  animation: rainbow-text-animation 8s linear infinite;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent !important;
+  animation: gradient-slide 8s linear infinite !important;
 }
 .cyberpunk-text { 
   background: linear-gradient(to right, #ff00ff 0%, #00ffff 33.3%, #ffff00 50%, #ff00ff 50%, #00ffff 83.3%, #ffff00 100%); 
   background-size: 200% auto;
-  animation: rainbow-text-animation 6s linear infinite;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent !important;
+  animation: gradient-slide 6s linear infinite !important;
 }
 
 .stellar-text { background: linear-gradient(45deg, #1e3c72 0%, #2a5298 25%, #70e1f5 50%, #1e3c72 50%, #2a5298 75%, #70e1f5 100%); }
