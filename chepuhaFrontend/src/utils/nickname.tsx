@@ -6,7 +6,7 @@ export const getFontSize = (text: string, baseSizeArg: number = 24) => {
   const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
 
   // Dynamically scale base size for mobile using the requested context size
-  const baseSize = isPC ? baseSizeArg : Math.floor(baseSizeArg * 0.85); 
+  const baseSize = isPC ? baseSizeArg : (baseSizeArg <= 24 ? baseSizeArg : Math.floor(baseSizeArg * 0.85));
 
   if (len <= 6) return `${baseSize}px`;
 
