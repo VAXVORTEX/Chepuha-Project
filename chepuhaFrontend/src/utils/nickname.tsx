@@ -61,7 +61,7 @@ export const renderThemedNickname = (
     </span>
   );
 
-  if (showHighlight && (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic' || theme === 'samurai-red-gold')) {
+  if (showHighlight && (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic')) {
     const bgClass = isInline ? `story-${theme === 'pirate-caribbean' ? 'pirate' : 'samurai'}-bg` : `${theme}-bg`;
     return (
       <span className={`${bgClass} inline-wrapper${isInline ? ' is-inline' : ''}`}>

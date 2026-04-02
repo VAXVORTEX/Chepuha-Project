@@ -182,7 +182,7 @@ export const AVAILABLE_COLORS = [
 
   // Animated gradients (ordered by hue: warm → cool)
   'special:rainbow', 'special:solar', 'special:nebula', 'special:cyberpunk',
-  'special:pirate-caribbean', 'special:cyber-samurai-iconic', 'special:samurai-red-gold',
+  'special:pirate-caribbean', 'special:cyber-samurai-iconic',
 
   // Premium animated gradients (ordered: warm reds → golds → greens → blues → pinks → neutrals)
   'special:royal-red', 'special:golden-rod', 'special:bronze-age',
