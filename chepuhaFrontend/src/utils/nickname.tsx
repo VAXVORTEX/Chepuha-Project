@@ -5,13 +5,13 @@ export const getFontSize = (text: string, baseSizeArg: number = 24) => {
   const len = text.length;
   const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
 
-  // Reduced base size for mobile to avoid giant nicknames
-  const baseSize = isPC ? 90 : 44; 
+  // Dynamically scale base size for mobile using the requested context size
+  const baseSize = isPC ? baseSizeArg : Math.floor(baseSizeArg * 0.7); 
 
   if (len <= 6) return `${baseSize}px`;
 
   const scaleFactor = 6 / len;
-  const minSize = isPC ? 36 : 16;
+  const minSize = isPC ? Math.floor(baseSizeArg * 0.4) : Math.floor(baseSizeArg * 0.3);
   const calculatedSize = Math.max(minSize, Math.floor(baseSize * Math.pow(scaleFactor, 0.6)));
   return `${calculatedSize}px`;
 };
