@@ -3028,7 +3028,8 @@
 
 .pirate-caribbean-text {
   background: linear-gradient(to right, 
-    #ff0000 0%, #ffd700 25%, #000000 50%, #ffd700 75%, #ff0000 100%
+    #ff0000 0%, #ffd700 12.5%, #000000 25%, #ffd700 37.5%, 
+    #ff0000 50%, #ffd700 62.5%, #000000 75%, #ffd700 87.5%, #ff0000 100%
   );
   background-size: 200% auto !important;
   animation: gradient-slide 18s linear infinite !important;
@@ -3036,10 +3037,21 @@
 
 .cyber-samurai-iconic-text {
   background: linear-gradient(to right, 
-    #000000 0%, #ff0000 25%, #ffd700 50%, #ff0000 75%, #000000 100%
+    #000000 0%, #ff0000 12.5%, #ffd700 25%, #ff0000 37.5%, 
+    #000000 50%, #ff0000 62.5%, #ffd700 75%, #ff0000 87.5%, #000000 100%
   );
   background-size: 200% auto !important;
   animation: gradient-slide 18s linear infinite !important;
+  will-change: background-position;
+}
+
+.samurai-red-gold-text {
+  background: linear-gradient(to right, 
+    #8b0000 0%, #ff0000 12.5%, #ffd700 25%, #ff0000 37.5%, 
+    #8b0000 50%, #ff0000 62.5%, #ffd700 75%, #ff0000 87.5%, #8b0000 100%
+  );
+  background-size: 200% auto !important;
+  animation: gradient-slide 10s linear infinite !important;
   will-change: background-position;
 }
 
@@ -3048,7 +3060,7 @@
 .rainbow-text, .fire-gradient-text, .ice-gradient-text, .gold-text, .nebula-text, .sunset-text, .solar-text, .cyberpunk-text,
 .stellar-text, .deep-purple-text, .cyan-burst-text, .golden-rod-text, .mint-fresh-text, .royal-red-text, 
 .electric-blue-text, .neon-pink-text, .silver-streak-text, .bronze-age-text,
-.pirate-caribbean-text, .cyber-samurai-iconic-text, .flag-gay-mlm-text {
+.pirate-caribbean-text, .cyber-samurai-iconic-text, .samurai-red-gold-text, .flag-gay-mlm-text {
   -webkit-background-clip: text !important;
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
@@ -3066,6 +3078,15 @@
     -webkit-text-stroke: 0.3px black !important;
     filter: drop-shadow(0.5px 0.5px 0.5px rgba(0,0,0,0.5));
   }
+
+  &::selection {
+    -webkit-text-fill-color: #ffffff !important;
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.4) !important;
+    -webkit-text-stroke: 0 !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
 }
 
 
@@ -3073,7 +3094,7 @@
   will-change: background-position;
 }
 
-@keyframes premium-slide-2 { 0% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+@keyframes premium-slide-2 { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
 @keyframes premium-slide-3 { 0% { background-position: 0% 100%; } 100% { background-position: 0% 0%; } }
 @keyframes premium-slide-4 { 0% { background-position: 0% 0%; } 100% { background-position: 0% 100%; } }
 
@@ -3156,7 +3177,10 @@
 }
 .mint-fresh-text { background: linear-gradient(45deg, #00ffca 0%, #05bfdb 25%, #088395 50%, #00ffca 50%, #05bfdb 75%, #088395 100%); }
 .royal-red-text { 
-  background: linear-gradient(45deg, #800000 0%, #ff0000 25%, #ffd700 50%, #ff0000 75%, #800000 100%);
+  background: linear-gradient(45deg, 
+    #800000 0%, #ff0000 12.5%, #ffd700 25%, #ff0000 37.5%, 
+    #800000 50%, #ff0000 62.5%, #ffd700 75%, #ff0000 87.5%, #800000 100%
+  );
   background-size: 200% auto !important;
   animation: premium-slide-2 12s linear infinite, theme-shimmer 4s ease-in-out infinite !important;
   -webkit-background-clip: text !important;
@@ -3190,6 +3214,18 @@
     border-radius: 4px;
     margin: 0 2px;
   }
+
+  &.is-inline {
+    min-height: unset !important;
+    padding: 2px 6px !important;
+    margin: 0 2px !important;
+    border-radius: 4px !important;
+    vertical-align: baseline !important;
+
+    &::before {
+      display: none !important;
+    }
+  }
 }
 
 .pirate-caribbean-bg {
@@ -3200,6 +3236,13 @@
 .cyber-samurai-iconic-bg {
   background: 
     url('./assets/images/theme_samurai_bg.png') center / 65% auto no-repeat, #000000;
+}
+
+.samurai-red-gold-bg {
+  background: 
+    url('./assets/images/theme_samurai_bg.png') center / 65% auto no-repeat,
+    linear-gradient(45deg, #8b0000, #ffd700);
+  background-size: 65% auto, cover;
 }
 
 .story-pirate-bg {

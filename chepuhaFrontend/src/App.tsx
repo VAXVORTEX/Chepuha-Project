@@ -44,6 +44,8 @@ import {
 import { TEMPLATES } from "./config/templates";
 import { useLanguage } from "./contexts/LanguageContext";
 import { Player } from "./api/types";
+import { renderThemedNickname, getFontSize, getNicknameStyle, getNicknameClassName } from "./utils/nickname";
+import ReactDOMServer from 'react-dom/server';
 
 export interface AppState {
   phase: Phases;
@@ -180,7 +182,7 @@ export const AVAILABLE_COLORS = [
 
   // Animated gradients (ordered by hue: warm → cool)
   'special:rainbow', 'special:solar', 'special:nebula', 'special:cyberpunk',
-  'special:pirate-caribbean', 'special:cyber-samurai-iconic',
+  'special:pirate-caribbean', 'special:cyber-samurai-iconic', 'special:samurai-red-gold',
 
   // Premium animated gradients (ordered: warm reds → golds → greens → blues → pinks → neutrals)
   'special:royal-red', 'special:golden-rod', 'special:bronze-age',
@@ -194,69 +196,7 @@ const GAME_LENGTH_INDICES: Record<number, number[]> = {
   12: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 };
 
-const getNicknameStyle = (color: string) => {
-  const isDark = color === '#000000' || color === '#000' || color === '#8b0000' || color === '#4b0082';
-  const isSpecial = color?.startsWith('special:');
-  const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
-
-  if (isSpecial) {
-    return { textShadow: 'none' };
-  }
-
-  return {
-    color: color || '#000000',
-    textShadow: isDark ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000',
-    WebkitTextStroke: isDark ? 'none' : (isPC ? '0.5px black' : '0.3px black')
-  } as React.CSSProperties;
-};
-
-const getNicknameClassName = (color: string) => {
-  if (color?.startsWith('special:')) {
-    return `player-name ${color.replace('special:', '')}-text`;
-  }
-  return 'player-name';
-};
-
-
-const getFontSize = (text: string, baseSizeArg: number = 24) => {
-  if (!text) return undefined;
-  const len = text.length;
-  const isPC = window.innerWidth > 768;
-
-  const baseSize = isPC ? 90 : 54;
-
-  if (len <= 6) return `${baseSize}px`;
-
-
-  const scaleFactor = 6 / len;
-
-  const minSize = isPC ? 36 : 18;
-  const calculatedSize = Math.max(minSize, Math.floor(baseSize * Math.pow(scaleFactor, 0.6)));
-  return `${calculatedSize}px`;
-};
-
-const renderThemedNickname = (name: string, color: string, defaultSize: number = 36, showHighlight: boolean = true) => {
-  const themeClass = getNicknameClassName(color);
-  const theme = color.startsWith('special:') ? color.replace('special:', '') : '';
-  const style = showHighlight ? getNicknameStyle(color) : { color: '#000000', textShadow: 'none' };
-  const fontSize = getFontSize(name, defaultSize);
-
-  const content = (
-    <span className={themeClass + (!showHighlight ? ' no-highlight' : '') + " notranslate"} translate="no" style={{ ...style, fontSize }}>
-      {name}
-    </span>
-  );
-
-  if (showHighlight && (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic')) {
-    return (
-      <span className={`${theme}-bg inline-wrapper`}>
-        {content}
-      </span>
-    );
-  }
-
-  return content;
-};
+// Shared utilities moved to src/utils/nickname.tsx
 
 
 const PlayerItem = memo(({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, crownImage, showColorPicker }: any) => {
@@ -540,28 +480,12 @@ function App() {
             }
             const ansOwnerId = typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id.id : originalAnswer.player_id;
             const ansOwner = typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id : players.find(p => String(p.id) === String(ansOwnerId));
-            const color = ansOwner?.color || (String(ansOwnerId) === String(playerId) ? playerColor : '#e52929');
-            const isSpecial = color?.startsWith('special:');
-            let style = `color: ${isSpecial ? 'transparent' : color}; font-weight: bold;`;
-            let className = '';
-
-            if (isSpecial) {
-              const theme = color.replace('special:', '');
-              className = ` class="${theme}-text"`;
-              style = 'color: transparent;';
-              const storyBgClass = theme === 'pirate-caribbean' ? 'story-pirate-bg' : (theme === 'cyber-samurai-iconic' ? 'story-samurai-bg' : `${theme}-bg`);
-              if (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic') {
-                return `<span class="${storyBgClass} inline-wrapper"><span lang="uk"${className}>${ans}</span></span>`;
-              }
-            } else {
-              const isDark = color === '#000000' || color === '#000' || color === '#8b0000' || color === '#4b0082';
-              const shadow = isDark 
-                ? '0 0 2px #fff, 0 0 5px rgba(255,255,255,0.5)' 
-                : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)';
-              const stroke = isDark ? '-webkit-text-stroke: 0.5px #fff;' : '-webkit-text-stroke: 1.5px black;';
-              style += ` text-shadow: ${shadow}; ${stroke}`;
-            }
-            return `<span lang="uk"${className} style="${style}">${ans}</span>`;
+            const color = ansOwner?.color || (String(ansOwnerId) === String(playerId) ? (playerColor || '#e52929') : '#e52929');
+            
+            // Use standard renderThemedNickname but marked as inline for story text
+            return ReactDOMServer.renderToStaticMarkup(
+               renderThemedNickname(ans, color, 24, true, true)
+            );
           });
 
           const sheetOwner = players.find(p => String(p.id) === String(sheetOwnerId));

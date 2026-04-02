@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React from "react";
 import styles from "./WaitCard.module.scss";
-import Button from "../Button/Button";
-import { playSecretMusic } from "../../utils/audio";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { renderThemedNickname } from "../../utils/nickname";
+
 interface WaitCardProps {
   nick: string;
   playerColor?: string;
@@ -12,29 +12,12 @@ interface WaitCardProps {
   totalRounds?: number;
   message?: string;
 }
-const getNicknameStyle = (color: string) => {
-  if (color?.startsWith('special:')) return {};
-  const isBlack = !color || color === '#000000' || color === '#000';
-  return {
-    color: color || '#000000',
-    textShadow: isBlack ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
-  };
-};
-
-const getNicknameClassName = (color: string) => {
-  if (color?.startsWith('special:')) {
-    return `${styles.nickText} ${color.replace('special:', '')}-text`;
-  }
-  return styles.nickText;
-};
 
 const WaitCard: React.FC<WaitCardProps> = ({
   nick,
   playerColor,
   joinedCount,
   totalCount,
-  currentRound,
-  totalRounds,
   message,
 }) => {
   const { t } = useLanguage();
@@ -42,7 +25,7 @@ const WaitCard: React.FC<WaitCardProps> = ({
     <div className={styles.wrapper}>
       <div className={styles.container}>
         <h2 className={styles.nickLabel + " notranslate"} translate="no">
-          {t('YOUR_NICK')} <span className={getNicknameClassName(playerColor || '') + " notranslate"} translate="no" style={getNicknameStyle(playerColor || '')}>{nick}</span>
+          {t('YOUR_NICK')} {renderThemedNickname(nick, playerColor || '', 36, true)}
         </h2>
         <p className={styles.countText}>
           {joinedCount} / {totalCount} {t('PLAYERS_READY')}
@@ -52,4 +35,5 @@ const WaitCard: React.FC<WaitCardProps> = ({
     </div>
   );
 };
-export default WaitCard;
+
+export default WaitCard;
