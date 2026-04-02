@@ -11,7 +11,7 @@ export const getFontSize = (text: string, baseSizeArg: number = 24) => {
   if (len <= 6) return `${baseSize}px`;
 
   const scaleFactor = 6 / len;
-  const minSize = isPC ? Math.floor(baseSizeArg * 0.4) : Math.floor(baseSizeArg * 0.3);
+  const minSize = isPC ? Math.floor(baseSizeArg * 0.4) : Math.floor(baseSizeArg * 0.35);
   const calculatedSize = Math.max(minSize, Math.floor(baseSize * Math.pow(scaleFactor, 0.6)));
   return `${calculatedSize}px`;
 };
@@ -49,7 +49,10 @@ export const renderThemedNickname = (
   const themeClass = getNicknameClassName(color);
   const theme = color.startsWith('special:') ? color.replace('special:', '') : '';
   const style = showHighlight ? getNicknameStyle(color) : { color: '#000000', textShadow: 'none' };
-  const fontSize = isInline ? undefined : getFontSize(name, defaultSize);
+  
+  const isPremiumBg = showHighlight && (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic');
+  const effectiveSize = (isPremiumBg && !isInline) ? Math.floor(defaultSize * 1.15) : defaultSize;
+  const fontSize = isInline ? undefined : getFontSize(name, effectiveSize);
 
   const content = (
     <span 

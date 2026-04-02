@@ -44,8 +44,6 @@ export const RoundCard = ({
     }, [hints]);
 
 
-
-
     const isWaiting = phase === Phases.Waiting;
     const handleSubmit = () => {
         if (onSubmitAnswer && answer.trim() !== '') {
@@ -57,9 +55,9 @@ export const RoundCard = ({
     return (
         <div className={`${styles.roundCard} ${isWaiting ? styles.waiting : ''}`}>
             <div className={styles.header}>
-                <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-                    {renderThemedNickname(playerName, playerColor || '', 45, showColors)}
-                </div>
+                <h2 className={styles.playerName}>
+                    {renderThemedNickname(playerName, playerColor || '', 55, showColors)}
+                </h2>
             </div>
             <div className={styles.body}>
                 {isWaiting ? (
