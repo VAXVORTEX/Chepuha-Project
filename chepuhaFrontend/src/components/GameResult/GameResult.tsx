@@ -5,6 +5,7 @@ import { Phases } from "../../types/phaseVariant";
 import HomeIcon from "../HomeIcon/HomeIcon";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { TEMPLATES, parseLegacyStory } from "../../config/templates";
+import { renderThemedNickname } from "../../utils/nickname";
 interface Story {
   playerName: string;
   story: string;
@@ -78,47 +79,12 @@ const GameResult: React.FC<ResultProps> = ({
   const pColor = current?.playerColor;
   const showNameColor = showColors && pColor;
   const nameIsSpecial = showNameColor && pColor?.startsWith('special:');
-  const nameClass = nameIsSpecial ? `${pColor?.replace('special:', '')}-text` : '';
-  const nameStyle = showNameColor
-    ? { color: nameIsSpecial ? 'transparent' : pColor }
-    : {
-      color: '#FFFFFF',
-      textShadow: '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 2px 2px 4px rgba(0,0,0,0.3)'
-    };
-
-
-  const getFontSize = (text: string) => {
-    if (!text) return undefined;
-    const len = text.length;
-    const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
-
-    const baseSize = isPC ? 90 : 36;
-
-    if (len <= 6) return `${baseSize}px`;
-    const scaleFactor = 6 / len;
-
-    const minSize = isPC ? 36 : 18;
-    const calculatedSize = Math.max(minSize, Math.floor(baseSize * Math.pow(scaleFactor, 0.6)));
-    return `${calculatedSize}px`;
-  };
-
-  return (
+  const nameClass = nameIsSpecial ? `${pColor?.replace('special:', '')}-text` : '';  return (
     <div className={classNames(styles.wrapper, styles[phase], "results-view")}>
       <div className={styles.container}>
         <div className={classNames(styles.box, styles[phase])}>
           <h2 className={styles.title}>
-            {t('STORY_OF')} {(() => {
-              const theme = pColor?.startsWith('special:') ? pColor.replace('special:', '') : '';
-              const content = (
-                <span className={classNames("player-name", nameClass, "notranslate")} translate="no" style={{ ...nameStyle, fontSize: getFontSize(current?.playerName) }}>
-                  {current?.playerName || t('LOADING')}
-                </span>
-              );
-              if (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic') {
-                return <span className={`${theme}-bg inline-wrapper`}>{content}</span>;
-              }
-              return content;
-            })()}
+            {t('STORY_OF')} {renderThemedNickname(current?.playerName || t('LOADING'), pColor || '', 42, showColors)}
           </h2>
           <div className={styles.storyNav}>
             <button

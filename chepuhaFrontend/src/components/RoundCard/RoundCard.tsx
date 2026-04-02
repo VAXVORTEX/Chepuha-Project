@@ -16,23 +16,7 @@ interface RoundCardProps {
     hints?: string[];
     showColors?: boolean;
 }
-const getNicknameStyle = (color: string, showColors: boolean = true) => {
-    if (!showColors) return { color: '#000000', textShadow: 'none' };
-    if (color?.startsWith('special:')) return {};
-    const isBlack = !color || color === '#000000' || color === '#000';
-    return {
-        color: color || '#000000',
-        textShadow: isBlack ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
-    };
-};
-
-const getNicknameClassName = (color: string, showColors: boolean = true) => {
-    if (!showColors) return styles.playerName;
-    if (color?.startsWith('special:')) {
-        return `${styles.playerName} ${color.replace('special:', '')}-text`;
-    }
-    return styles.playerName;
-};
+import { renderThemedNickname } from '../../utils/nickname';
 
 export const RoundCard = ({
     playerName,
@@ -60,15 +44,7 @@ export const RoundCard = ({
     }, [hints]);
 
 
-    const getFontSize = (text: string) => {
-        if (!text) return undefined;
-        const len = text.length;
-        if (len <= 10) return "45px";
-        const baseSize = 45;
-        const scaleFactor = 10 / len;
-        const calculatedSize = Math.max(22, Math.floor(baseSize * Math.pow(scaleFactor, 1.1)));
-        return `${calculatedSize}px`;
-    };
+
 
     const isWaiting = phase === Phases.Waiting;
     const handleSubmit = () => {
@@ -81,15 +57,9 @@ export const RoundCard = ({
     return (
         <div className={`${styles.roundCard} ${isWaiting ? styles.waiting : ''}`}>
             <div className={styles.header}>
-                <h2
-                    className={getNicknameClassName(playerColor || '', showColors)}
-                    style={{
-                        ...getNicknameStyle(playerColor || '', showColors),
-                        fontSize: getFontSize(playerName)
-                    }}
-                >
-                    {playerName}
-                </h2>
+                <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+                    {renderThemedNickname(playerName, playerColor || '', 45, showColors)}
+                </div>
             </div>
             <div className={styles.body}>
                 {isWaiting ? (
