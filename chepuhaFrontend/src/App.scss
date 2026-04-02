@@ -3069,6 +3069,10 @@
     filter: drop-shadow(0.5px 0.5px 0.5px rgba(0,0,0,0.5));
   }
 
+  &.is-inline {
+    display: inline !important;
+  }
+
   &::selection {
     -webkit-text-fill-color: #ffffff !important;
   }
@@ -3207,8 +3211,6 @@
     margin: 0 !important;
     border-radius: 4px !important;
     vertical-align: baseline !important;
-    -webkit-box-decoration-break: clone;
-    box-decoration-break: clone;
 
     &::before {
       display: none !important;
@@ -3232,7 +3234,6 @@
   background: 
     url('./assets/images/theme_pirate_bg.jpg') center / 120% auto no-repeat, #000000;
   background-size: 120% auto;
-  display: inline-flex;
   padding: 2px 6px;
   border-radius: 4px;
 }
