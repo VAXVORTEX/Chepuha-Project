@@ -5,14 +5,15 @@ export const getFontSize = (text: string, baseSizeArg: number = 24) => {
   const len = text.length;
   const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
 
-  // Dynamically scale base size for mobile using the requested context size
-  const baseSize = isPC ? baseSizeArg : (baseSizeArg <= 24 ? baseSizeArg : Math.floor(baseSizeArg * 0.85));
+  const baseSize = isPC ? baseSizeArg : Math.floor(baseSizeArg * 0.75); 
 
-  if (len <= 6) return `${baseSize}px`;
+  const threshold = isPC ? 15 : 8;
+  if (len <= threshold) return `${baseSize}px`;
 
-  const scaleFactor = 6 / len;
-  const minSize = isPC ? Math.floor(baseSizeArg * 0.4) : Math.floor(baseSizeArg * 0.35);
-  const calculatedSize = Math.max(minSize, Math.floor(baseSize * Math.pow(scaleFactor, 0.6)));
+  const scaleFactor = threshold / len;
+  const minSize = isPC ? Math.floor(baseSizeArg * 0.4) : Math.floor(baseSizeArg * 0.25);
+  const power = isPC ? 0.55 : 1.0; 
+  const calculatedSize = Math.max(minSize, Math.floor(baseSize * Math.pow(scaleFactor, power)));
   return `${calculatedSize}px`;
 };
 
@@ -44,15 +45,19 @@ export const renderThemedNickname = (
   color: string, 
   defaultSize: number = 36, 
   showHighlight: boolean = true,
-  isInline: boolean = false
+  isInline: boolean = false,
+  skipFontSize: boolean = false,
+  customFontSize?: string
 ) => {
   const themeClass = getNicknameClassName(color);
   const theme = color.startsWith('special:') ? color.replace('special:', '') : '';
   const style = showHighlight ? getNicknameStyle(color) : { color: '#000000', textShadow: 'none' };
   
+  const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
+  const themeBoost = isPC ? 1.15 : 1.05;
   const isPremiumBg = showHighlight && (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic');
-  const effectiveSize = (isPremiumBg && !isInline) ? Math.floor(defaultSize * 1.15) : defaultSize;
-  const fontSize = isInline ? undefined : getFontSize(name, effectiveSize);
+  const effectiveSize = (isPremiumBg && !isInline) ? Math.floor(defaultSize * themeBoost) : defaultSize;
+  const fontSize = customFontSize || ((isInline || skipFontSize) ? undefined : getFontSize(name, effectiveSize));
 
   const content = (
     <span 

@@ -181,14 +181,14 @@
       opacity: 0.8;
 
       @media (max-width: 480px) {
-        font-size: 16px;
+        font-size: 30px;
       }
     }
 
     .nick-scroll-container {
       width: auto;
-      max-width: 800px;
-      overflow: hidden;
+      max-width: 900px;
+      overflow: visible;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -198,6 +198,7 @@
 
       @media (max-width: 768px) {
         min-height: 70px;
+        max-width: 65vw;
       }
     }
   }
@@ -212,6 +213,10 @@
   color: $black;
   margin: 0;
   text-align: center;
+
+  @media (max-width: 768px) {
+    margin-top: 20px;
+  }
 }
 
 .players-list {
@@ -225,8 +230,6 @@
   scrollbar-width: thin;
   scrollbar-color: $red transparent;
   touch-action: pan-y;
-  user-select: none;
-  -webkit-user-select: none;
 
   &.has-many-players {
     overflow-y: auto;
@@ -276,19 +279,20 @@
 }
 
 .player-name {
-  @include font-pangolin(50);
   color: $black;
   text-align: center;
   white-space: nowrap;
   transition: color 0.5s ease;
   display: inline-block;
   max-width: 550px;
-  overflow-x: hidden;
+  overflow: visible;
   scrollbar-width: none;
-  line-height: 1;
+  line-height: 1.15;
   padding-block: 2px;
   vertical-align: middle;
   font-weight: bold;
+  user-select: text;
+  -webkit-user-select: text;
 
   &::-webkit-scrollbar {
     display: none;
@@ -791,7 +795,7 @@
   font-size: 20px;
   color: $black;
   cursor: pointer;
-  padding: 0 4px;
+  padding: 0 2px;
   transition: transform 0.15s;
 
   &:hover {
@@ -800,8 +804,8 @@
 }
 
 .inline-color-swatch {
-  width: 28px;
-  height: 28px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
   border: 2px solid $black;
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
@@ -1165,6 +1169,7 @@
   border: 4px solid $black;
   border-radius: 255px 15px 225px 15px/15px 225px 15px 255px;
   animation: wave-blob 12s infinite ease-in-out;
+  will-change: transform;
   padding: 0;
   overflow: hidden;
   cursor: pointer;
@@ -1404,9 +1409,9 @@
   }
 
   .player-name {
-    font-size: 28px;
     margin: 0 auto;
-    max-width: 80vw !important;
+    max-width: 60vw !important;
+    min-width: 0;
   }
 
   .inline-color-picker {
@@ -1428,8 +1433,8 @@
     }
 
     .inline-color-swatch {
-      width: 32px !important; // Increased for mobile
-      height: 32px !important; // Increased for mobile
+      width: 24px !important;
+      height: 24px !important;
 
       &.pirate-caribbean {
         background: url('./assets/images/theme_pirate_bg.jpg') center / contain no-repeat !important;
@@ -3006,11 +3011,11 @@
 
 @keyframes gradient-slide {
   0% { background-position: 0% 50%; }
-  100% { background-position: 100% 50%; }
+  100% { background-position: -200% 50%; }
 }
 
 @keyframes gradient-slide-reverse {
-  0% { background-position: 100% 50%; }
+  0% { background-position: -200% 50%; }
   100% { background-position: 0% 50%; }
 }
 
@@ -3031,8 +3036,8 @@
     #ff0000 0%, #ffd700 12.5%, #000000 25%, #ffd700 37.5%, 
     #ff0000 50%, #ffd700 62.5%, #000000 75%, #ffd700 87.5%, #ff0000 100%
   );
-  background-size: 200% auto !important;
-  animation: gradient-slide 18s linear infinite alternate !important;
+  background-size: 400px auto !important;
+  animation: gradient-slide 18s linear infinite !important;
 }
 
 .cyber-samurai-iconic-text {
@@ -3041,7 +3046,7 @@
     #000000 50%, #ff0000 62.5%, #ffd700 75%, #ff0000 87.5%, #000000 100%
   );
   background-size: 200% auto !important;
-  animation: gradient-slide 18s linear infinite alternate !important;
+  animation: gradient-slide 18s linear infinite !important;
 }
 
 [class*="flag-"][class*="-text"], 
@@ -3067,6 +3072,8 @@
 
   &.is-inline {
     display: inline !important;
+    animation: gradient-slide 18s linear infinite !important;
+    filter: none !important;
   }
 
   &::selection {
@@ -3076,66 +3083,70 @@
 
 
 
-@keyframes premium-slide-2 { 0% { background-position: 0% 50%; } 100% { background-position: 100% 50%; } }
-@keyframes premium-slide-3 { 0% { background-position: 50% 0%; } 100% { background-position: 50% 100%; } }
-@keyframes premium-slide-4 { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
+@keyframes premium-slide-2 { 0% { background-position: 0% 50%; } 100% { background-position: -200% 50%; } }
+@keyframes premium-slide-3 { 0% { background-position: 50% 0%; } 100% { background-position: 50% -200%; } }
+@keyframes premium-slide-4 { 0% { background-position: 0% 0%; } 100% { background-position: -200% -200%; } }
 .stellar-text, .mint-fresh-text, .silver-streak-text {
   background-size: 200% auto !important;
   animation: gradient-slide 12s linear infinite, theme-glow 6s ease-in-out infinite !important;
 }
 .deep-purple-text, .royal-red-text, .bronze-age-text {
   background-size: 200% auto !important;
-  animation: premium-slide-2 15s linear infinite, theme-shimmer 4s ease-in-out infinite !important;
+  animation: premium-slide-2 15s linear infinite, theme-shimmer 12s ease-in-out infinite !important;
 }
 .cyan-burst-text, .electric-blue-text {
-  background-size: auto 200% !important;
-  animation: premium-slide-3 10s linear infinite alternate !important;
+  background-size: 200% 200% !important;
+  animation: premium-slide-3 10s linear infinite !important;
 }
-.golden-rod-text, .neon-pink-text {
-  background-size: auto 200% !important;
-  animation: premium-slide-4 8s linear infinite, theme-shimmer 3s ease-in-out infinite !important;
+.neon-pink-text {
+  background-size: 200% 200% !important;
+  animation: premium-slide-4 8s linear infinite, theme-shimmer 10s ease-in-out infinite !important;
+}
+.golden-rod-text {
+  background-size: 200% auto !important;
+  animation: gradient-slide 15s linear infinite !important;
 }
 
 
 .rainbow-text { 
   background: linear-gradient(90deg, #ff0000 0%, #ff7f00 8.3%, #ffff00 16.6%, #00ff00 25%, #0000ff 33.3%, #4b0082 41.6%, #8b00ff 50%, #ff0000 50%, #ff7f00 58.3%, #ffff00 66.6%, #00ff00 75%, #0000ff 83.3%, #4b0082 91.6%, #8b00ff 100%); 
   background-size: 200% auto;
-  animation: gradient-slide 15s linear infinite alternate !important;
+  animation: gradient-slide 15s linear infinite !important;
 }
 .fire-gradient-text { 
   background: linear-gradient(to right, #ff0000 0%, #ff7f00 25%, #ffff00 50%, #ff0000 50%, #ff7f00 75%, #ffff00 100%); 
   background-size: 200% auto;
-  animation: gradient-slide 15s linear infinite alternate !important;
+  animation: gradient-slide 15s linear infinite !important;
 }
 .ice-gradient-text { 
   background: linear-gradient(to right, #00ffff 0%, #00bfff 25%, #1e90ff 50%, #00ffff 50%, #00bfff 75%, #1e90ff 100%); 
   background-size: 200% auto;
-  animation: gradient-slide 15s linear infinite alternate !important;
+  animation: gradient-slide 15s linear infinite !important;
 }
 .gold-text { 
   background: linear-gradient(to right, #ffd700 0%, #ff8c00 25%, #daa520 50%, #ffd700 50%, #ff8c00 75%, #daa520 100%); 
   background-size: 200% auto;
-  animation: gradient-slide 15s linear infinite alternate !important;
+  animation: gradient-slide 15s linear infinite !important;
 }
 .nebula-text { 
   background: linear-gradient(to right, #8a2be2 0%, #4b0082 25%, #0000ff 50%, #8a2be2 50%, #4b0082 75%, #0000ff 100%); 
   background-size: 200% auto;
-  animation: gradient-slide 15s linear infinite alternate !important;
+  animation: gradient-slide 15s linear infinite !important;
 }
 .sunset-text { 
   background: linear-gradient(to right, #ff4500 0%, #ff8c00 25%, #ffd700 50%, #ff4500 50%, #ff8c00 75%, #ffd700 100%); 
   background-size: 200% auto;
-  animation: gradient-slide 10s linear infinite alternate !important;
+  animation: gradient-slide 10s linear infinite !important;
 }
 .solar-text { 
   background: linear-gradient(to right, #ffff00 0%, #ffa500 25%, #ff0000 50%, #ffff00 50%, #ffa500 75%, #ff0000 100%); 
   background-size: 200% auto;
-  animation: gradient-slide 8s linear infinite alternate !important;
+  animation: gradient-slide 8s linear infinite !important;
 }
 .cyberpunk-text { 
   background: linear-gradient(to right, #ff00ff 0%, #00ffff 33.3%, #ffff00 50%, #ff00ff 50%, #00ffff 83.3%, #ffff00 100%); 
   background-size: 200% auto;
-  animation: gradient-slide 6s linear infinite alternate !important;
+  animation: gradient-slide 6s linear infinite !important;
 }
 
 .stellar-text { background: linear-gradient(45deg, #1e3c72 0%, #2a5298 25%, #70e1f5 50%, #1e3c72 50%, #2a5298 75%, #70e1f5 100%); }
@@ -3144,7 +3155,7 @@
 .golden-rod-text { 
   background: linear-gradient(45deg, #daa520 0%, #ffd700 25%, #b8860b 50%, #daa520 50%, #ffd700 75%, #b8860b 100%);
   background-size: 200% auto;
-  animation: gold-pulse 4s ease-in-out infinite;
+  animation: gradient-slide 15s linear infinite;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -3156,7 +3167,7 @@
     #800000 50%, #ff0000 62.5%, #ffd700 75%, #ff0000 87.5%, #800000 100%
   );
   background-size: 200% auto !important;
-  animation: premium-slide-2 12s linear infinite, theme-shimmer 4s ease-in-out infinite !important;
+  animation: premium-slide-2 12s linear infinite, theme-shimmer 12s ease-in-out infinite !important;
   -webkit-background-clip: text !important;
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
@@ -3167,24 +3178,24 @@
 .bronze-age-text { 
   background: linear-gradient(45deg, #cd7f32 0%, #a0522d 25%, #8b4513 50%, #cd7f32 50%, #a0522d 75%, #8b4513 100%);
   background-size: 200% auto;
-  animation: gradient-slide 20s linear infinite alternate !important;
+  animation: gradient-slide 15s linear infinite !important;
 }
 
 
 
 .inline-wrapper {
-  padding: 6px 12px;
+  padding: 4px 8px;
   border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   margin: 0 4px;
-  min-height: 52px;
+  min-height: unset;
   box-sizing: border-box;
 
   @media (max-width: 768px) {
     padding: 2px 6px;
-    min-height: 32px;
+    min-height: unset;
     border-radius: 4px;
     margin: 0 2px;
   }
@@ -3196,6 +3207,7 @@
     margin: 0 !important;
     border-radius: 4px !important;
     vertical-align: baseline !important;
+    overflow: visible !important;
 
     &::before {
       display: none !important;
@@ -3205,12 +3217,12 @@
 
 .pirate-caribbean-bg {
   background: 
-    url('./assets/images/theme_pirate_bg.jpg') center / 65% auto no-repeat, #000000;
+    url('./assets/images/theme_pirate_bg.jpg') center / contain no-repeat, #000000;
 }
 
 .cyber-samurai-iconic-bg {
   background: 
-    url('./assets/images/theme_samurai_bg.png') center / 65% auto no-repeat, #000000;
+    url('./assets/images/theme_samurai_bg.png') center / contain no-repeat, #000000;
 }
 
 

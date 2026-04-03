@@ -207,7 +207,7 @@ const PlayerItem = memo(({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS
     <div key={p.id || String(i)} className="player-item" data-player-id={p.id}>
       <div className="player-name-wrapper">
         {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
-        {renderThemedNickname(p.nickname, activeColor, 36, showColorPicker)}
+        {renderThemedNickname(p.nickname, activeColor, (typeof window !== 'undefined' && window.innerWidth > 768) ? 42 : 24, showColorPicker)}
         {isMe && showColorPicker && (
           <div className="inline-color-picker">
             <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
@@ -462,7 +462,8 @@ function App() {
           });
           for (let i = 0; i < 12; i++) {
             if (!fullAnswers[i]) {
-              const pool = activeTemplate.fallbacks[i] || ["..."];
+              const fbArr = (language === 'en' && activeTemplate.fallbacksEn) ? activeTemplate.fallbacksEn : activeTemplate.fallbacks;
+              const pool = fbArr[i] || ["..."];
               fullAnswers[i] = pool[Math.floor(Math.random() * pool.length)];
             }
           }
@@ -754,7 +755,8 @@ function App() {
                 return sid === p.id;
               });
               if (pSheet) {
-                const fallbackPool = activeTemplate.fallbacks[currentRound - 1] ?? ["..."];
+                const fbArr757 = (language === 'en' && activeTemplate.fallbacksEn) ? activeTemplate.fallbacksEn : activeTemplate.fallbacks;
+                const fallbackPool = fbArr757[currentRound - 1] ?? ["..."];
                 await submitAnswer({
                   answer_text: fallbackPool[Math.floor(Math.random() * fallbackPool.length)],
                   position_in_sheet: currentRound,
@@ -1181,7 +1183,8 @@ function App() {
     }
 
     const isMissing = answer.trim() === "" || answer.trim() === "Час вийшов";
-    const fallbackPool = activeTemplate.fallbacks[currentRound - 1] ?? [""];
+    const fbArr1184 = (language === 'en' && activeTemplate.fallbacksEn) ? activeTemplate.fallbacksEn : activeTemplate.fallbacks;
+    const fallbackPool = fbArr1184[currentRound - 1] ?? [""];
     const cleanAnswer = isMissing
       ? fallbackPool[Math.floor(Math.random() * fallbackPool.length)]
       : answer;
@@ -1198,7 +1201,8 @@ function App() {
         indices.forEach((qIndex, i) => { fullAnswers[qIndex] = updatedAnswers[i]; });
         for (let i = 0; i < 12; i++) {
           if (!fullAnswers[i]) {
-            const pool = activeTemplate.fallbacks[i] || ["..."];
+            const fbArr1201 = (language === 'en' && activeTemplate.fallbacksEn) ? activeTemplate.fallbacksEn : activeTemplate.fallbacks;
+            const pool = fbArr1201[i] || ["..."];
             fullAnswers[i] = pool[Math.floor(Math.random() * pool.length)];
           }
         }
@@ -1474,7 +1478,7 @@ function App() {
               <h2 className="lobby-text label-and-nick notranslate" translate="no">
                 <span className="label-part">{t('YOUR_NICK')}</span>
                 <div className="nick-scroll-container">
-                  {renderThemedNickname(nickname, playerColor, 64, parsedColorHighlight)}
+                  {renderThemedNickname(nickname, playerColor, 90, parsedColorHighlight)}
                 </div>
               </h2>
               <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
@@ -1598,7 +1602,7 @@ function App() {
             })()}
             playerTotal={derivedTotalCount}
             onSubmitAnswer={doAnswerSubmit}
-            hints={parsedHintsEnabled ? (activeTemplate.fallbacks[currentRound - 1] || []) : undefined}
+            hints={parsedHintsEnabled ? ((language === 'en' && activeTemplate.fallbacksEn ? activeTemplate.fallbacksEn : activeTemplate.fallbacks)[currentRound - 1] || []) : undefined}
             showColors={parsedColorHighlight}
           />
         </>
