@@ -1444,6 +1444,9 @@
     .inline-color-swatch {
       width: 24px !important;
       height: 24px !important;
+      border-radius: 50% !important;
+      overflow: visible !important;
+      background-clip: content-box !important;
 
       &.pirate-caribbean {
         background: url('./assets/images/theme_pirate_bg.jpg') center / contain no-repeat !important;
@@ -3193,17 +3196,17 @@
 
 
 .inline-wrapper {
-  padding: 4px 8px;
-  border-radius: 8px;
+  padding: 0 4px;
+  border-radius: 4px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin: 0 4px;
+  margin: 0;
   min-height: unset;
   box-sizing: border-box;
 
   @media (max-width: 768px) {
-    padding: 2px 6px;
+    padding: 0 2px;
     min-height: unset;
     border-radius: 4px;
     margin: 0 2px;
@@ -3240,7 +3243,7 @@
   background: 
     url('./assets/images/theme_pirate_bg.jpg') center / 120% auto no-repeat, #000000;
   background-size: 120% auto;
-  padding: 2px 6px;
+  padding: 0 4px;
   border-radius: 4px;
 }
 
@@ -3248,6 +3251,8 @@
   background: 
     url('./assets/images/theme_samurai_bg.png') center / 120% auto no-repeat, #000000;
   background-size: 120% auto;
+  padding: 0 4px;
+  border-radius: 4px;
 }
 
 
