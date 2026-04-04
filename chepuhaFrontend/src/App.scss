@@ -228,13 +228,25 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  width: 100%;
+  width: calc(100% + 240px);
+  margin-left: -120px;
+  margin-right: -120px;
+  padding-left: 120px;
+  padding-right: 120px;
+  box-sizing: border-box;
   overflow-y: visible;
   padding-top: 20px; /* Fixes crown clipping at the top */
-  padding-right: 10px;
   scrollbar-width: thin;
   scrollbar-color: $red transparent;
   touch-action: pan-y;
+
+  @media (max-width: 768px) {
+    width: calc(100% + 140px);
+    margin-left: -70px;
+    margin-right: -70px;
+    padding-left: 70px;
+    padding-right: 70px;
+  }
 
   &.has-many-players {
     overflow-y: auto;
@@ -270,39 +282,16 @@
 
 .player-name-wrapper {
   position: relative;
-  display: flex !important;
-  width: 100%;
-  flex-direction: row !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin: 0 auto;
-
-  .center-slot {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 1;
-    min-width: 0;
-  }
-
-  .side-slot {
-    flex: 1;
-    display: flex;
-    align-items: center;
-  }
-
-  .left-slot {
-    justify-content: flex-end;
-    padding-right: 15px;
-  }
-
-  .right-slot {
-    justify-content: flex-start;
-    padding-left: 15px;
-  }
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .crown-icon {
+  position: absolute;
+  right: calc(100% + 5px);
+  top: calc(50% - 4px) !important;
+  transform: translateY(-50%);
   width: 100px;
   height: auto;
   object-fit: contain;
@@ -314,6 +303,10 @@
 }
 
 .inline-color-picker {
+  position: absolute !important;
+  left: calc(100% + 5px) !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
   display: flex;
   align-items: center;
   justify-content: center;
