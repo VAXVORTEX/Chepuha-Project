@@ -9,10 +9,9 @@ export const getFontSize = (text: string, baseSizeArg: number = 24) => {
   const threshold = 7; // Nicknames up to 7 chars stay at full size
   if (len <= threshold) return `${baseSize}px`;
 
-  // Linear per-character reduction
-  const reductionPerChar = isPC
-    ? Math.max(1, Math.floor(baseSizeArg / 30))   // ~1-3px per char on PC
-    : Math.max(0.8, Math.floor(baseSizeArg / 25)); // ~1-2px per char on mobile
+  // Smooth decimal reduction to hit exact target sizes
+  // e.g. on mobile (base=34), len=25 -> 18 over threshold -> 18 * ~0.77 = ~14 reduction -> size ~20px
+  const reductionPerChar = isPC ? (baseSizeArg * 0.025) : (baseSizeArg * 0.023);
   const reduction = (len - threshold) * reductionPerChar;
   const minSize = isPC ? Math.floor(baseSizeArg * 0.35) : Math.floor(baseSizeArg * 0.4);
   const calculatedSize = Math.max(minSize, Math.floor(baseSize - reduction));
