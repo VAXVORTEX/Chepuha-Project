@@ -1478,7 +1478,7 @@ function App() {
               <h2 className="lobby-text label-and-nick notranslate" translate="no">
                 <span className="label-part">{t('YOUR_NICK')}</span>
                 <div className="nick-scroll-container">
-                  {renderThemedNickname(nickname, playerColor, 90, parsedColorHighlight)}
+                  {renderThemedNickname(nickname, playerColor, (typeof window !== 'undefined' && window.innerWidth > 768) ? 90 : 40, parsedColorHighlight)}
                 </div>
               </h2>
               <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>

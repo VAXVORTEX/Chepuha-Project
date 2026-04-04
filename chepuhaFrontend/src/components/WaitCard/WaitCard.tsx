@@ -22,11 +22,14 @@ const WaitCard: React.FC<WaitCardProps> = ({
 }) => {
   const { t } = useLanguage();
   const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
-  const baseSize = isPC ? 45 : 28;
-  // Calculate a unified font-size for both the label and the nickname
+  const labelSize = isPC ? 45 : 28;
+  const nickBaseSize = isPC ? 45 : 36;
   const fullLabel = t('YOUR_NICK');
   const displayNick = nick || '';
-  const fontSize = getFontSize(fullLabel + " " + displayNick, baseSize);
+  // Size nick independently — don't combine with label length
+  const nickFontSize = getFontSize(displayNick, nickBaseSize);
+  // Label uses a stable size (not scaled by nick length)
+  const labelFontSize = `${labelSize}px`;
 
   return (
     <div className={styles.wrapper}>
@@ -39,14 +42,14 @@ const WaitCard: React.FC<WaitCardProps> = ({
             alignItems: 'center',
             justifyContent: 'center',
             gap: '8px',
-            flexWrap: 'nowrap',
+            flexWrap: 'wrap',
             width: '100%',
-            fontSize: fontSize // Ensure parent has it too for em units
+            fontSize: nickFontSize
           }}
         >
-          <span className={styles.labelPart} style={{ fontSize, lineHeight: 1 }}>{fullLabel}</span>
-          <span style={{ fontSize, lineHeight: 1, display: 'flex', alignItems: 'center' }}>
-            {renderThemedNickname(displayNick, playerColor || '', baseSize, true, false, true, fontSize)}
+          <span className={styles.labelPart} style={{ fontSize: labelFontSize, lineHeight: 1 }}>{fullLabel}</span>
+          <span style={{ fontSize: nickFontSize, lineHeight: 1, display: 'inline-block', wordBreak: 'break-all', textAlign: 'center', maxWidth: '100%' }}>
+            {renderThemedNickname(displayNick, playerColor || '', nickBaseSize, true, false, true, nickFontSize)}
           </span>
         </div>
         <p className={styles.countText}>

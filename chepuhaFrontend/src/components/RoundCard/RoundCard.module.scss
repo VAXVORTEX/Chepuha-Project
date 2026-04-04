@@ -28,11 +28,11 @@
 
 .playerName {
   @include font-60;
-  font-size: 70px;
   color: $white;
   text-transform: uppercase;
   margin: 0;
   letter-spacing: 2px;
+  overflow: visible;
 }
 
 .body {

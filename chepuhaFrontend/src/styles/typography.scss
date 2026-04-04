@@ -22,40 +22,40 @@
   font-display: swap;
 }
 
-%pangolin-base {
+@mixin pangolin-base {
   font-family: "Pangolin", cursive;
   font-weight: 400;
   font-style: normal;
 }
 
-%abel-base {
+@mixin abel-base {
   font-family: "Abel", sans-serif;
   font-weight: 400;
   font-style: normal;
 }
 
-%acme-base {
+@mixin acme-base {
   font-family: "Acme", sans-serif;
   font-weight: 400;
   font-style: normal;
 }
 
 @mixin font-pangolin ($size, $weight: 400, $line-height: 1.2) {
-  @extend %pangolin-base;
+  @include pangolin-base;
   font-size: #{$size}px;
   font-weight: $weight;
   line-height: $line-height;
 }
 
 @mixin font-abel ($size, $weight: 400, $line-height: 1.2) {
-  @extend %abel-base;
+  @include abel-base;
   font-size: #{$size}px;
   font-weight: $weight;
   line-height: $line-height;
 }
 
 @mixin font-acme($size, $weight: 400, $line-height: 1.2) {
-  @extend %acme-base;
+  @include acme-base;
   font-size: #{$size}px;
   font-weight: $weight;
   line-height: $line-height;

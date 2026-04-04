@@ -279,12 +279,15 @@
 }
 
 .player-name {
+  @include font-pangolin(42);
   color: $black;
+  @media (max-width: 768px) {
+    @include font-pangolin(24);
+  }
   text-align: center;
   white-space: nowrap;
   transition: color 0.5s ease;
   display: inline-block;
-  max-width: 550px;
   overflow: visible;
   scrollbar-width: none;
   line-height: 1.15;
@@ -1361,13 +1364,13 @@
   }
 
   .label-and-nick {
-    font-size: 32px;
+    font-size: 24px;
     flex-direction: column !important;
     gap: 2px !important;
     align-items: center !important;
 
     .label-part {
-      font-size: 20px;
+      font-size: 16px;
       opacity: 0.7;
     }
 
@@ -1410,7 +1413,7 @@
 
   .player-name {
     margin: 0 auto;
-    max-width: 60vw !important;
+    max-width: 100% !important;
     min-width: 0;
   }
 
@@ -3036,7 +3039,7 @@
     #ff0000 0%, #ffd700 12.5%, #000000 25%, #ffd700 37.5%, 
     #ff0000 50%, #ffd700 62.5%, #000000 75%, #ffd700 87.5%, #ff0000 100%
   );
-  background-size: 400px auto !important;
+  background-size: 200% auto !important;
   animation: gradient-slide 18s linear infinite !important;
 }
 
@@ -3217,12 +3220,12 @@
 
 .pirate-caribbean-bg {
   background: 
-    url('./assets/images/theme_pirate_bg.jpg') center / contain no-repeat, #000000;
+    url('./assets/images/theme_pirate_bg.jpg') center / cover no-repeat, #000000;
 }
 
 .cyber-samurai-iconic-bg {
   background: 
-    url('./assets/images/theme_samurai_bg.png') center / contain no-repeat, #000000;
+    url('./assets/images/theme_samurai_bg.png') center / cover no-repeat, #000000;
 }
 
 
