@@ -274,6 +274,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  max-width: 95vw;
 }
 
 .crown-icon {
@@ -297,7 +298,10 @@
   transform: translateZ(0); /* Hardware acceleration to prevent text/outline jitter */
   will-change: transform;
   display: inline-block;
-  overflow: visible;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex-shrink: 1;
   scrollbar-width: none;
   line-height: 1.15;
   padding-block: 2px;
@@ -1418,10 +1422,15 @@
     width: auto;
     text-align: center;
     position: relative;
+    max-width: 90vw;
   }
 
   .player-name {
     margin: 0 auto;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .inline-color-picker {
@@ -3213,6 +3222,9 @@
   margin: 0;
   min-height: unset;
   box-sizing: border-box;
+  flex-shrink: 1;
+  max-width: 100%;
+  min-width: 0;
 
   @media (max-width: 768px) {
     padding: 2px 8px;
