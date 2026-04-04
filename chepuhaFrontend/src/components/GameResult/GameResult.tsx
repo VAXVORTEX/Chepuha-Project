@@ -5,6 +5,7 @@ import { Phases } from "../../types/phaseVariant";
 import HomeIcon from "../HomeIcon/HomeIcon";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { TEMPLATES, parseLegacyStory } from "../../config/templates";
+import { getFontSize } from "../../utils/nickname";
 interface Story {
   playerName: string;
   story: string;
@@ -87,19 +88,10 @@ const GameResult: React.FC<ResultProps> = ({
     };
 
 
-  const getFontSize = (text: string) => {
+  const getResultFontSize = (text: string) => {
     if (!text) return undefined;
-    const len = text.length;
     const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
-
-    const baseSize = isPC ? 90 : 36;
-
-    if (len <= 6) return `${baseSize}px`;
-    const scaleFactor = 6 / len;
-
-    const minSize = isPC ? 36 : 18;
-    const calculatedSize = Math.max(minSize, Math.floor(baseSize * Math.pow(scaleFactor, 0.6)));
-    return `${calculatedSize}px`;
+    return getFontSize(text, isPC ? 90 : 36);
   };
 
   return (
@@ -110,7 +102,7 @@ const GameResult: React.FC<ResultProps> = ({
             {t('STORY_OF')} {(() => {
               const theme = pColor?.startsWith('special:') ? pColor.replace('special:', '') : '';
               const content = (
-                <span className={classNames("player-name", nameClass, "notranslate")} translate="no" style={{ ...nameStyle, fontSize: getFontSize(current?.playerName) }}>
+                <span className={classNames("player-name", nameClass, "notranslate")} translate="no" style={{ ...nameStyle, fontSize: getResultFontSize(current?.playerName) }}>
                   {current?.playerName || t('LOADING')}
                 </span>
               );

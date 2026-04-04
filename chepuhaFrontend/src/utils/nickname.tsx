@@ -5,14 +5,17 @@ export const getFontSize = (text: string, baseSizeArg: number = 24) => {
   const len = text.length;
   const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
 
-  const baseSize = isPC ? baseSizeArg : Math.floor(baseSizeArg * 0.85); 
-  const threshold = isPC ? 15 : 10;
+  const baseSize = isPC ? baseSizeArg : Math.floor(baseSizeArg * 0.85);
+  const threshold = 7; // Nicknames up to 7 chars stay at full size
   if (len <= threshold) return `${baseSize}px`;
 
-  const scaleFactor = threshold / len;
-  const minSize = isPC ? Math.floor(baseSizeArg * 0.4) : 15;
-  const power = isPC ? 0.55 : 0.8; 
-  const calculatedSize = Math.max(minSize, Math.floor(baseSize * Math.pow(scaleFactor, power)));
+  // Linear per-character reduction
+  const reductionPerChar = isPC
+    ? Math.max(1, Math.floor(baseSizeArg / 30))   // ~1-3px per char on PC
+    : Math.max(0.8, Math.floor(baseSizeArg / 25)); // ~1-2px per char on mobile
+  const reduction = (len - threshold) * reductionPerChar;
+  const minSize = isPC ? Math.floor(baseSizeArg * 0.35) : Math.floor(baseSizeArg * 0.4);
+  const calculatedSize = Math.max(minSize, Math.floor(baseSize - reduction));
   return `${calculatedSize}px`;
 };
 

@@ -235,6 +235,10 @@
     overflow-y: auto;
     max-height: 425px;
     scroll-behavior: smooth;
+    
+    @media (max-width: 768px) {
+      max-height: 270px; /* Show exactly ~4.5 items consistently based on 50px min-height + 10px gap */
+    }
   }
 
   &::-webkit-scrollbar {
@@ -287,6 +291,8 @@
   text-align: center;
   white-space: nowrap;
   transition: color 0.5s ease;
+  transform: translateZ(0); /* Hardware acceleration to prevent text/outline jitter */
+  will-change: transform;
   display: inline-block;
   overflow: visible;
   scrollbar-width: none;

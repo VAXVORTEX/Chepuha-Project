@@ -207,7 +207,7 @@ const PlayerItem = memo(({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS
     <div key={p.id || String(i)} className="player-item" data-player-id={p.id}>
       <div className="player-name-wrapper">
         {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
-        {renderThemedNickname(p.nickname, activeColor, (typeof window !== 'undefined' && window.innerWidth > 768) ? 42 : 24, showColorPicker)}
+        {renderThemedNickname(p.nickname, activeColor, (typeof window !== 'undefined' && window.innerWidth > 768) ? 48 : 34, showColorPicker)}
         {isMe && showColorPicker && (
           <div className="inline-color-picker">
             <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
