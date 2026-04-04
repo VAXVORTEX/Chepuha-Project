@@ -174,6 +174,10 @@
     width: 100%;
     margin: 5px 0;
 
+    @media (max-width: 768px) {
+      padding: 100px 0;
+    }
+
     .label-part {
       white-space: nowrap;
       flex-shrink: 0;
@@ -225,7 +229,8 @@
   align-items: center;
   gap: 10px;
   width: 100%;
-  overflow-y: hidden;
+  overflow-y: visible;
+  padding-top: 20px; /* Fixes crown clipping at the top */
   padding-right: 10px;
   scrollbar-width: thin;
   scrollbar-color: $red transparent;
@@ -233,7 +238,7 @@
 
   &.has-many-players {
     overflow-y: auto;
-    max-height: 425px;
+    max-height: 450px;
     scroll-behavior: smooth;
     
     @media (max-width: 768px) {
@@ -256,8 +261,7 @@
   display: flex;
   justify-content: center;
   width: 100%;
-  margin-bottom: 20px;
-  /* transition: transform 0.3s ease; -- removed to prevent "lifting" during scroll */
+  /* margin-bottom removed to prevent huge scrolling items */
 
   &.color-updated {
     animation: color-pulse 1s ease-out;

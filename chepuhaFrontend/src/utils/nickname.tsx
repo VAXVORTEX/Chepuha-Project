@@ -9,10 +9,18 @@ export const getFontSize = (text: string, baseSizeArg: number = 24) => {
   const threshold = 7; // Nicknames up to 7 chars stay at full size
   if (len <= threshold) return `${baseSize}px`;
 
-  // For a base of 34 (WaitCard mobile), we want length 25 (18 over threshold) to reach 25px
-  // Reduction needed: 34 - 25 = 9px. 9 / 18 chars = 0.5px per character.
-  // For PC (base 48), we want a proportional reduction -> 48 to ~35px -> 13px / 18 = ~0.72px
-  const reductionPerChar = isPC ? 0.72 : 0.5;
+  // The user explicitly requested:
+  // - Mobile: at 25 characters, font size must be exactly 25px.
+  // - PC: at 25 characters, font size must be exactly 77px.
+  // We use these specific drop targets at len = 25 (18 chars above threshold).
+  // We calculate target sizes by assuming standard bases (40 for mobile, 90 for PC).
+  // Target ratio: mobile -> 25 / 40 = 0.625; PC -> 77 / 90 = ~0.855
+  
+  const targetRatio = isPC ? (77 / 90) : (25 / 40);
+  const targetSizeAt25 = baseSize * targetRatio;
+  
+  // Reduction needed per character to exactly hit targetSizeAt25 at len=25
+  const reductionPerChar = (baseSize - targetSizeAt25) / 18;
   const reduction = (len - threshold) * reductionPerChar;
   const minSize = isPC ? Math.floor(baseSizeArg * 0.35) : Math.floor(baseSizeArg * 0.4);
   const calculatedSize = Math.max(minSize, Math.floor(baseSize - reduction));
