@@ -175,7 +175,7 @@
     margin: 5px 0;
 
     @media (max-width: 768px) {
-      padding: 100px 0;
+      padding: 50px 0;
     }
 
     .label-part {
@@ -270,20 +270,86 @@
 
 .player-name-wrapper {
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: flex !important;
+  width: 100%;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 auto;
+
+  .center-slot {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 1;
+    min-width: 0;
+  }
+
+  .side-slot {
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .left-slot {
+    justify-content: flex-end;
+    padding-right: 15px;
+  }
+
+  .right-slot {
+    justify-content: flex-start;
+    padding-left: 15px;
+  }
 }
 
 .crown-icon {
-  position: absolute;
-  right: calc(100% + 5px);
-  top: calc(50% - 4px) !important;
-  transform: translateY(-50%);
   width: 100px;
   height: auto;
   object-fit: contain;
   flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    width: 65px !important;
+  }
+}
+
+.inline-color-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px !important;
+  padding: 2px 4px !important;
+  background: transparent !important;
+
+  .inline-color-arrow {
+    font-size: 16px !important;
+    @media (max-width: 768px) {
+      font-size: 12px !important;
+    }
+  }
+
+  .inline-color-swatch {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    overflow: visible !important;
+    background-clip: content-box !important;
+
+    @media (max-width: 768px) {
+      width: 30px !important;
+      height: 30px !important;
+    }
+
+    &.pirate-caribbean {
+      background: url('./assets/images/theme_pirate_bg.jpg') center / cover no-repeat !important;
+      background-color: #000 !important;
+    }
+
+    &.cyber-samurai-iconic {
+      background: url('./assets/images/theme_samurai_bg.png') center / cover no-repeat !important;
+      background-color: #000 !important;
+    }
+  }
 }
 
 .player-name {
@@ -1410,56 +1476,8 @@
     min-height: 50px;
   }
 
-  .player-name-wrapper {
-    display: inline-flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 0px !important;
-    width: auto;
-    text-align: center;
-    position: relative;
-  }
-
   .player-name {
     margin: 0 auto;
-  }
-
-  .inline-color-picker {
-    position: absolute !important;
-    left: calc(100% + 5px) !important;
-    right: auto !important;
-    top: 50% !important;
-    margin-top: 0 !important;
-    transform: translateY(-50%) !important;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px !important;
-    padding: 2px 4px !important;
-    background: transparent !important;
-
-    .inline-color-arrow {
-      font-size: 12px !important;
-    }
-
-    .inline-color-swatch {
-      width: 24px !important;
-      height: 24px !important;
-      border-radius: 50% !important;
-      overflow: visible !important;
-      background-clip: content-box !important;
-
-      &.pirate-caribbean {
-        background: url('./assets/images/theme_pirate_bg.jpg') center / cover no-repeat !important;
-        background-color: #000 !important;
-      }
-
-      &.cyber-samurai-iconic {
-        background: url('./assets/images/theme_samurai_bg.png') center / cover no-repeat !important;
-        background-color: #000 !important;
-      }
-    }
   }
 
   .menu-buttons {
@@ -1468,17 +1486,6 @@
     align-items: center;
     margin-top: 0 !important;
     transform: none;
-  }
-
-  .crown-icon {
-    position: absolute !important;
-    right: calc(100% + 5px) !important;
-    left: auto !important;
-    top: calc(50% - 4px) !important;
-    transform: translateY(-50%) !important;
-    width: 65px !important; // Increased for mobile
-    margin-bottom: 0 !important;
-    display: inline-flex;
   }
 
   .logo-wrapper {

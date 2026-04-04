@@ -206,15 +206,21 @@ const PlayerItem = memo(({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS
   return (
     <div key={p.id || String(i)} className="player-item" data-player-id={p.id}>
       <div className="player-name-wrapper">
-        {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
-        {renderThemedNickname(p.nickname, activeColor, (typeof window !== 'undefined' && window.innerWidth > 768) ? 90 : 40, showColorPicker)}
-        {isMe && showColorPicker && (
-          <div className="inline-color-picker">
-            <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
-            <div className={classNames("inline-color-swatch", activeColor?.startsWith('special:') ? activeColor.replace('special:', '') : '')} style={!activeColor?.startsWith('special:') ? { background: activeColor } : {}} />
-            <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
-          </div>
-        )}
+        <div className="side-slot left-slot">
+          {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
+        </div>
+        <div className="center-slot">
+          {renderThemedNickname(p.nickname, activeColor, (typeof window !== 'undefined' && window.innerWidth > 768) ? 90 : 40, showColorPicker)}
+        </div>
+        <div className="side-slot right-slot">
+          {isMe && showColorPicker && (
+            <div className="inline-color-picker">
+              <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
+              <div className={classNames("inline-color-swatch", activeColor?.startsWith('special:') ? activeColor.replace('special:', '') : '')} style={!activeColor?.startsWith('special:') ? { background: activeColor } : {}} />
+              <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
