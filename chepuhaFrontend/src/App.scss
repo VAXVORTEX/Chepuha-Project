@@ -175,7 +175,8 @@
     margin: 5px 0;
 
     @media (max-width: 768px) {
-      padding: 50px 0;
+      padding-top: 200px;
+      padding-bottom: 0;
     }
 
     .label-part {
@@ -228,25 +229,13 @@
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  width: calc(100% + 240px);
-  margin-left: -120px;
-  margin-right: -120px;
-  padding-left: 120px;
-  padding-right: 120px;
-  box-sizing: border-box;
+  width: 100%;
   overflow-y: visible;
   padding-top: 20px; /* Fixes crown clipping at the top */
+  padding-right: 10px;
   scrollbar-width: thin;
   scrollbar-color: $red transparent;
   touch-action: pan-y;
-
-  @media (max-width: 768px) {
-    width: calc(100% + 140px);
-    margin-left: -70px;
-    margin-right: -70px;
-    padding-left: 70px;
-    padding-right: 70px;
-  }
 
   &.has-many-players {
     overflow-y: auto;
@@ -288,61 +277,12 @@
 }
 
 .crown-icon {
-  position: absolute;
-  right: calc(100% + 5px);
-  top: calc(50% - 4px) !important;
-  transform: translateY(-50%);
-  width: 100px;
+  position: relative;
+  width: 75px;
   height: auto;
   object-fit: contain;
   flex-shrink: 0;
-
-  @media (max-width: 768px) {
-    width: 65px !important;
-  }
-}
-
-.inline-color-picker {
-  position: absolute !important;
-  left: calc(100% + 5px) !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px !important;
-  padding: 2px 4px !important;
-  background: transparent !important;
-
-  .inline-color-arrow {
-    font-size: 16px !important;
-    @media (max-width: 768px) {
-      font-size: 12px !important;
-    }
-  }
-
-  .inline-color-swatch {
-    width: 40px !important;
-    height: 40px !important;
-    border-radius: 50% !important;
-    overflow: visible !important;
-    background-clip: content-box !important;
-
-    @media (max-width: 768px) {
-      width: 30px !important;
-      height: 30px !important;
-    }
-
-    &.pirate-caribbean {
-      background: url('./assets/images/theme_pirate_bg.jpg') center / cover no-repeat !important;
-      background-color: #000 !important;
-    }
-
-    &.cyber-samurai-iconic {
-      background: url('./assets/images/theme_samurai_bg.png') center / cover no-repeat !important;
-      background-color: #000 !important;
-    }
-  }
+  margin-right: 5px;
 }
 
 .player-name {
@@ -1469,8 +1409,60 @@
     min-height: 50px;
   }
 
+  .player-name-wrapper {
+    display: inline-flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0px !important;
+    width: auto;
+    text-align: center;
+    position: relative;
+  }
+
   .player-name {
     margin: 0 auto;
+  }
+
+  .inline-color-picker {
+    position: relative !important;
+    display: flex;
+    flex-shrink: 0;
+    margin-left: 5px !important;
+    align-items: center;
+    justify-content: center;
+    transform: none !important;
+    left: auto !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    align-items: center;
+    justify-content: center;
+    gap: 6px !important;
+    padding: 2px 4px !important;
+    background: transparent !important;
+
+    .inline-color-arrow {
+      font-size: 12px !important;
+    }
+
+    .inline-color-swatch {
+      width: 24px !important;
+      height: 24px !important;
+      border-radius: 50% !important;
+      overflow: visible !important;
+      background-clip: content-box !important;
+
+      &.pirate-caribbean {
+        background: url('./assets/images/theme_pirate_bg.jpg') center / cover no-repeat !important;
+        background-color: #000 !important;
+      }
+
+      &.cyber-samurai-iconic {
+        background: url('./assets/images/theme_samurai_bg.png') center / cover no-repeat !important;
+        background-color: #000 !important;
+      }
+    }
   }
 
   .menu-buttons {
@@ -1479,6 +1471,21 @@
     align-items: center;
     margin-top: 0 !important;
     transform: none;
+  }
+
+  .crown-icon {
+    position: relative !important;
+    width: 50px !important; // Fits better on mobile
+    height: auto;
+    object-fit: contain;
+    flex-shrink: 0;
+    margin-right: 5px !important;
+    transform: none !important;
+    right: auto !important;
+    top: auto !important;
+    bottom: auto !important;
+    display: inline-flex;
+    align-items: center;
   }
 
   .logo-wrapper {
@@ -3198,8 +3205,8 @@
 
 
 .inline-wrapper {
-  padding: 0 4px;
-  border-radius: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -3208,7 +3215,7 @@
   box-sizing: border-box;
 
   @media (max-width: 768px) {
-    padding: 0 2px;
+    padding: 2px 8px;
     min-height: unset;
     border-radius: 4px;
     margin: 0 2px;
@@ -3245,16 +3252,16 @@
   background: 
     url('./assets/images/theme_pirate_bg.jpg') center / 120% auto no-repeat, #000000;
   background-size: 120% auto;
-  padding: 0 4px;
-  border-radius: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
 }
 
 .story-samurai-bg {
   background: 
     url('./assets/images/theme_samurai_bg.png') center / 120% auto no-repeat, #000000;
   background-size: 120% auto;
-  padding: 0 4px;
-  border-radius: 4px;
+  padding: 4px 10px;
+  border-radius: 6px;
 }
 
 
