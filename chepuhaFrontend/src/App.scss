@@ -1423,8 +1423,6 @@
 
   .player-name {
     margin: 0 auto;
-    max-width: 100% !important;
-    min-width: 0;
   }
 
   .inline-color-picker {
@@ -1453,12 +1451,12 @@
       background-clip: content-box !important;
 
       &.pirate-caribbean {
-        background: url('./assets/images/theme_pirate_bg.jpg') center / contain no-repeat !important;
+        background: url('./assets/images/theme_pirate_bg.jpg') center / cover no-repeat !important;
         background-color: #000 !important;
       }
 
       &.cyber-samurai-iconic {
-        background: url('./assets/images/theme_samurai_bg.png') center / contain no-repeat !important;
+        background: url('./assets/images/theme_samurai_bg.png') center / cover no-repeat !important;
         background-color: #000 !important;
       }
     }
@@ -3233,12 +3231,12 @@
 
 .pirate-caribbean-bg {
   background: 
-    url('./assets/images/theme_pirate_bg.jpg') center / cover no-repeat, #000000;
+    url('./assets/images/theme_pirate_bg.jpg') center / contain no-repeat, #000000;
 }
 
 .cyber-samurai-iconic-bg {
   background: 
-    url('./assets/images/theme_samurai_bg.png') center / cover no-repeat, #000000;
+    url('./assets/images/theme_samurai_bg.png') center / contain no-repeat, #000000;
 }
 
 
