@@ -227,21 +227,16 @@
 .players-list {
   display: flex;
   flex-direction: column;
-  align-items: flex-start; /* safe center strategy */
+  align-items: center; /* Centered perfectly */
   gap: 10px;
   width: 100%;
   overflow-y: visible;
-  padding-top: 20px; /* Fixes crown clipping at the top */
-  padding-right: 0px; // removed to give max width back
+  padding-top: 20px; 
+  padding-bottom: 20px;
+  padding-left: 70px; /* Safe buffer zone for absolute crown */
+  padding-right: 70px; /* Safe buffer zone for absolute color picker */
+  box-sizing: border-box;
   scrollbar-width: thin;
-  scrollbar-color: $red transparent;
-  touch-action: pan-y;
-
-  /* Reserve space so bottom buttons don't shift when players join */
-  min-height: 450px;
-  @media (max-width: 768px) {
-    min-height: 270px;
-  }
 
   &.has-many-players {
     overflow-y: auto;
@@ -267,13 +262,8 @@
 .player-item {
   display: flex;
   justify-content: center;
-  width: max-content;
-  min-width: 100%;
-  /* margin-bottom removed to prevent huge scrolling items */
-
-  &.color-updated {
-    animation: color-pulse 1s ease-out;
-  }
+  width: 100%;
+  position: relative;
 }
 
 .player-name-wrapper {
@@ -281,26 +271,14 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto; /* effectively safe centers inside the row without clipping left */
-
-  /* Dynamically allocate space so absolute items don't bleed into negative X space where scrollbars clip them */
-  &:has(.crown-icon) {
-    padding-left: 80px;
-    @media (max-width: 768px) { padding-left: 55px; }
-  }
-
-  &:has(.inline-color-picker) {
-    padding-right: 80px;
-    @media (max-width: 768px) { padding-right: 55px; }
-  }
 }
 
 .crown-icon {
   position: absolute;
-  left: 0;
+  right: calc(100% + 8px);
   top: 50% !important;
   transform: translateY(-50%);
-  width: 75px;
+  width: 60px;
   height: auto;
   object-fit: contain;
 }
@@ -1430,22 +1408,9 @@
 
   .player-name-wrapper {
     display: inline-flex !important;
-    flex-direction: row !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 0px !important;
-    width: auto;
-    text-align: center;
     position: relative;
-    margin: 0 auto !important; /* safe centers inside player-item */
-    
-    &:has(.crown-icon) {
-      padding-left: 55px !important;
-    }
-  
-    &:has(.inline-color-picker) {
-      padding-right: 55px !important;
-    }
   }
 
   .player-name {
@@ -1455,17 +1420,14 @@
   .inline-color-picker {
     position: absolute !important;
     display: flex;
-    right: 0 !important;
+    left: calc(100% + 5px) !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
-    left: auto !important;
-    bottom: auto !important;
     align-items: center;
     justify-content: center;
-    gap: 6px !important;
-    padding: 2px 4px !important;
+    gap: 4px !important;
     background: transparent !important;
-    margin: 0 !important;
+
 
     .inline-color-arrow {
       font-size: 12px !important;
@@ -1500,15 +1462,14 @@
 
   .crown-icon {
     position: absolute !important;
-    width: 50px !important; // Fits better on mobile
-    height: auto;
-    object-fit: contain;
-    left: 0 !important;
+    width: 45px !important;
+    right: calc(100% + 5px) !important;
     top: 50% !important;
     transform: translateY(-50%) !important;
-    right: auto !important;
-    bottom: auto !important;
-    margin: 0 !important;
+  }
+
+  .lobby-actions {
+    margin-top: 15px !important; // Bring it up relative to list ending
   }
 
   .logo-wrapper {
