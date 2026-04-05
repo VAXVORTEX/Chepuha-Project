@@ -227,12 +227,12 @@
 .players-list {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start; /* safe center strategy */
   gap: 10px;
   width: 100%;
   overflow-y: visible;
   padding-top: 20px; /* Fixes crown clipping at the top */
-  padding-right: 10px;
+  padding-right: 0px; // removed to give max width back
   scrollbar-width: thin;
   scrollbar-color: $red transparent;
   touch-action: pan-y;
@@ -261,7 +261,8 @@
 .player-item {
   display: flex;
   justify-content: center;
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   /* margin-bottom removed to prevent huge scrolling items */
 
   &.color-updated {
@@ -274,7 +275,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  max-width: 95vw;
+  margin: 0 auto; /* effectively safe centers inside the row without clipping left */
 }
 
 .crown-icon {
@@ -298,10 +299,6 @@
   transform: translateZ(0); /* Hardware acceleration to prevent text/outline jitter */
   will-change: transform;
   display: inline-block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-  flex-shrink: 1;
   scrollbar-width: none;
   line-height: 1.15;
   padding-block: 2px;
@@ -1422,15 +1419,11 @@
     width: auto;
     text-align: center;
     position: relative;
-    max-width: 90vw;
+    margin: 0 auto !important; /* safe centers inside player-item */
   }
 
   .player-name {
     margin: 0 auto;
-    flex-shrink: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .inline-color-picker {
@@ -3222,9 +3215,6 @@
   margin: 0;
   min-height: unset;
   box-sizing: border-box;
-  flex-shrink: 1;
-  max-width: 100%;
-  min-width: 0;
 
   @media (max-width: 768px) {
     padding: 2px 8px;
