@@ -146,7 +146,7 @@
   justify-content: center;
   gap: 60px;
   width: 100%;
-  max-width: 800px;
+  max-width: 1200px; /* Supporting 90px font size */
   margin-top: -10vh;
 }
 
@@ -175,7 +175,7 @@
     margin: 5px 0;
 
     @media (max-width: 768px) {
-      padding-top: 60px; /* Reduced further to 60px as per "bring it up" */
+      padding-top: 120px; /* Restored to comfortable height */
       padding-bottom: 0;
     }
 
@@ -227,11 +227,11 @@
 .players-list {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px; /* Slightly tighter gaps */
+  align-items: center; 
+  gap: 4px; /* Tightest gaps for performance and clear list */
   width: 100%;
   overflow-y: visible;
-  padding: 0;
+  padding: 10px 0;
   box-sizing: border-box;
   scrollbar-width: thin;
 
@@ -265,26 +265,49 @@
   width: 100%;
   position: relative;
   margin: 0;
+  padding: 0 100px; /* Significant harbor for absolute icons to prevent clipping */
+  box-sizing: border-box;
+  min-height: 50px; /* Reduced from 60px to fix "huge gaps" */
+
+  @media (max-width: 768px) {
+    padding: 0 70px; 
+    min-height: 40px;
+  }
 }
 
 .player-name-wrapper {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: nowrap;
+  position: relative;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px; /* Balanced gap between crown, name, and picker */
   width: auto;
 }
 
+.inline-color-picker {
+  position: absolute !important;
+  left: calc(100% + 12px); /* Matched to crown for symmetry */
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  z-index: 10 !important;
+  pointer-events: auto !important;
+  width: auto !important;
+  display: flex;
+  align-items: center;
+}
+
 .crown-icon {
+  position: absolute;
+  right: calc(100% + 12px); 
+  top: 50% !important;
+  transform: translateY(-50%);
   width: 60px;
   height: auto;
   object-fit: contain;
-  flex-shrink: 0; /* Never squash */
+  flex-shrink: 0;
+  z-index: 5;
 }
 
-.player-name {
+.player-name, .nick-scroll-container span {
   @include font-pangolin(42);
   color: $black;
   @media (max-width: 768px) {
@@ -299,12 +322,12 @@
   scrollbar-width: none;
   line-height: 1.15;
   padding-block: 2px;
-  flex-shrink: 0; /* Prevent nickname itself from squashing */
+  flex-shrink: 0;
+  margin: 0 !important;
 
-  /* Standardized contour as per animated ones (matched values) */
+  /* Standardized contour global application */
   -webkit-text-stroke: 0.5px #000 !important;
   filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.4)) !important;
-  flex-shrink: 0;
 
   @media (max-width: 768px) {
     -webkit-text-stroke: 0.3px #000 !important;
@@ -1428,19 +1451,18 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 50px;
+    min-height: 48px;
+    padding: 0 60px !important;
+    box-sizing: border-box;
   }
 
   .player-name-wrapper {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
+    position: relative !important;
+    display: inline-flex !important;
     align-items: center !important;
     justify-content: center !important;
-    gap: 6px !important;
-    position: relative;
-    max-width: 95vw;
-    margin: 0 auto !important;
+    width: auto !important;
+    margin: 0 !important;
   }
 
   .player-name {
@@ -1448,30 +1470,27 @@
   }
 
   .inline-color-picker {
-    position: static !important;
+    position: absolute !important;
     display: flex;
+    left: calc(100% + 8px) !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
     align-items: center;
     justify-content: center;
-    gap: 2px !important;
+    gap: 4px !important;
     background: transparent !important;
-    flex-shrink: 0 !important; 
+    z-index: 10 !important;
+    pointer-events: auto !important;
     width: auto !important;
-    height: auto !important;
-    min-width: unset !important;
-
-    .inline-color-arrow {
-      font-size: 16px !important; 
-      flex-shrink: 0 !important;
-    }
 
     .inline-color-swatch {
-      width: 28px !important; /* Increased for visibility */
-      height: 28px !important;
+      width: 25px !important;
+      height: 25px !important;
       flex-shrink: 0 !important;
       border-radius: 50% !important;
+      box-shadow: 0 0 4px rgba(0,0,0,0.5) !important;
       overflow: visible !important;
       background-clip: content-box !important;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
 
       &.pirate-caribbean {
         background: url('./assets/images/theme_pirate_bg.jpg') center / cover no-repeat !important;
@@ -1494,11 +1513,13 @@
   }
 
   .crown-icon {
-    position: static !important;
+    position: absolute !important;
     width: 45px !important;
-    flex-shrink: 0 !important; // Never compress
-    height: auto;
-    object-fit: contain;
+    right: calc(100% + 8px) !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    left: auto !important;
+    z-index: 10 !important;
   }
 
 
