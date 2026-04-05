@@ -175,7 +175,7 @@
     margin: 5px 0;
 
     @media (max-width: 768px) {
-      padding-top: 200px;
+      padding-top: 140px; /* Reduced by 30% from 200px */
       padding-bottom: 0;
     }
 
@@ -237,6 +237,12 @@
   scrollbar-color: $red transparent;
   touch-action: pan-y;
 
+  /* Reserve space so bottom buttons don't shift when players join */
+  min-height: 450px;
+  @media (max-width: 768px) {
+    min-height: 270px;
+  }
+
   &.has-many-players {
     overflow-y: auto;
     max-height: 450px;
@@ -276,15 +282,27 @@
   align-items: center;
   justify-content: center;
   margin: 0 auto; /* effectively safe centers inside the row without clipping left */
+
+  /* Dynamically allocate space so absolute items don't bleed into negative X space where scrollbars clip them */
+  &:has(.crown-icon) {
+    padding-left: 80px;
+    @media (max-width: 768px) { padding-left: 55px; }
+  }
+
+  &:has(.inline-color-picker) {
+    padding-right: 80px;
+    @media (max-width: 768px) { padding-right: 55px; }
+  }
 }
 
 .crown-icon {
-  position: relative;
+  position: absolute;
+  left: 0;
+  top: 50% !important;
+  transform: translateY(-50%);
   width: 75px;
   height: auto;
   object-fit: contain;
-  flex-shrink: 0;
-  margin-right: 5px;
 }
 
 .player-name {
@@ -1420,6 +1438,14 @@
     text-align: center;
     position: relative;
     margin: 0 auto !important; /* safe centers inside player-item */
+    
+    &:has(.crown-icon) {
+      padding-left: 55px !important;
+    }
+  
+    &:has(.inline-color-picker) {
+      padding-right: 55px !important;
+    }
   }
 
   .player-name {
@@ -1427,22 +1453,19 @@
   }
 
   .inline-color-picker {
-    position: relative !important;
+    position: absolute !important;
     display: flex;
-    flex-shrink: 0;
-    margin-left: 5px !important;
-    align-items: center;
-    justify-content: center;
-    transform: none !important;
+    right: 0 !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
     left: auto !important;
-    right: auto !important;
-    top: auto !important;
     bottom: auto !important;
     align-items: center;
     justify-content: center;
     gap: 6px !important;
     padding: 2px 4px !important;
     background: transparent !important;
+    margin: 0 !important;
 
     .inline-color-arrow {
       font-size: 12px !important;
@@ -1476,18 +1499,16 @@
   }
 
   .crown-icon {
-    position: relative !important;
+    position: absolute !important;
     width: 50px !important; // Fits better on mobile
     height: auto;
     object-fit: contain;
-    flex-shrink: 0;
-    margin-right: 5px !important;
-    transform: none !important;
+    left: 0 !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
     right: auto !important;
-    top: auto !important;
     bottom: auto !important;
-    display: inline-flex;
-    align-items: center;
+    margin: 0 !important;
   }
 
   .logo-wrapper {
