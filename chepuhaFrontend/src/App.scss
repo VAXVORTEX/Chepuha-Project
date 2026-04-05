@@ -155,7 +155,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 50px;
+  gap: 20px; /* Reduced gap as requested */
 }
 
 .lobby-text {
@@ -175,7 +175,7 @@
     margin: 5px 0;
 
     @media (max-width: 768px) {
-      padding-top: 140px; /* Reduced by 30% from 200px */
+      padding-top: 60px; /* Reduced further to 60px as per "bring it up" */
       padding-bottom: 0;
     }
 
@@ -227,14 +227,11 @@
 .players-list {
   display: flex;
   flex-direction: column;
-  align-items: center; /* Centered perfectly */
-  gap: 10px;
+  align-items: center;
+  gap: 8px; /* Slightly tighter gaps */
   width: 100%;
   overflow-y: visible;
-  padding-top: 20px; 
-  padding-bottom: 20px;
-  padding-left: 70px; /* Safe buffer zone for absolute crown */
-  padding-right: 70px; /* Safe buffer zone for absolute color picker */
+  padding: 0;
   box-sizing: border-box;
   scrollbar-width: thin;
 
@@ -262,25 +259,29 @@
 .player-item {
   display: flex;
   justify-content: center;
+.player-item {
+  display: flex;
+  justify-content: center;
   width: 100%;
   position: relative;
+  margin: 0;
 }
 
 .player-name-wrapper {
-  position: relative;
-  display: inline-flex;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
+  gap: 8px; /* Balanced gap between crown, name, and picker */
+  width: auto;
 }
 
 .crown-icon {
-  position: absolute;
-  right: calc(100% + 8px);
-  top: 50% !important;
-  transform: translateY(-50%);
   width: 60px;
   height: auto;
   object-fit: contain;
+  flex-shrink: 0; /* Never squash */
 }
 
 .player-name {
@@ -292,16 +293,40 @@
   text-align: center;
   white-space: nowrap;
   transition: color 0.5s ease;
-  transform: translateZ(0); /* Hardware acceleration to prevent text/outline jitter */
+  transform: translateZ(0); 
   will-change: transform;
   display: inline-block;
   scrollbar-width: none;
   line-height: 1.15;
   padding-block: 2px;
-  vertical-align: middle;
-  font-weight: bold;
-  user-select: text;
-  -webkit-user-select: text;
+  flex-shrink: 0; /* Prevent nickname itself from squashing */
+
+  /* Standardized contour as per animated ones (matched values) */
+  -webkit-text-stroke: 0.5px #000 !important;
+  filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.4)) !important;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    -webkit-text-stroke: 0.3px #000 !important;
+    filter: drop-shadow(0.5px 0.5px 0.5px rgba(0,0,0,0.5)) !important;
+  }
+}
+
+.lobby-actions {
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  
+  @media (max-width: 768px) {
+    position: fixed !important;
+    bottom: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 1000 !important;
+    background: transparent !important;
+  }
+}
 
   &::-webkit-scrollbar {
     display: none;
@@ -1407,38 +1432,46 @@
   }
 
   .player-name-wrapper {
-    display: inline-flex !important;
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
     align-items: center !important;
     justify-content: center !important;
+    gap: 6px !important;
     position: relative;
+    max-width: 95vw;
+    margin: 0 auto !important;
   }
 
   .player-name {
-    margin: 0 auto;
+    margin: 0;
   }
 
   .inline-color-picker {
-    position: absolute !important;
+    position: static !important;
     display: flex;
-    left: calc(100% + 5px) !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
     align-items: center;
     justify-content: center;
-    gap: 4px !important;
+    gap: 2px !important;
     background: transparent !important;
-
+    flex-shrink: 0 !important; 
+    width: auto !important;
+    height: auto !important;
+    min-width: unset !important;
 
     .inline-color-arrow {
-      font-size: 12px !important;
+      font-size: 16px !important; 
+      flex-shrink: 0 !important;
     }
 
     .inline-color-swatch {
-      width: 24px !important;
-      height: 24px !important;
+      width: 28px !important; /* Increased for visibility */
+      height: 28px !important;
+      flex-shrink: 0 !important;
       border-radius: 50% !important;
       overflow: visible !important;
       background-clip: content-box !important;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3) !important;
 
       &.pirate-caribbean {
         background: url('./assets/images/theme_pirate_bg.jpg') center / cover no-repeat !important;
@@ -1461,16 +1494,14 @@
   }
 
   .crown-icon {
-    position: absolute !important;
+    position: static !important;
     width: 45px !important;
-    right: calc(100% + 5px) !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
+    flex-shrink: 0 !important; // Never compress
+    height: auto;
+    object-fit: contain;
   }
 
-  .lobby-actions {
-    margin-top: 15px !important; // Bring it up relative to list ending
-  }
+
 
   .logo-wrapper {
     margin-top: 20vh;

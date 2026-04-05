@@ -33,13 +33,16 @@ export const getNicknameStyle = (color: string) => {
   const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
 
   if (isSpecial) {
-    return { textShadow: 'none' };
+    return { textShadow: 'none', WebkitTextStroke: '0' }; // Premium themes apply their own effects via class
+  }
+
+  if (isDark) {
+    return { color: color || '#000000', textShadow: 'none', WebkitTextStroke: '0' } as React.CSSProperties;
   }
 
   return {
     color: color || '#000000',
-    textShadow: isDark ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000',
-    WebkitTextStroke: isDark ? 'none' : (isPC ? '0.5px black' : '0.3px black')
+    // Relying completely on App.scss for standardized outline and stroke (4px thick / 2px mobile to match animated)
   } as React.CSSProperties;
 };
 
