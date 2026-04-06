@@ -22,9 +22,9 @@ const WaitCard: React.FC<WaitCardProps> = ({
 }) => {
   const { t } = useLanguage();
   const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
-  const labelSize = isPC ? 45 : 28;
+  const labelSize = isPC ? 45 : 36;
   const nickBaseSize = isPC ? 45 : 36;
-  const fullLabel = t('YOUR_NICK');
+  const fullLabel = t('YOUR_NICK').replace(':', '') + ': ';
   const displayNick = nick || '';
   // Size nick independently — don't combine with label length
   const nickFontSize = getFontSize(displayNick, nickBaseSize);

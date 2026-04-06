@@ -202,14 +202,19 @@ const GAME_LENGTH_INDICES: Record<number, number[]> = {
 const PlayerItem = memo(({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, crownImage, showColorPicker }: any) => {
   const defaultColor = AVAILABLE_COLORS[i % AVAILABLE_COLORS.length];
   const activeColor = isMe && playerColor ? playerColor : (p.color || defaultColor);
+  const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
 
   return (
     <div key={p.id || String(i)} className="player-item" data-player-id={p.id}>
-      <div className="player-name-wrapper">
-        {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
-        {renderThemedNickname(p.nickname, activeColor, (typeof window !== 'undefined' && window.innerWidth > 768) ? 90 : 40, showColorPicker)}
+      <div className="player-side-container left">
+        {i === 0 && <img src={crownImage} alt="Host" className="crown-icon-new" />}
+      </div>
+      <div className="player-name-wrapper-new">
+        {renderThemedNickname(p.nickname, activeColor, isPC ? 90 : 40, showColorPicker)}
+      </div>
+      <div className="player-side-container right">
         {isMe && showColorPicker && (
-          <div className="inline-color-picker">
+          <div className="inline-color-picker-new">
             <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
             <div className={classNames("inline-color-swatch", activeColor?.startsWith('special:') ? activeColor.replace('special:', '') : '')} style={!activeColor?.startsWith('special:') ? { background: activeColor } : {}} />
             <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
@@ -1476,7 +1481,7 @@ function App() {
           <div className="lobby-container">
             <div className="lobby-info">
               <h2 className="lobby-text label-and-nick notranslate" translate="no">
-                <span className="label-part">{t('YOUR_NICK')}</span>
+                <span className="label-part">{(t('YOUR_NICK') as string).replace(':', '')}: </span>
                 <div className="nick-scroll-container">
                   {renderThemedNickname(nickname, playerColor, (typeof window !== 'undefined' && window.innerWidth > 768) ? 90 : 40, parsedColorHighlight)}
                 </div>

@@ -175,18 +175,18 @@
     margin: 5px 0;
 
     @media (max-width: 768px) {
-      padding-top: 120px; /* Restored to comfortable height */
+      padding-top: 140px; /* Increased back for better mobile ergonomics */
       padding-bottom: 0;
     }
 
     .label-part {
       white-space: nowrap;
       flex-shrink: 0;
-      @include font-pangolin(45);
+      @include font-pangolin(90);
       opacity: 0.8;
 
-      @media (max-width: 480px) {
-        font-size: 30px;
+      @media (max-width: 768px) {
+        @include font-pangolin(40);
       }
     }
 
@@ -234,6 +234,7 @@
   padding: 10px 0;
   box-sizing: border-box;
   scrollbar-width: thin;
+  flex-shrink: 0; /* Prevent shrinking when many players join */
 
   &.has-many-players {
     overflow-y: auto;
@@ -255,60 +256,73 @@
     border-radius: 10px;
   }
 }
-
 .player-item {
   display: flex;
-  justify-content: center;
-.player-item {
-  display: flex;
+  align-items: center;
   justify-content: center;
   width: 100%;
   position: relative;
   margin: 0;
-  padding: 0 100px; /* Significant harbor for absolute icons to prevent clipping */
   box-sizing: border-box;
-  min-height: 50px; /* Reduced from 60px to fix "huge gaps" */
+  min-height: 100px; 
+  gap: 20px;
 
   @media (max-width: 768px) {
-    padding: 0 70px; 
-    min-height: 40px;
+    min-height: 60px;
+    gap: 10px;
   }
 }
 
-.player-name-wrapper {
+.player-side-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 80px;
+  pointer-events: none;
+
+  &.left {
+    justify-content: flex-end;
+  }
+  &.right {
+    justify-content: flex-start;
+  }
+
+  @media (max-width: 768px) {
+    min-width: 50px;
+  }
+}
+
+.player-name-wrapper-new {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: auto;
-  overflow: visible !important; /* Never clip absolute icons locally */
+  min-width: 0;
+  flex: 0 0 auto;
+  overflow: visible !important;
 }
 
-.inline-color-picker {
-  position: absolute !important;
-  left: calc(100% + 12px); /* Matched to crown for symmetry */
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  z-index: 10 !important;
-  pointer-events: auto !important;
-  width: auto !important;
-  display: flex;
-  align-items: center;
-}
-
-.crown-icon {
-  position: absolute;
-  right: calc(100% + 12px); 
-  top: 50% !important;
-  transform: translateY(-50%);
+.crown-icon-new {
   width: 60px;
   height: auto;
   object-fit: contain;
   flex-shrink: 0;
-  z-index: 5;
+  pointer-events: auto;
+
+  @media (max-width: 768px) {
+    width: 35px;
+  }
 }
 
-.player-name, .nick-scroll-container span {
+.inline-color-picker-new {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  pointer-events: auto;
+}
+
+.player-name, .nick-scroll-container span, .label-and-nick .player-name {
   @include font-pangolin(42);
   color: $black;
   @media (max-width: 768px) {
@@ -322,36 +336,9 @@
   display: inline-block;
   scrollbar-width: none;
   line-height: 1.15;
-  padding: 2px 10px; /* Added horizontal padding to match premium .inline-wrapper */
+  padding: 2px 0; /* Vertical only, horizontal handled by wrapper */
   flex-shrink: 0;
   margin: 0 !important;
-
-  /* Standardized contour global application */
-  -webkit-text-stroke: 0.5px #000 !important;
-  filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.4)) !important;
-
-  @media (max-width: 768px) {
-    -webkit-text-stroke: 0.3px #000 !important;
-    filter: drop-shadow(0.5px 0.5px 0.5px rgba(0,0,0,0.5)) !important;
-  }
-}
-
-
-.lobby-actions {
-  margin-top: 30px;
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  
-  @media (max-width: 768px) {
-    position: fixed !important;
-    bottom: 20px !important;
-    left: 50% !important;
-    transform: translateX(-50%) !important;
-    z-index: 1000 !important;
-    background: transparent !important;
-  }
-}
 
   &::-webkit-scrollbar {
     display: none;
@@ -361,6 +348,26 @@
     color: #000000 !important;
     text-shadow: none !important;
     -webkit-text-stroke: 0 !important;
+  }
+}
+
+.lobby-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  margin-top: auto; 
+  padding-bottom: 20px;
+  flex-shrink: 0;
+
+  @media (max-width: 768px) {
+    position: fixed !important;
+    bottom: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 1000 !important;
+    background: transparent !important;
   }
 }
 
@@ -428,7 +435,9 @@
   flex-direction: column;
   align-items: center;
   gap: 15px;
-  margin-top: 50px;
+  margin-top: auto; /* Push to bottom of its flex container if possible */
+  padding-bottom: 20px;
+  flex-shrink: 0;
 }
 
 .gameCodePos {
@@ -3243,7 +3252,7 @@
 
 
 .inline-wrapper {
-  padding: 4px 10px;
+  padding: 4px 0; /* Horizontal padding removed to use unified wrapper-level buffer */
   border-radius: 6px;
   display: inline-flex;
   align-items: center;
