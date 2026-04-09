@@ -206,20 +206,24 @@ const PlayerItem = memo(({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS
 
   return (
     <div key={p.id || String(i)} className="player-item" data-player-id={p.id}>
-      <div className="player-side-container left">
-        {i === 0 && <img src={crownImage} alt="Host" className="crown-icon-new" />}
-      </div>
       <div className="player-name-wrapper-new">
-        {renderThemedNickname(p.nickname, activeColor, isPC ? 90 : 40, showColorPicker)}
-      </div>
-      <div className="player-side-container right">
-        {isMe && showColorPicker && (
-          <div className="inline-color-picker-new">
-            <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
-            <div className={classNames("inline-color-swatch", activeColor?.startsWith('special:') ? activeColor.replace('special:', '') : '')} style={!activeColor?.startsWith('special:') ? { background: activeColor } : {}} />
-            <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
-          </div>
-        )}
+        <div className="player-side-container left">
+          {i === 0 && <img src={crownImage} alt="Host" className="crown-icon-new" />}
+        </div>
+        {(() => {
+          const baseSize = isPC ? 75 : 40;
+          const fontSize = getFontSize(p.nickname, baseSize);
+          return renderThemedNickname(p.nickname, activeColor, baseSize, showColorPicker, false, true, fontSize);
+        })()}
+        <div className="player-side-container right">
+          {isMe && showColorPicker && (
+            <div className="inline-color-picker-new">
+              <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
+              <div className={classNames("inline-color-swatch", activeColor?.startsWith('special:') ? activeColor.replace('special:', '') : '')} style={!activeColor?.startsWith('special:') ? { background: activeColor } : {}} />
+              <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -245,6 +249,13 @@ function App() {
 
   const [serverTimeOffset, setServerTimeOffset] = useState(0);
   const playersListRef = useRef<HTMLDivElement>(null);
+  const [logoPop, setLogoPop] = useState(false);
+
+  const triggerLogoPop = () => {
+    setLogoPop(true);
+    playSecretMusic();
+    setTimeout(() => setLogoPop(false), 300);
+  };
 
   useEffect(() => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -482,7 +493,7 @@ function App() {
 
 
             if (!originalAnswer) {
-              return `<span lang="uk" style="color: #ffffff; font-weight: normal; text-shadow: none; -webkit-text-stroke: none; opacity: 0.9;">${ans}</span>`;
+              return `<span lang="uk" style="color: #ffffff; text-shadow: none; -webkit-text-stroke: none;">${ans}</span>`;
             }
             const ansOwnerId = typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id.id : originalAnswer.player_id;
             const ansOwner = typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id : players.find(p => String(p.id) === String(ansOwnerId));
@@ -1309,10 +1320,14 @@ function App() {
       {!didGameStart && !isCreatingLobby && phase === Phases.Main && !isLobby && (
         <>
           <div className="logo-wrapper">
-            <img src={language === 'en' ? logoImageEng : logoImage} alt="Чепуха Лого" className="logo" />
-            <div className="logo-boy-hitbox hitbox-1" onClick={playSecretMusic} />
-            <div className="logo-boy-hitbox hitbox-2" onClick={playSecretMusic} />
-            <div className="logo-boy-hitbox hitbox-3" onClick={playSecretMusic} />
+            <img 
+              src={language === 'en' ? logoImageEng : logoImage} 
+              alt="Чепуха Лого" 
+              className={classNames("logo", { "logo-pop-active": logoPop })} 
+            />
+            <div className="logo-boy-hitbox hitbox-1" onClick={triggerLogoPop} />
+            <div className="logo-boy-hitbox hitbox-2" onClick={triggerLogoPop} />
+            <div className="logo-boy-hitbox hitbox-3" onClick={triggerLogoPop} />
           </div>
           <div className="menu-buttons">
             <Button
@@ -1481,10 +1496,19 @@ function App() {
           <div className="lobby-container">
             <div className="lobby-info">
               <h2 className="lobby-text label-and-nick notranslate" translate="no">
-                <span className="label-part">{(t('YOUR_NICK') as string).replace(':', '')}: </span>
-                <div className="nick-scroll-container">
-                  {renderThemedNickname(nickname, playerColor, (typeof window !== 'undefined' && window.innerWidth > 768) ? 90 : 40, parsedColorHighlight)}
-                </div>
+                {(() => {
+                  const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
+                  const baseSize = isPC ? 75 : 40;
+                  const fontSize = getFontSize(nickname, baseSize);
+                  return (
+                    <div className="label-and-nick-flex" style={{ fontSize }}>
+                      <span className="label-part" style={{ fontSize: 'inherit' }}>{(t('YOUR_NICK') as string).replace(':', '')}: </span>
+                      <div className="nick-part" style={{ fontSize: 'inherit' }}>
+                        {renderThemedNickname(nickname, playerColor, baseSize, parsedColorHighlight, false, true, fontSize)}
+                      </div>
+                    </div>
+                  );
+                })()}
               </h2>
               <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
               <div 

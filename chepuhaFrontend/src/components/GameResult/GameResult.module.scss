@@ -76,6 +76,12 @@
     word-wrap: break-word;
     overflow-wrap: break-word;
     white-space: pre-wrap;
+
+    span {
+      font-size: inherit !important;
+      font-weight: inherit !important;
+      line-height: inherit !important;
+    }
   }
 }
 

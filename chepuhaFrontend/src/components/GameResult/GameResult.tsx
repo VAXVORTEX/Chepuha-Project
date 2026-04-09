@@ -91,7 +91,23 @@ const GameResult: React.FC<ResultProps> = ({
   const getResultFontSize = (text: string) => {
     if (!text) return undefined;
     const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
-    return getFontSize(text, isPC ? 90 : 36);
+    // User requested "history nickname... not decreasing if too big".
+    // We'll use a slightly smaller base (80 for PC, 32 for mobile) to give it more room to grow/shrink.
+    return getFontSize(text, isPC ? 80 : 32);
+  };
+
+  const getStoryFontSize = (text: string) => {
+    if (!text) return undefined;
+    const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
+    const len = text.length;
+    const baseSize = isPC ? 55 : 18;
+    
+    // Scale down if story is very long
+    if (len > 300) {
+      const reduction = Math.min(Math.floor((len - 300) / 50) * 2, isPC ? 15 : 4);
+      return `${baseSize - reduction}px`;
+    }
+    return `${baseSize}px`;
   };
 
   return (
@@ -124,6 +140,7 @@ const GameResult: React.FC<ResultProps> = ({
             <div className={styles.part}>
               <p
                 className={styles.text}
+                style={{ fontSize: getStoryFontSize(content) }}
                 dangerouslySetInnerHTML={{ __html: content }}
               />
             </div>

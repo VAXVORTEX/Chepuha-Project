@@ -28,8 +28,8 @@ const WaitCard: React.FC<WaitCardProps> = ({
   const displayNick = nick || '';
   // Size nick independently — don't combine with label length
   const nickFontSize = getFontSize(displayNick, nickBaseSize);
-  // Label uses a stable size (not scaled by nick length)
-  const labelFontSize = `${labelSize}px`;
+  // Label uses the same size as current nickname (sync size)
+  const labelFontSize = nickFontSize;
 
   return (
     <div className={styles.wrapper}>
