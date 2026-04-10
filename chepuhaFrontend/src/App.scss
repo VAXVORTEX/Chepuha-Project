@@ -170,6 +170,10 @@
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
   align-self: center;
   margin-top: 0 !important;
+
+  @media (max-width: 768px) {
+    margin-top: -20px !important;
+  }
 }
 
 .lobby-container {
@@ -177,7 +181,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  height: 88vh; /* Moderated back to 88vh to pull START GAME button up on mobile */
+  height: 82vh; /* Reduced from 88vh to pull START GAME button up on mobile */
   max-height: 89vh; 
   gap: 10px;
   width: 100%;
@@ -357,10 +361,10 @@
   
   @media (max-width: 768px) {
     &.left {
-      right: calc(100% + 6px); /* Crown gap remains tight */
+      right: calc(100% + 10px); /* Restored gap from 4px to 10px for breathing room */
     }
     &.right {
-      left: calc(100% + 22px); /* Increased gap back from name per user's "perfect gap" request */
+      left: calc(100% + 10px); /* Restored gap from 4px to 10px for breathing room */
     }
   }
 }
@@ -380,10 +384,10 @@
     padding: 2px 0;
     width: auto; /* Return to auto-width to allow name to fit */
     min-width: 0;
-    max-width: 75vw; /* Expanded from 55vw to allow name to breathe */
+    max-width: none !important; /* Unclamped so wrapper directly equals text width, keeping absolute gaps accurate */
     margin: 0 auto;
     overflow: visible !important; 
-    transform: translateX(-15px); /* Shift left to utilize empty space near crown */
+    transform: translateX(-10px); /* Restored slightly reduced left shift */
     
     .render-wrapper {
       max-width: 100% !important;
@@ -391,8 +395,9 @@
     }
     
     .player-name {
-      max-width: 100% !important;
-      overflow: visible !important; /* Stop ellipsis on mobile as requested */
+      max-width: none !important;
+      width: auto !important;
+      overflow: visible !important; /* Allow the bg gradient to stretch over the entire name */
       text-overflow: clip !important;
       white-space: nowrap !important;
       display: inline-block !important; 
@@ -410,7 +415,7 @@
   pointer-events: auto;
 
   @media (max-width: 768px) {
-    width: 24px; /* Shrunk further from 28px to maximize nickname space on mobile */
+    width: 20px; /* Reduced from 24px to maximize nickname space on mobile */
   }
 }
 
@@ -1927,9 +1932,15 @@
     top: auto !important;
     transform: none !important;
     opacity: 0.5;
-    z-index: 1 !important; 
+    z-index: 99999 !important; /* Extremely high to punch through Create Game / overlays */
     pointer-events: auto !important;
-    cursor: default !important; /* Hide hint on mobile too */
+    cursor: pointer !important; /* Restore pointer */
+    
+    &:active {
+      transform: scale(0.85) !important;
+      filter: brightness(1.3) !important;
+      transition: 0.05s;
+    }
   }
 
   .yellow-guy-bg {
@@ -1949,9 +1960,9 @@
     left: auto !important;
     bottom: 70px !important; /* Final requested bottom offset */
     background-position: right bottom !important;
-    z-index: 1 !important;
+    z-index: 99999 !important; /* Fixed: was 1, now high to be clickable */
     pointer-events: auto !important;
-    cursor: default !important; /* Hide hint on mobile too */
+    cursor: pointer !important; /* Restore pointer */
     position: fixed !important;
   }
 
@@ -3570,11 +3581,27 @@
 .pirate-caribbean-bg {
   background: 
     url('./assets/images/theme_pirate_bg.jpg') center / contain no-repeat, #000000;
+  background-color: #000000 !important;
+  padding: 8px 15px !important; /* Proper vertical presence on mobile */
+  margin: -4px 0 !important; /* Offset to keep list spacing reasonable */
+    
+  @media (min-width: 769px) {
+    padding: 14px 20px !important; /* Even taller for PC as requested */
+    margin: -14px 0 !important;
+  }
 }
 
 .cyber-samurai-iconic-bg {
   background: 
     url('./assets/images/theme_samurai_bg.png') center / contain no-repeat, #000000;
+  background-color: #000000 !important;
+  padding: 8px 15px !important; /* Proper vertical presence on mobile */
+  margin: -4px 0 !important; /* Offset to keep list spacing reasonable */
+
+  @media (min-width: 769px) {
+    padding: 14px 20px !important; /* Even taller for PC as requested */
+    margin: -14px 0 !important;
+  }
 }
 
 

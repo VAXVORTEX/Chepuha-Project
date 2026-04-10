@@ -1682,6 +1682,7 @@ function App() {
         </>
       )}
 
+
       {}
       {(isCreatingLobby || isLobby || phase === Phases.Join) && phase !== Phases.End && phase !== Phases.History && (
         <HomeIcon onClick={goHome} className="homeIconPos" />

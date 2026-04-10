@@ -37,17 +37,7 @@
     align-items: center;
     box-sizing: border-box;
     border: 10px solid $gray-medium;
-}
-
-.shadow {
-    position: absolute;
-    z-index: 1;
-    width: 100%;
-    height: 100%;
-    background-color: $gray-medium;
-    border-radius: 40px;
-    left: 0;
-    top: 10px;
+    box-shadow: 10px 10px 0px 0px $gray-medium;
 }
 
 .title {
@@ -164,6 +154,7 @@
         height: 80vh;
         max-height: 85vh;
         margin-top: 0;
+        box-shadow: 5px 5px 0px 0px $gray-medium;
     }
 
     .title {

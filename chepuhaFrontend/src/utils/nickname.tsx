@@ -14,20 +14,20 @@ export const getFontSize = (text: string, baseSizeArg: number = 24) => {
   // - PC: at 25 characters, font size must be exactly 77px.
   // We use these specific drop targets at len = 25 (18 chars above threshold).
   // We calculate target sizes by assuming standard bases (40 for mobile, 90 for PC).
-  // Target ratio: mobile -> 25 / 40 = 0.625; PC -> 77 / 90 = ~0.855
+  // Target ratio: mobile -> 15.5 / 40 = 0.3875; PC -> 77 / 90 = ~0.855
   
-  const targetRatio = isPC ? (77 / 90) : (19 / 40); // Increased from 18/40 to hit ~19px at len=25
+  const targetRatio = isPC ? (77 / 90) : (15.5 / 40); // 15.5px allows decent gaps for 25 M's on 390px screens
   const targetSizeAt25 = baseSize * targetRatio;
   
   // Reduction needed per character to exactly hit targetSizeAt25 at len=25
   const reductionPerChar = (baseSize - targetSizeAt25) / 18;
   const reduction = (len - threshold) * reductionPerChar;
-  const minSize = isPC ? Math.floor(baseSizeArg * 0.35) : 14; 
+  const minSize = isPC ? Math.floor(baseSizeArg * 0.35) : 10; 
   const calculatedSize = Math.max(minSize, Math.floor(baseSize - reduction));
   return `${calculatedSize}px`;
 };
 
-export const getNicknameStyle = (color: string) => {
+export const getNicknameStyle = (color: string, text: string = '', isInline: boolean = false) => {
   const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
   const isBlack = color === '#000000' || color === '#000';
 
@@ -40,9 +40,14 @@ export const getNicknameStyle = (color: string) => {
   }
 
   // Ultra-thin restorative outline to allow pure colors to shine
+  // Use 0.4px ONLY for long nicknames (> 20 chars) that are not inline, to improve legibility.
+  // Shorter names or inline text use a lighter 0.15px stroke.
+  const useThickStroke = text.length > 20 && !isInline;
+  const strokeSize = isPC ? '0.3px' : (useThickStroke ? '0.4px' : '0.15px');
+
   return {
     color: color || '#000000',
-    WebkitTextStroke: isPC ? '0.3px #000' : '0.15px #000',
+    WebkitTextStroke: `${strokeSize} #000`,
     textShadow: isPC ? '0.3px 0.3px 0.6px rgba(0,0,0,0.15)' : '0.2px 0.2px 0.4px rgba(0,0,0,0.15)',
   } as React.CSSProperties;
 };
@@ -65,7 +70,7 @@ export const renderThemedNickname = (
 ) => {
   const themeClass = getNicknameClassName(color);
   const theme = color.startsWith('special:') ? color.replace('special:', '') : '';
-  const style = showHighlight ? getNicknameStyle(color) : { color: '#000000', textShadow: 'none' };
+  const style = showHighlight ? getNicknameStyle(color, name, isInline) : { color: '#000000', textShadow: 'none' };
   
   const fontSize = customFontSize || ((isInline || skipFontSize) ? undefined : getFontSize(name, defaultSize));
 

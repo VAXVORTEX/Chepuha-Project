@@ -41,7 +41,6 @@ const HistoryScreen: React.FC<HistoryScreenProps> = ({ games, onSelectGame, onHo
                         </button>
                     </div>
                 </div>
-                <div className={styles.shadow}></div>
             </div>
         </div>
     );
