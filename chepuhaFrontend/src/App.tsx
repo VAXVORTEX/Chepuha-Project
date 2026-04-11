@@ -510,7 +510,7 @@ function App() {
 
           return {
             playerName: nick,
-            story: activeTemplate.buildStory(coloredAnswers, language, String(sessionId || 'local'), String(s.id || Math.random())),
+            story: activeTemplate.buildStory(coloredAnswers, language, String(sessionId || 'local'), String(sessionId || 'local')),
             answers: fullAnswers,
             templateId: activeTemplate.id,
             playerColor: sheetOwnerColor
@@ -1040,6 +1040,7 @@ function App() {
             isCreatingLobby: false,
             isJoining: false,
             gameLength: targetSession.template ? (parseInt(targetSession.template.split('|')[1]) as 6 | 9 | 12) : 9,
+            selectedTemplate: targetSession.template ? targetSession.template.split('|')[0] : prev.selectedTemplate,
             storyMode: targetSession.template ? targetSession.template.split('|')[2] === '1' : false,
             hintsEnabled: targetSession.template ? targetSession.template.split('|')[3] === '1' : true,
             colorHighlight: targetSession.template ? targetSession.template.split('|')[4] === '1' : true,
@@ -1078,6 +1079,7 @@ function App() {
             isCreatingLobby: false,
             isJoining: false,
             gameLength: targetSession.template ? (parseInt(targetSession.template.split('|')[1]) as 6 | 9 | 12) : 9,
+            selectedTemplate: targetSession.template ? targetSession.template.split('|')[0] : prev.selectedTemplate,
             storyMode: targetSession.template ? targetSession.template.split('|')[2] === '1' : false,
             hintsEnabled: targetSession.template ? targetSession.template.split('|')[3] === '1' : true,
             colorHighlight: targetSession.template ? targetSession.template.split('|')[4] === '1' : true,

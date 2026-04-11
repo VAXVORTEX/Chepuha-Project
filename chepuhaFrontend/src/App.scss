@@ -12,6 +12,14 @@
   }
 }
 
+// Google Translate fix
+body.translated-ltr, body.translated-rtl {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 .app-view {
   width: 149.25vw;
   height: 149.25vh;
@@ -317,6 +325,17 @@
   &::-webkit-scrollbar-thumb {
     background-color: $red;
     border-radius: 10px;
+  }
+
+  &.has-themed-names {
+    padding-top: 35px;
+    padding-bottom: 35px;
+  }
+
+  .player-item {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    max-width: 100%;
   }
 }
 .player-item {
@@ -3676,4 +3695,24 @@
     gap: 1px !important; /* Even tighter for small screens */
     padding: 0 2px !important;
   }
+}
+
+// Global word wrapping
+.nick-part, .playerName, .story-text, .answer-text, .final-story-item {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+}
+
+// Themed Header spacing for RoundCard
+.roundCard .header {
+    overflow: visible !important;
+    padding: 45px 0 !important;
+}
+
+// History Centering Fix
+.history-screen-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100dvh;
 }
