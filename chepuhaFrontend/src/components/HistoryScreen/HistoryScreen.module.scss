@@ -6,7 +6,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
+    min-height: 100dvh;
     width: 100vw;
     margin: 0;
     box-sizing: border-box;
@@ -26,8 +26,8 @@
     position: relative;
     z-index: 2;
     width: 100%;
-    height: calc(100vh - 40px);
-    max-height: calc(100vh - 40px);
+    height: calc(100dvh - 40px);
+    max-height: calc(100dvh - 40px);
     padding: 15px 40px;
     background-color: $red;
     border-radius: 50px;
@@ -37,7 +37,7 @@
     align-items: center;
     box-sizing: border-box;
     border: 10px solid $gray-medium;
-    box-shadow: 10px 10px 0px 0px $gray-medium;
+    /* Removed box-shadow to ensure uniform gray border thickness */
 }
 
 .title {
@@ -151,10 +151,10 @@
     .box {
         padding: 20px 10px;
         border-width: 5px;
-        height: 80vh;
-        max-height: 85vh;
+        height: 80dvh;
+        max-height: 85dvh;
         margin-top: 0;
-        box-shadow: 5px 5px 0px 0px $gray-medium;
+        /* Removed box-shadow to ensure uniform gray border thickness */
     }
 
     .title {
