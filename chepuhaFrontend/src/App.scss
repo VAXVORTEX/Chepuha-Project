@@ -301,22 +301,12 @@
   
   @media (min-width: 769px) {
     gap: 12px; 
-    height: 338px !important; /* Exactly 4.5 standard nicknames on PC (75px * 4.5 + gaps/padding) */
     padding: 10px 100px; /* Generous side padding for PC to prevent icon clipping */
-    
-    &.has-themed-names {
-      height: 750px !important; /* Exactly 4.5 tall themed nicknames on PC (167px * 4.5) */
-    }
   }
 
   @media (max-width: 768px) {
     gap: 6px; 
     padding: 10px 40px; /* Side padding for absolute arrows */
-    height: 216px !important; /* Exactly 4.5 standard nicknames on mobile (48px * 4.5) */
-    
-    &.has-themed-names {
-      height: 252px !important; /* Exactly 4.5 themed nicknames on mobile (56px * 4.5) */
-    }
   }
 
   &::-webkit-scrollbar {
@@ -3596,7 +3586,7 @@
     
   @media (min-width: 769px) {
     padding: 45px 20px !important; /* Even taller as requested */
-    margin: -45px 0 !important;
+    margin: -30px 0 !important; /* Reduced negative margin to add space to list flow */
   }
 }
 
@@ -3609,7 +3599,7 @@
 
   @media (min-width: 769px) {
     padding: 45px 20px !important; /* Even taller as requested */
-    margin: -45px 0 !important;
+    margin: -30px 0 !important; /* Reduced negative margin to add space to list flow */
   }
 }
 

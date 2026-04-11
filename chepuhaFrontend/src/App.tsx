@@ -1512,11 +1512,48 @@ function App() {
               </h2>
               <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
               {(() => {
+                const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
                 const hasThemedPlayers = players.some(p => p.color?.startsWith('special:'));
+                
+                // Dynamic Height Calculation for exactly 4.5 nicknames
+                const getListHeight = () => {
+                  const padding = 20; // container padding
+                  const playersToMeasure = players.length > 0 ? players : [{ color: '' }];
+                  
+                  if (isPC) {
+                    const stdH = 75; // standard item height
+                    const specialH = 107; // themed item height in flow
+                    const gap = 12;
+                    let total = 0;
+                    for (let i = 0; i < 4; i++) {
+                      const p = playersToMeasure[i] || playersToMeasure[0];
+                      total += (p.color?.startsWith('special:') ? specialH : stdH) + gap;
+                    }
+                    const p5 = playersToMeasure[4] || playersToMeasure[0];
+                    total += (p5.color?.startsWith('special:') ? specialH : stdH) * 0.5;
+                    return total + padding;
+                  } else {
+                    const stdH = 48;
+                    const specialH = 56;
+                    const gap = 6;
+                    let total = 0;
+                    for (let i = 0; i < 4; i++) {
+                      const p = playersToMeasure[i] || playersToMeasure[0];
+                      total += (p.color?.startsWith('special:') ? specialH : stdH) + gap;
+                    }
+                    const p5 = playersToMeasure[4] || playersToMeasure[0];
+                    total += (p5.color?.startsWith('special:') ? specialH : stdH) * 0.5;
+                    return total + padding;
+                  }
+                };
+
+                const dynamicHeight = getListHeight();
+
                 return (
                   <div 
                     ref={playersListRef}
                     className={`players-list ${hasThemedPlayers ? 'has-themed-names' : ''} ${(players.length >= 4) ? 'has-many-players' : ''}`}
+                    style={{ height: `${dynamicHeight}px` }}
                   >
                     {players.length > 0 ? (
                       players.map((p, i) => (
