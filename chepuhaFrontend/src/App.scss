@@ -390,7 +390,7 @@
     transform: translateX(-10px); /* Restored slightly reduced left shift */
     
     .render-wrapper {
-      max-width: 100% !important;
+      max-width: none !important; /* Allow background to expand beyond parent for long names to prevent clipping */
       overflow: visible !important; /* Stop clipping on mobile */
     }
     
@@ -3586,8 +3586,8 @@
   margin: -4px 0 !important; /* Offset to keep list spacing reasonable */
     
   @media (min-width: 769px) {
-    padding: 14px 20px !important; /* Even taller for PC as requested */
-    margin: -14px 0 !important;
+    padding: 30px 50px !important; /* Significantly larger as requested */
+    margin: -30px 0 !important;
   }
 }
 
@@ -3599,8 +3599,8 @@
   margin: -4px 0 !important; /* Offset to keep list spacing reasonable */
 
   @media (min-width: 769px) {
-    padding: 14px 20px !important; /* Even taller for PC as requested */
-    margin: -14px 0 !important;
+    padding: 30px 50px !important; /* Significantly larger as requested */
+    margin: -30px 0 !important;
   }
 }
 
