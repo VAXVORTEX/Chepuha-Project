@@ -1511,76 +1511,42 @@ function App() {
                 })()}
               </h2>
               <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
-              <div 
-                ref={playersListRef}
-                className={`players-list ${(players.length >= 4) ? 'has-many-players' : ''}`}
-                style={(() => {
-                  const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
-                  if (!isPC) return {};
-                  
-                  // Constants matching App.scss
-                  const GAP = 12;
-                  const STD_H = 75; // min-height of .player-item on PC
-                  const THEME_H = 167; // approx font (77) + padding (45*2)
-                  
-                  const getH = (p: any) => {
-                    const color = p?.avatar_color || p?.color || '';
-                    const isThemed = color === 'special:pirate-caribbean' || color === 'special:cyber-samurai-iconic';
-                    return isThemed ? THEME_H : STD_H;
-                  };
-
-                  // The user wants exactly 4.5 names visible in the viewport before scrolling.
-                  // We calculate the sum of heights of the first 4.5 items.
-                  let totalH = 0;
-                  const samplePlayers = players.length > 0 ? players : [{ color: playerColor || '' }];
-                  const limit = Math.min(samplePlayers.length, 5);
-                  
-                  for (let i = 0; i < limit; i++) {
-                    const itemH = getH(samplePlayers[i]);
-                    if (i < 4) {
-                      totalH += itemH + GAP;
-                    } else if (i === 4) {
-                      totalH += (itemH * 0.5); // The "half of 5th" part
-                    }
-                  }
-
-                  // Strip the last gap if we only have 4 or fewer players
-                  if (players.length > 0 && players.length <= 4) {
-                     totalH -= GAP;
-                  }
-
-                  // Safety min to prevent zero-height
-                  const finalH = Math.max(totalH, 80); 
-                  return { maxHeight: `${finalH}px` };
-                })()}
-              >
-                {players.length > 0 ? (
-                  players.map((p, i) => (
-                    <PlayerItem
-                      key={p.id || String(i)}
-                      p={p}
-                      i={i}
-                      isMe={String(p.id) === String(playerId) || (i === 0 && nickname === p.nickname)}
-                      playerColor={playerColor}
-                      cycleColor={cycleColor}
-                      AVAILABLE_COLORS={AVAILABLE_COLORS}
-                      crownImage={crownImage}
-                      showColorPicker={parsedColorHighlight}
-                    />
-                  ))
-                ) : (
-                  <PlayerItem
-                    p={{ id: 'temp', nickname }}
-                    i={0}
-                    isMe={true}
-                    playerColor={playerColor}
-                    cycleColor={cycleColor}
-                    AVAILABLE_COLORS={AVAILABLE_COLORS}
-                    crownImage={crownImage}
-                    showColorPicker={parsedColorHighlight}
-                  />
-                )}
-              </div>
+              {(() => {
+                const hasThemedPlayers = players.some(p => p.color?.startsWith('special:'));
+                return (
+                  <div 
+                    ref={playersListRef}
+                    className={`players-list ${hasThemedPlayers ? 'has-themed-names' : ''} ${(players.length >= 4) ? 'has-many-players' : ''}`}
+                  >
+                    {players.length > 0 ? (
+                      players.map((p, i) => (
+                        <PlayerItem
+                          key={p.id || String(i)}
+                          p={p}
+                          i={i}
+                          isMe={String(p.id) === String(playerId) || (i === 0 && nickname === p.nickname)}
+                          playerColor={playerColor}
+                          cycleColor={cycleColor}
+                          AVAILABLE_COLORS={AVAILABLE_COLORS}
+                          crownImage={crownImage}
+                          showColorPicker={parsedColorHighlight}
+                        />
+                      ))
+                    ) : (
+                      <PlayerItem
+                        p={{ id: 'temp', nickname }}
+                        i={0}
+                        isMe={true}
+                        playerColor={playerColor}
+                        cycleColor={cycleColor}
+                        AVAILABLE_COLORS={AVAILABLE_COLORS}
+                        crownImage={crownImage}
+                        showColorPicker={parsedColorHighlight}
+                      />
+                    )}
+                  </div>
+                );
+              })()}
             </div>
             <div className="error-message" style={{ color: "red", minHeight: '24px' }}>
               {pollError ? (t(pollError as any) || pollError) : '\u00A0'}

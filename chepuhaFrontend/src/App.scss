@@ -293,7 +293,7 @@
   align-items: center; 
   gap: 8px; /* Increased list gap for PC */
   width: 100%;
-  flex: 1; /* Take up available space securely */
+  flex: none !important; /* Enforce height strictly, don't let parent flexbox squash/grow it */
   overflow-y: auto; /* Always scroll if overflowing */
   padding: 10px 0;
   box-sizing: border-box;
@@ -301,13 +301,22 @@
   
   @media (min-width: 769px) {
     gap: 12px; 
-    max-height: 750px; /* Increased from 350px to fit 4.5 tall themed nicknames as requested */
+    height: 338px !important; /* Exactly 4.5 standard nicknames on PC (75px * 4.5 + gaps/padding) */
     padding: 10px 100px; /* Generous side padding for PC to prevent icon clipping */
+    
+    &.has-themed-names {
+      height: 750px !important; /* Exactly 4.5 tall themed nicknames on PC (167px * 4.5) */
+    }
   }
 
   @media (max-width: 768px) {
-    gap: 6px; /* Fine-tuned for 6.5 visible nicknames on mobile */
-    padding: 10px 40px; /* Side padding to ensure absolute arrows aren't clipped by scroll container */
+    gap: 6px; 
+    padding: 10px 40px; /* Side padding for absolute arrows */
+    height: 216px !important; /* Exactly 4.5 standard nicknames on mobile (48px * 4.5) */
+    
+    &.has-themed-names {
+      height: 252px !important; /* Exactly 4.5 themed nicknames on mobile (56px * 4.5) */
+    }
   }
 
   &::-webkit-scrollbar {
@@ -3582,7 +3591,6 @@
   background: 
     url('./assets/images/theme_pirate_bg.jpg') center / contain no-repeat, #000000;
   background-color: #000000 !important;
-  height: auto !important; /* Allow padding to define height */
   padding: 8px 15px !important; /* Proper vertical presence on mobile */
   margin: -4px 0 !important; /* Offset to keep list spacing reasonable */
     
@@ -3596,7 +3604,6 @@
   background: 
     url('./assets/images/theme_samurai_bg.png') center / contain no-repeat, #000000;
   background-color: #000000 !important;
-  height: auto !important; /* Allow padding to define height */
   padding: 8px 15px !important; /* Proper vertical presence on mobile */
   margin: -4px 0 !important; /* Offset to keep list spacing reasonable */
 
