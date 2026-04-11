@@ -301,7 +301,7 @@
   
   @media (min-width: 769px) {
     gap: 12px; 
-    max-height: 350px; /* Reduced to accommodate lifted START GAME button on PC */
+    max-height: 750px; /* Increased from 350px to fit 4.5 tall themed nicknames as requested */
     padding: 10px 100px; /* Generous side padding for PC to prevent icon clipping */
   }
 
