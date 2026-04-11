@@ -1514,6 +1514,45 @@ function App() {
               <div 
                 ref={playersListRef}
                 className={`players-list ${(players.length >= 4) ? 'has-many-players' : ''}`}
+                style={(() => {
+                  const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
+                  if (!isPC) return {};
+                  
+                  // Constants matching App.scss
+                  const GAP = 12;
+                  const STD_H = 75; // min-height of .player-item on PC
+                  const THEME_H = 167; // approx font (77) + padding (45*2)
+                  
+                  const getH = (p: any) => {
+                    const color = p?.avatar_color || p?.color || '';
+                    const isThemed = color === 'special:pirate-caribbean' || color === 'special:cyber-samurai-iconic';
+                    return isThemed ? THEME_H : STD_H;
+                  };
+
+                  // The user wants exactly 4.5 names visible in the viewport before scrolling.
+                  // We calculate the sum of heights of the first 4.5 items.
+                  let totalH = 0;
+                  const samplePlayers = players.length > 0 ? players : [{ color: playerColor || '' }];
+                  const limit = Math.min(samplePlayers.length, 5);
+                  
+                  for (let i = 0; i < limit; i++) {
+                    const itemH = getH(samplePlayers[i]);
+                    if (i < 4) {
+                      totalH += itemH + GAP;
+                    } else if (i === 4) {
+                      totalH += (itemH * 0.5); // The "half of 5th" part
+                    }
+                  }
+
+                  // Strip the last gap if we only have 4 or fewer players
+                  if (players.length > 0 && players.length <= 4) {
+                     totalH -= GAP;
+                  }
+
+                  // Safety min to prevent zero-height
+                  const finalH = Math.max(totalH, 80); 
+                  return { maxHeight: `${finalH}px` };
+                })()}
               >
                 {players.length > 0 ? (
                   players.map((p, i) => (

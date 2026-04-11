@@ -3582,6 +3582,7 @@
   background: 
     url('./assets/images/theme_pirate_bg.jpg') center / contain no-repeat, #000000;
   background-color: #000000 !important;
+  height: auto !important; /* Allow padding to define height */
   padding: 8px 15px !important; /* Proper vertical presence on mobile */
   margin: -4px 0 !important; /* Offset to keep list spacing reasonable */
     
@@ -3595,6 +3596,7 @@
   background: 
     url('./assets/images/theme_samurai_bg.png') center / contain no-repeat, #000000;
   background-color: #000000 !important;
+  height: auto !important; /* Allow padding to define height */
   padding: 8px 15px !important; /* Proper vertical presence on mobile */
   margin: -4px 0 !important; /* Offset to keep list spacing reasonable */
 
