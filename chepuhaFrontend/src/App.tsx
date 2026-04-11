@@ -1696,15 +1696,17 @@ function App() {
       )}
 
       {phase === Phases.History && !selectedHistoryGame && (
-        <HistoryScreen
-          games={savedGames}
-          onSelectGame={(g) => {
-            setAppState(prev => ({ ...prev, allStories: g.stories }));
-            setAppState(prev => ({ ...prev, storyIndex: 0 }));
-            setAppState(prev => ({ ...prev, selectedHistoryGame: g }));
-          }}
-          onHome={goHome}
-        />
+        <div className="history-screen-wrapper">
+          <HistoryScreen
+            games={savedGames}
+            onSelectGame={(g) => {
+              setAppState(prev => ({ ...prev, allStories: g.stories }));
+              setAppState(prev => ({ ...prev, storyIndex: 0 }));
+              setAppState(prev => ({ ...prev, selectedHistoryGame: g }));
+            }}
+            onHome={goHome}
+          />
+        </div>
       )}
 
       {phase === Phases.History && selectedHistoryGame && (

@@ -89,7 +89,7 @@ export const renderThemedNickname = (
     : '';
 
   return (
-    <span className={`${bgClass} inline-wrapper${isInline ? ' is-inline' : ''} render-wrapper`}>
+    <span className={`${bgClass} inline-wrapper${isInline ? ' is-inline' : ''} render-wrapper notranslate`} translate="no">
       {content}
     </span>
   );

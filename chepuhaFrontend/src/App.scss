@@ -3697,10 +3697,11 @@ body.translated-ltr, body.translated-rtl {
   }
 }
 
-// Global word wrapping
-.nick-part, .playerName, .story-text, .answer-text, .final-story-item {
-    overflow-wrap: anywhere;
-    word-break: break-word;
+// Global word wrapping - Aggressive for ultra-long words
+.nick-part, .playerName, .story-text, .answer-text, .final-story-item, .part .text {
+    overflow-wrap: anywhere !important;
+    word-break: break-all !important;
+    hyphens: auto;
 }
 
 // Themed Header spacing for RoundCard
@@ -3709,10 +3710,16 @@ body.translated-ltr, body.translated-rtl {
     padding: 45px 0 !important;
 }
 
-// History Centering Fix
+// History Centering Fix - Robust
 .history-screen-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
     min-height: 100dvh;
+    width: 100vw;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    background-color: transparent;
 }
