@@ -12,18 +12,28 @@
   }
 }
 
-// Google Translate fix
+// Google Translate fix - Ultra Aggressive
 body.translated-ltr, body.translated-rtl {
   *, *::before, *::after {
     animation: none !important;
     transition: none !important;
+    will-change: auto !important;
+    backface-visibility: visible !important;
+  }
+  
+  // Protect the main scale transform from being wiped by translation-induced "transform: none"
+  .app-view {
+    transition: none !important;
+    animation: none !important;
   }
 }
 
 .app-view {
   hyphens: auto;
-  word-break: break-word;
+  word-break: normal; // Let hyphens work better
   overflow-wrap: anywhere;
+  -webkit-hyphens: auto;
+  -ms-hyphens: auto;
   width: 149.25vw;
   height: 149.25vh;
   transform: scale(0.67);
@@ -3701,10 +3711,11 @@ body.translated-ltr, body.translated-rtl {
 }
 
 // Global word wrapping
-.nick-part, .playerName, .story-text, .answer-text, .final-story-item, .history-stories p {
+.nick-part, .playerName, .story-text, .answer-text, .final-story-item, .history-stories p, .results-view p {
     overflow-wrap: anywhere;
-    word-break: break-all; // Force break for extremely long words
+    word-break: break-all; 
     hyphens: auto;
+    -webkit-hyphens: auto;
 }
 
 // RoundCard character limit error
