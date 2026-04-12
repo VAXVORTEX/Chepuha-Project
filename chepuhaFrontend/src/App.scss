@@ -21,6 +21,9 @@ body.translated-ltr, body.translated-rtl {
 }
 
 .app-view {
+  hyphens: auto;
+  word-break: break-word;
+  overflow-wrap: anywhere;
   width: 149.25vw;
   height: 149.25vh;
   transform: scale(0.67);
@@ -3697,11 +3700,30 @@ body.translated-ltr, body.translated-rtl {
   }
 }
 
-// Global word wrapping - Aggressive for ultra-long words
-.nick-part, .playerName, .story-text, .answer-text, .final-story-item, .part .text {
-    overflow-wrap: anywhere !important;
-    word-break: break-all !important;
+// Global word wrapping
+.nick-part, .playerName, .story-text, .answer-text, .final-story-item, .history-stories p {
+    overflow-wrap: anywhere;
+    word-break: break-all; // Force break for extremely long words
     hyphens: auto;
+}
+
+// RoundCard character limit error
+.char-limit-error {
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: #ff4e50;
+    font-size: 14px;
+    font-weight: bold;
+    white-space: nowrap;
+    z-index: 10;
+    pointer-events: none;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+}
+
+.roundCard .body {
+    position: relative; // For absolute error positioning
 }
 
 // Themed Header spacing for RoundCard
@@ -3710,16 +3732,20 @@ body.translated-ltr, body.translated-rtl {
     padding: 45px 0 !important;
 }
 
-// History Centering Fix - Robust
-.history-screen-wrapper {
+// History Centering Fix (Using global class from HistoryScreen.tsx)
+.history-view {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    min-height: 100dvh;
-    width: 100vw;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 1000;
-    background-color: transparent;
+    z-index: 1000 !important;
+}
+
+.app-view.is-history {
+    justify-content: center !important;
+    padding: 0 !important;
 }

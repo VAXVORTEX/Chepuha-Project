@@ -1312,7 +1312,7 @@ function App() {
   });
 
   return (
-    <div className="app-view">
+    <div className={classNames("app-view", phase === Phases.History && "is-history")} lang={language}>
       {roomCode && !didGameStart && isLobby && phase !== Phases.Join && phase !== Phases.History && phase !== Phases.End && (
         <div className="create-game-pc-code-wrapper">
           <GameCode code={roomCode} className="gameCodePos create-code-mobile" />
@@ -1696,17 +1696,15 @@ function App() {
       )}
 
       {phase === Phases.History && !selectedHistoryGame && (
-        <div className="history-screen-wrapper">
-          <HistoryScreen
-            games={savedGames}
-            onSelectGame={(g) => {
-              setAppState(prev => ({ ...prev, allStories: g.stories }));
-              setAppState(prev => ({ ...prev, storyIndex: 0 }));
-              setAppState(prev => ({ ...prev, selectedHistoryGame: g }));
-            }}
-            onHome={goHome}
-          />
-        </div>
+        <HistoryScreen
+          games={savedGames}
+          onSelectGame={(g) => {
+            setAppState(prev => ({ ...prev, allStories: g.stories }));
+            setAppState(prev => ({ ...prev, storyIndex: 0 }));
+            setAppState(prev => ({ ...prev, selectedHistoryGame: g }));
+          }}
+          onHome={goHome}
+        />
       )}
 
       {phase === Phases.History && selectedHistoryGame && (

@@ -70,15 +70,22 @@ export const RoundCard = ({
                 ) : (
                     <div className={styles.activeContent}>
                         <h3 className={styles.question}>{question ? t(question as TranslationKey) : ''}</h3>
-                        <Input
-                            value={answer}
-                            onChange={setAnswer}
-                            placeholder={t('ENTER_ANSWER')}
-                            maxLength={200}
-                            autoFocus={true}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-                            className={styles.cardInput}
-                        />
+                        <div style={{ position: 'relative', width: '100%', maxWidth: '850px' }}>
+                            <Input
+                                value={answer}
+                                onChange={setAnswer}
+                                placeholder={t('ENTER_ANSWER')}
+                                maxLength={305}
+                                autoFocus={true}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+                                className={styles.cardInput}
+                            />
+                            {answer.length > 300 && (
+                                <div className="char-limit-error">
+                                    {t('MAX_CHARS_300' as any) || "Максимум 300 символів"}
+                                </div>
+                            )}
+                        </div>
                         {hints && hints.length > 0 && (
                             <div className={styles.hintsSection}>
                                 <button
