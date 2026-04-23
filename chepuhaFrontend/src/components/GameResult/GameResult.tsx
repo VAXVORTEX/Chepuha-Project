@@ -75,7 +75,6 @@ const GameResult: React.FC<ResultProps> = ({
       c = c.replace(/<\/?[^>]+(>|$)/g, "");
     }
 
-    // Apply soft hyphens to long words for proper hyphenation visuals
     return hyphenateLongWords(c);
   }, [current?.story, current?.answers, current?.templateId, language, showColors]);
 
@@ -94,8 +93,6 @@ const GameResult: React.FC<ResultProps> = ({
   const getResultFontSize = (text: string) => {
     if (!text) return undefined;
     const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
-    // User requested "history nickname... not decreasing if too big".
-    // We'll use a slightly smaller base (80 for PC, 32 for mobile) to give it more room to grow/shrink.
     return getFontSize(text, isPC ? 80 : 32);
   };
 
@@ -105,7 +102,6 @@ const GameResult: React.FC<ResultProps> = ({
     const len = text.length;
     const baseSize = isPC ? 55 : 18;
     
-    // Scale down if story is very long
     if (len > 300) {
       const reduction = Math.min(Math.floor((len - 300) / 50) * 2, isPC ? 15 : 4);
       return `${baseSize - reduction}px`;

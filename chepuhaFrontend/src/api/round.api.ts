@@ -19,15 +19,6 @@ export async function createRound(payload: CreateRoundPayload): Promise<Round> {
     return data as Round;
 }
 
-export async function getRound(id: string): Promise<Round> {
-    const { data, error } = await supabase
-        .from('rounds')
-        .select('id, round_number, question_type, rounds_status, started_at, completed_at, session_id')
-        .eq('id', id)
-        .single();
-    if (error) throw error;
-    return data as Round;
-}
 
 export async function getRoundsBySession(sessionId: string): Promise<Round[]> {
     const { data, error } = await supabase
@@ -37,18 +28,4 @@ export async function getRoundsBySession(sessionId: string): Promise<Round[]> {
         .order('round_number', { ascending: true });
     if (error) throw error;
     return data || [];
-}
-
-export async function updateRound(
-    id: string,
-    payload: Partial<CreateRoundPayload & { completed_at: string }>,
-): Promise<Round> {
-    const { data, error } = await supabase
-        .from('rounds')
-        .update(payload)
-        .eq('id', id)
-        .select('id, round_number, question_type, rounds_status, started_at, completed_at, session_id')
-        .single();
-    if (error) throw error;
-    return data as Round;
 }

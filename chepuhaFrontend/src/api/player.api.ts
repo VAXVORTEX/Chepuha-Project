@@ -20,16 +20,6 @@ export async function createPlayer(payload: CreatePlayerPayload): Promise<Player
     return data as Player;
 }
 
-export async function getPlayer(id: string): Promise<Player> {
-    const { data, error } = await supabase
-        .from('players')
-        .select('id, nickname, session_id, players_status, player_order, color, joined_at')
-        .eq('id', id)
-        .single();
-
-    if (error) throw error;
-    return data as Player;
-}
 
 export async function getPlayersBySession(sessionId: string): Promise<Player[]> {
     const { data, error } = await supabase
@@ -62,14 +52,5 @@ export async function updatePlayersBySession(
         .from('players')
         .update(payload)
         .eq('session_id', sessionId);
-    if (error) throw error;
-}
-
-export async function deletePlayer(id: string): Promise<void> {
-    const { error } = await supabase
-        .from('players')
-        .delete()
-        .eq('id', id);
-
     if (error) throw error;
 }

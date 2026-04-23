@@ -30,7 +30,6 @@ import {
   updatePlayer,
   updatePlayersBySession,
   createRound,
-  createStorySheet,
   createStorySheetsBatch,
   submitAnswer,
   getAnswersByRound,
@@ -158,7 +157,6 @@ const getInitialState = (): AppState => {
 };
 
 export const AVAILABLE_COLORS = [
-  // Plain colors by hue: red → orange → yellow → green → blue → purple → neutrals
   '#e52929', '#ff4e50', '#8b0000',
   '#ff8c00', '#ffa500', '#e5a629',
   '#ffd700', '#ffff00', '#f9d423', '#fafad2',
@@ -167,24 +165,19 @@ export const AVAILABLE_COLORS = [
   '#9c29e5', '#8a2be2', '#4b0082', '#9932cc', '#ba55d3', '#e6e6fa',
   '#000000', '#ffffff',
 
-  // Flags
   'special:flag-ua', 'special:flag-de', 'special:flag-jp', 'special:flag-pl',
   'special:flag-it', 'special:flag-es', 'special:flag-br', 'special:flag-ca',
   'special:flag-bi', 'special:flag-pan', 'special:flag-ace', 'special:flag-nonbinary',
 
-  // Gender/pride
   'special:gender-pride', 'special:gender-trans', 'special:flag-lesbian',
   'special:flag-gay-mlm',
   'special:flag-intersex', 'special:flag-genderqueer', 'special:flag-polysexual',
 
-  // Static gradients (ordered by warmth: fire → gold → ice)
   'special:fire-gradient', 'special:gold', 'special:ice-gradient',
 
-  // Animated gradients (ordered by hue: warm → cool)
   'special:rainbow', 'special:solar', 'special:nebula', 'special:cyberpunk',
   'special:pirate-caribbean', 'special:cyber-samurai-iconic',
 
-  // Premium animated gradients (ordered: warm reds → golds → greens → blues → pinks → neutrals)
   'special:royal-red', 'special:golden-rod', 'special:bronze-age',
   'special:mint-fresh', 'special:stellar', 'special:cyan-burst', 'special:electric-blue', 'special:deep-purple',
   'special:neon-pink', 'special:silver-streak'
@@ -195,8 +188,6 @@ const GAME_LENGTH_INDICES: Record<number, number[]> = {
   9: [0, 1, 2, 3, 4, 5, 6, 7, 8],
   12: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 };
-
-// Shared utilities moved to src/utils/nickname.tsx
 
 
 const PlayerItem = memo(({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, crownImage, showColorPicker }: any) => {
@@ -425,7 +416,6 @@ function App() {
     if (sessionId && playerId && playerColor) {
       updatePlayer(playerId, { color: playerColor }).catch((err) => {
         if (String(err.message).includes('column') || String(err.message).includes('schema cache')) {
-          // Expected during DB migration
         } else {
           console.error("Failed to update player color sync:", err);
         }
@@ -498,8 +488,7 @@ function App() {
             const ansOwnerId = typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id.id : originalAnswer.player_id;
             const ansOwner = typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id : players.find(p => String(p.id) === String(ansOwnerId));
             const color = ansOwner?.color || (String(ansOwnerId) === String(playerId) ? (playerColor || '#e52929') : '#e52929');
-            
-            // Use standard renderThemedNickname but marked as inline for story text
+
             return ReactDOMServer.renderToStaticMarkup(
                renderThemedNickname(ans, color, 24, true, true)
             );
@@ -749,7 +738,6 @@ function App() {
         const allFinished = isStory && freshPlayers.every(p => p.players_status === 'finished');
 
 
-
         const shouldTransition = (!isStory && (curAnswers.length >= total || (isHost && timePassed > maxTime))) ||
           (isStory && (allFinished || (isHost && timePassed > 1800)));
 
@@ -982,7 +970,6 @@ function App() {
       }
 
 
-
       setAppState(prev => ({ ...prev, nickname: nick, roomCode: code }));
 
       const existingPlayers = await getPlayersBySession(targetSession.id);
@@ -1020,8 +1007,6 @@ function App() {
         }
 
 
-
-
         const finishJoin = () => {
           setAppState(prev => ({
             ...prev,
@@ -1053,7 +1038,7 @@ function App() {
         const currentLocalColor = appState.playerColor;
         const takenColors = (existingPlayers || []).map((p: Player) => p.color?.toLowerCase()).filter(Boolean);
         const availableUnique = AVAILABLE_COLORS.filter(c => !takenColors.includes(c.toLowerCase()));
-        
+
         let guestColor = availableUnique.length > 0 ? availableUnique[0] : AVAILABLE_COLORS[0];
         if (currentLocalColor && !takenColors.includes(currentLocalColor.toLowerCase())) {
           guestColor = currentLocalColor;
@@ -1322,10 +1307,10 @@ function App() {
       {!didGameStart && !isCreatingLobby && phase === Phases.Main && !isLobby && (
         <>
           <div className="logo-wrapper">
-            <img 
-              src={language === 'en' ? logoImageEng : logoImage} 
-              alt="Чепуха Лого" 
-              className={classNames("logo", { "logo-pop-active": logoPop })} 
+            <img
+              src={language === 'en' ? logoImageEng : logoImage}
+              alt="Чепуха Лого"
+              className={classNames("logo", { "logo-pop-active": logoPop })}
             />
             <div className="logo-boy-hitbox hitbox-1" onClick={triggerLogoPop} />
             <div className="logo-boy-hitbox hitbox-2" onClick={triggerLogoPop} />
@@ -1516,15 +1501,14 @@ function App() {
               {(() => {
                 const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
                 const hasThemedPlayers = players.some(p => p.color?.startsWith('special:'));
-                
-                // Dynamic Height Calculation for exactly 4.5 nicknames
+
                 const getListHeight = () => {
-                  const padding = 20; // container padding
+                  const padding = 20;
                   const playersToMeasure = players.length > 0 ? players : [{ color: '' }];
-                  
+
                   if (isPC) {
-                    const stdH = 75; // standard item height
-                    const specialH = 107; // themed item height in flow
+                    const stdH = 75;
+                    const specialH = 107;
                     const gap = 12;
                     let total = 0;
                     for (let i = 0; i < 4; i++) {
@@ -1552,7 +1536,7 @@ function App() {
                 const dynamicHeight = getListHeight();
 
                 return (
-                  <div 
+                  <div
                     ref={playersListRef}
                     className={`players-list ${hasThemedPlayers ? 'has-themed-names' : ''} ${(players.length >= 4) ? 'has-many-players' : ''}`}
                     style={{ height: `${dynamicHeight}px` }}

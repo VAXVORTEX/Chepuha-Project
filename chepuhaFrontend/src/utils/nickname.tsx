@@ -6,20 +6,12 @@ export const getFontSize = (text: string, baseSizeArg: number = 24) => {
   const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
 
   const baseSize = isPC ? baseSizeArg : Math.floor(baseSizeArg * 0.85);
-  const threshold = 7; // Nicknames up to 7 chars stay at full size
+  const threshold = 7;
   if (len <= threshold) return `${baseSize}px`;
 
-  // The user explicitly requested:
-  // - Mobile: at 25 characters, font size must be exactly 25px.
-  // - PC: at 25 characters, font size must be exactly 77px.
-  // We use these specific drop targets at len = 25 (18 chars above threshold).
-  // We calculate target sizes by assuming standard bases (40 for mobile, 90 for PC).
-  // Target ratio: mobile -> 15.5 / 40 = 0.3875; PC -> 77 / 90 = ~0.855
-  
-  const targetRatio = isPC ? (77 / 90) : (15.5 / 40); // 15.5px allows decent gaps for 25 M's on 390px screens
+  const targetRatio = isPC ? (77 / 90) : (15.5 / 40);
   const targetSizeAt25 = baseSize * targetRatio;
   
-  // Reduction needed per character to exactly hit targetSizeAt25 at len=25
   const reductionPerChar = (baseSize - targetSizeAt25) / 18;
   const reduction = (len - threshold) * reductionPerChar;
   const minSize = isPC ? Math.floor(baseSizeArg * 0.35) : 10; 
@@ -39,9 +31,6 @@ export const getNicknameStyle = (color: string, text: string = '', isInline: boo
     } as React.CSSProperties;
   }
 
-  // Use consistent stroke for ALL non-black colors to prevent vertical drift
-  // when switching between solid and animated themes. The stroke must match
-  // the CSS baseline in .player-name (0.5px PC, 0.3px mobile).
   return {
     color: color || '#000000',
   } as React.CSSProperties;

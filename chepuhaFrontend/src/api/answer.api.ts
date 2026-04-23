@@ -19,31 +19,12 @@ export async function submitAnswer(payload: SubmitAnswerPayload): Promise<Answer
     return data as Answer;
 }
 
-export async function getAnswer(id: string): Promise<Answer> {
-    const { data, error } = await supabase
-        .from('answers')
-        .select('*')
-        .eq('id', id)
-        .single();
-    if (error) throw error;
-    return data as Answer;
-}
 
 export async function getAnswersByRound(roundId: string): Promise<Answer[]> {
     const { data, error } = await supabase
         .from('answers')
         .select('*')
         .eq('round_id', roundId)
-        .order('position_in_sheet', { ascending: true });
-    if (error) throw error;
-    return data || [];
-}
-
-export async function getAnswersByStorySheet(storySheetId: string): Promise<Answer[]> {
-    const { data, error } = await supabase
-        .from('answers')
-        .select('*')
-        .eq('story_sheet_id', storySheetId)
         .order('position_in_sheet', { ascending: true });
     if (error) throw error;
     return data || [];
