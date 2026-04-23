@@ -315,7 +315,7 @@ export const DICTIONARY = {
         SAVE: "Save",
         ENTER_ANSWER: "Enter your answer...",
         GAME_CODE_LABEL: "GAME CODE",
-        STORY_OF: "Story of",
+        STORY_OF: "Story",
         LOADING: "Loading...",
         PREVIOUS: "Previous",
         BACK_TO_LIST: "Back to list",

@@ -6,6 +6,7 @@ import HomeIcon from "../HomeIcon/HomeIcon";
 import { useLanguage } from "../../contexts/LanguageContext";
 import { TEMPLATES, parseLegacyStory } from "../../config/templates";
 import { getFontSize } from "../../utils/nickname";
+import { hyphenateLongWords } from "../../utils/text";
 interface Story {
   playerName: string;
   story: string;
@@ -73,7 +74,9 @@ const GameResult: React.FC<ResultProps> = ({
     if (!showColors) {
       c = c.replace(/<\/?[^>]+(>|$)/g, "");
     }
-    return c;
+
+    // Apply soft hyphens to long words for proper hyphenation visuals
+    return hyphenateLongWords(c);
   }, [current?.story, current?.answers, current?.templateId, language, showColors]);
 
   const pColor = current?.playerColor;

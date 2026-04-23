@@ -46,7 +46,7 @@ export const RoundCard = ({
 
     const isWaiting = phase === Phases.Waiting;
     const handleSubmit = () => {
-        if (onSubmitAnswer && answer.trim() !== '') {
+        if (onSubmitAnswer && answer.trim() !== '' && answer.length <= 300) {
             onSubmitAnswer(answer);
             setAnswer('');
         }
@@ -82,7 +82,7 @@ export const RoundCard = ({
                             />
                             {answer.length > 300 && (
                                 <div className="char-limit-error">
-                                    {t('MAX_CHARS_300' as any) || "Максимум 300 символів"}
+                                    Максимальный предел в 300 символов был достигнут
                                 </div>
                             )}
                         </div>

@@ -39,16 +39,11 @@ export const getNicknameStyle = (color: string, text: string = '', isInline: boo
     } as React.CSSProperties;
   }
 
-  // Ultra-thin restorative outline to allow pure colors to shine
-  // Use 0.4px ONLY for long nicknames (> 20 chars) that are not inline, to improve legibility.
-  // Shorter names or inline text use a lighter 0.15px stroke.
-  const useThickStroke = text.length > 20 && !isInline;
-  const strokeSize = isPC ? '0.3px' : (useThickStroke ? '0.4px' : '0.15px');
-
+  // Use consistent stroke for ALL non-black colors to prevent vertical drift
+  // when switching between solid and animated themes. The stroke must match
+  // the CSS baseline in .player-name (0.5px PC, 0.3px mobile).
   return {
     color: color || '#000000',
-    WebkitTextStroke: `${strokeSize} #000`,
-    textShadow: isPC ? '0.3px 0.3px 0.6px rgba(0,0,0,0.15)' : '0.2px 0.2px 0.4px rgba(0,0,0,0.15)',
   } as React.CSSProperties;
 };
 

@@ -12,6 +12,15 @@
   }
 }
 
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden !important;
+  position: fixed; /* Extra protection against mobile rubber-banding/scroll */
+}
+
 // Google Translate fix - Ultra Aggressive
 body.translated-ltr, body.translated-rtl {
   *, *::before, *::after {
@@ -30,7 +39,7 @@ body.translated-ltr, body.translated-rtl {
 
 .app-view {
   hyphens: auto;
-  word-break: normal; // Let hyphens work better
+  word-break: break-all;
   overflow-wrap: anywhere;
   -webkit-hyphens: auto;
   -ms-hyphens: auto;
@@ -59,15 +68,15 @@ body.translated-ltr, body.translated-rtl {
   margin: 0 -10px !important; 
   border-radius: 8px;
   background-size: cover;
-  transition: color 0.3s ease; 
+  transition: none !important;
   position: relative;
   overflow: visible !important;
-  height: 60px !important; /* PC Height */
+  height: 60px !important; /* PC - strict fixed height to prevent nickname drift */
   box-sizing: border-box;
   line-height: 1 !important;
 
   @media (max-width: 768px) {
-    height: 38px !important; /* Mobile fixed height parity */
+    height: 38px !important; /* Mobile strict fixed height */
   }
 
   span {
@@ -340,10 +349,7 @@ body.translated-ltr, body.translated-rtl {
     border-radius: 10px;
   }
 
-  &.has-themed-names {
-    padding-top: 35px;
-    padding-bottom: 35px;
-  }
+  /* .has-themed-names padding removed — was causing nickname vertical shift */
 
   .player-item {
     overflow-wrap: anywhere;
@@ -491,12 +497,17 @@ body.translated-ltr, body.translated-rtl {
 .player-name, .nick-scroll-container span, .label-and-nick .player-name {
   @include font-pangolin(42);
   color: $black;
+  font-weight: bold !important; /* Always bold to prevent metric shift on theme switch */
+  -webkit-text-stroke: 0.5px black; /* Match animated text stroke by default */
+  filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.4)); /* Match animated text shadow by default */
   @media (max-width: 768px) {
     @include font-pangolin(24);
+    -webkit-text-stroke: 0.3px black;
+    filter: drop-shadow(0.5px 0.5px 0.5px rgba(0,0,0,0.5));
   }
   text-align: center;
   white-space: nowrap;
-  transition: color 0.5s ease;
+  transition: none;
   transform: translateZ(0); 
   will-change: transform;
   display: flex;
@@ -506,7 +517,7 @@ body.translated-ltr, body.translated-rtl {
   @media (max-width: 768px) {
     display: inline-block !important; 
     max-width: 100% !important;
-    overflow: visible !important; /* Stop ellipsis */
+    overflow: visible !important;
     text-overflow: clip !important;
     white-space: nowrap !important;
     vertical-align: middle;
@@ -526,6 +537,8 @@ body.translated-ltr, body.translated-rtl {
     color: #000000 !important;
     text-shadow: none !important;
     -webkit-text-stroke: 0 !important;
+    filter: none !important;
+    font-weight: normal !important;
   }
 }
 
@@ -3424,7 +3437,7 @@ body.translated-ltr, body.translated-rtl {
   -webkit-text-fill-color: transparent !important;
   color: transparent !important;
   font-weight: bold;
-  line-height: 1.2 !important;
+  line-height: 1 !important;
   vertical-align: middle;
   -webkit-text-stroke: 0.5px black !important;
   filter: drop-shadow(1px 1px 1px rgba(0,0,0,0.4));
@@ -3610,28 +3623,58 @@ body.translated-ltr, body.translated-rtl {
 }
 
 .pirate-caribbean-bg {
-  background: 
-    url('./assets/images/theme_pirate_bg.jpg') center / contain no-repeat, #000000;
-  background-color: #000000 !important;
-  padding: 8px 15px !important; /* Proper vertical presence on mobile */
-  margin: -4px 0 !important; /* Offset to keep list spacing reasonable */
+  background: none !important;
+  background-color: transparent !important;
+  padding: 0 15px !important;
+  margin: 0 !important;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100% + 10px);
+    background: url('./assets/images/theme_pirate_bg.jpg') center / contain no-repeat, #000000;
+    background-color: #000000;
+    border-radius: 8px;
+    z-index: -1;
+    pointer-events: none;
+    height: 38px;
     
-  @media (min-width: 769px) {
-    padding: 45px 20px !important; /* Even taller as requested */
-    margin: -30px 0 !important; /* Reduced negative margin to add space to list flow */
+    @media (min-width: 769px) {
+      height: 80px;
+      width: calc(100% + 20px);
+    }
   }
 }
 
 .cyber-samurai-iconic-bg {
-  background: 
-    url('./assets/images/theme_samurai_bg.png') center / contain no-repeat, #000000;
-  background-color: #000000 !important;
-  padding: 8px 15px !important; /* Proper vertical presence on mobile */
-  margin: -4px 0 !important; /* Offset to keep list spacing reasonable */
-
-  @media (min-width: 769px) {
-    padding: 45px 20px !important; /* Even taller as requested */
-    margin: -30px 0 !important; /* Reduced negative margin to add space to list flow */
+  background: none !important;
+  background-color: transparent !important;
+  padding: 0 15px !important;
+  margin: 0 !important;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: calc(100% + 10px);
+    background: url('./assets/images/theme_samurai_bg.png') center / contain no-repeat, #000000;
+    background-color: #000000;
+    border-radius: 8px;
+    z-index: -1;
+    pointer-events: none;
+    height: 38px;
+    
+    @media (min-width: 769px) {
+      height: 80px;
+      width: calc(100% + 20px);
+    }
   }
 }
 
@@ -3724,13 +3767,13 @@ body.translated-ltr, body.translated-rtl {
     bottom: -25px;
     left: 50%;
     transform: translateX(-50%);
-    color: #ff4e50;
+    color: #b71c1c;
     font-size: 14px;
     font-weight: bold;
     white-space: nowrap;
     z-index: 10;
     pointer-events: none;
-    text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+    text-shadow: none;
 }
 
 .roundCard .body {
