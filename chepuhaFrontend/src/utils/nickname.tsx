@@ -9,7 +9,7 @@ export const getFontSize = (text: string, baseSizeArg: number = 24) => {
   const threshold = 7;
   if (len <= threshold) return `${baseSize}px`;
 
-  const targetRatio = isPC ? (77 / 90) : (15.5 / 40);
+  const targetRatio = isPC ? (77 / 90) : (20 / 40);
   const targetSizeAt25 = baseSize * targetRatio;
   
   const reductionPerChar = (baseSize - targetSizeAt25) / 18;
