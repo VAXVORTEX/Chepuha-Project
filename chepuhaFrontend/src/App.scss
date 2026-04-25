@@ -3749,16 +3749,31 @@ body.translated-ltr, body.translated-rtl {
 
 .char-limit-error {
     position: absolute;
-    bottom: -25px;
+    bottom: -30px;
     left: 50%;
     transform: translateX(-50%);
-    color: #b71c1c;
-    font-size: 14px;
+    color: $white;
+    font-family: 'Pangolin', cursive;
+    font-size: 16px;
     font-weight: bold;
     white-space: nowrap;
     z-index: 10;
     pointer-events: none;
-    text-shadow: none;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);
+    background: rgba(183, 28, 28, 0.85);
+    padding: 4px 14px;
+    border-radius: 12px;
+    animation: charLimitPop 0.3s ease-out;
+    @media (max-width: 768px) {
+        font-size: 12px;
+        bottom: -24px;
+        padding: 3px 10px;
+    }
+}
+
+@keyframes charLimitPop {
+    0% { opacity: 0; transform: translateX(-50%) translateY(5px); }
+    100% { opacity: 1; transform: translateX(-50%) translateY(0); }
 }
 
 .roundCard .body {

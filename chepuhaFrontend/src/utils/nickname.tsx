@@ -4,19 +4,25 @@ export const getFontSize = (text: string, baseSizeArg: number = 24) => {
   if (!text) return undefined;
   const len = text.length;
   const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
+  const vw = typeof window !== 'undefined' ? window.innerWidth / 100 : 10;
 
   const baseSize = isPC ? baseSizeArg : Math.floor(baseSizeArg * 0.85);
   const threshold = 7;
-  if (len <= threshold) return `${baseSize}px`;
+  if (len <= threshold) {
+    const basePx = baseSize;
+    const vwEquiv = basePx / vw;
+    return `clamp(${Math.floor(basePx * 0.6)}px, ${vwEquiv.toFixed(2)}vw, ${basePx}px)`;
+  }
 
-  const targetRatio = isPC ? (77 / 90) : (20 / 40);
+  const targetRatio = isPC ? (77 / 90) : (24 / 40);
   const targetSizeAt25 = baseSize * targetRatio;
   
   const reductionPerChar = (baseSize - targetSizeAt25) / 18;
   const reduction = (len - threshold) * reductionPerChar;
-  const minSize = isPC ? Math.floor(baseSizeArg * 0.35) : 10; 
+  const minSize = isPC ? Math.floor(baseSizeArg * 0.35) : 11; 
   const calculatedSize = Math.max(minSize, Math.floor(baseSize - reduction));
-  return `${calculatedSize}px`;
+  const vwEquiv = calculatedSize / vw;
+  return `clamp(${Math.max(minSize, Math.floor(calculatedSize * 0.7))}px, ${vwEquiv.toFixed(2)}vw, ${calculatedSize}px)`;
 };
 
 export const getNicknameStyle = (color: string, text: string = '', isInline: boolean = false) => {

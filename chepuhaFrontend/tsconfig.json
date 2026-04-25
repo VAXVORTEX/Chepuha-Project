@@ -1,5 +1,4 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
   "compilerOptions": {
     "target": "ESNext",
     "lib": [
@@ -13,7 +12,6 @@
     "types": [
       "vite/client"
     ],
-    // Recommended Options
     "strict": true,
     "noUncheckedSideEffectImports": false,
     "allowJs": true,
