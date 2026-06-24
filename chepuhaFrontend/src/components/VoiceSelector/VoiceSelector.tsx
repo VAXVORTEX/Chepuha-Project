@@ -26,9 +26,10 @@ interface VoiceSelectorProps {
     isPaused: boolean;
     isLoading: boolean;
     isReady?: boolean;
+    loadingProgress?: number;
 }
 
-const VoiceSelector: React.FC<VoiceSelectorProps> = ({ selectedVoice, onChange, onPlay, onStop, onPause, onResume, isPlaying, isPaused, isLoading, isReady }) => {
+const VoiceSelector: React.FC<VoiceSelectorProps> = ({ selectedVoice, onChange, onPlay, onStop, onPause, onResume, isPlaying, isPaused, isLoading, isReady, loadingProgress = 0 }) => {
     const { language } = useLanguage();
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -54,6 +55,7 @@ const VoiceSelector: React.FC<VoiceSelectorProps> = ({ selectedVoice, onChange, 
                     key={selectedVoice}
                     className={`${styles.select} ${isOpen ? styles.selectOpen : ''} ${(!isReady && isReady !== undefined) || isLoading ? styles.loading : ''} ${isReady ? styles.ready : ''}`} 
                     onClick={() => setIsOpen(!isOpen)}
+                    style={{ '--progress': `${!isReady ? loadingProgress : 100}%` } as React.CSSProperties}
                 >
                     <span>{selectedOption.name}</span>
                 </div>
@@ -77,18 +79,20 @@ const VoiceSelector: React.FC<VoiceSelectorProps> = ({ selectedVoice, onChange, 
             </div>
             <div className={styles.controls}>
                 <button 
-                    className={styles.playBtn} 
+                    className={`${styles.playBtn} ${(!isReady || isLoading) && !isPlaying && !isPaused ? styles.disabledBtn : ''}`} 
                     onClick={(isPlaying || isPaused) ? onStop : onPlay}
-                    disabled={isLoading}
+                    disabled={(!isReady || isLoading) && !isPlaying && !isPaused}
                     title={(isPlaying || isPaused) ? "Остановить полностью" : "Начать озвучку"}
+                    style={(!isReady || isLoading) && !isPlaying && !isPaused ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
                 >
-                    {isLoading ? '⏳' : (isPlaying || isPaused) ? '⏹️' : '🔊'}
+                    {(!isReady || isLoading) && !isPlaying && !isPaused ? '⏳' : (isPlaying || isPaused) ? '⏹️' : '🔊'}
                 </button>
                 <button 
                     className={styles.playBtn} 
                     onClick={isPlaying ? onPause : onResume}
-                    disabled={isLoading || (!isPlaying && !isPaused)}
+                    disabled={(!isPlaying && !isPaused)}
                     title={isPlaying ? "Пауза" : "Возобновить"}
+                    style={(!isPlaying && !isPaused) ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
                 >
                     {isPlaying ? '⏸️' : '▶️'}
                 </button>

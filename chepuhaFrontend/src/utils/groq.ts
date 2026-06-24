@@ -67,27 +67,35 @@ export async function generateAIStory(
         .join('\n');
 
     const systemPrompt = language === 'uk'
-        ? `Ти — генератор ідеальних абсурдних історій для гри "Чепуха".
-Твоя мета: створити зв'язний, дуже смішний текст, який об'єднує всі надані відповіді гравців.
-УВАГА: Головна тематика історії — "${templateName}". Ти ПОВИНЕН використати цю тему як головний всесвіт або контекст історії (згадуй терміни, імена та події з цієї теми).
-КРИТИЧНА ВИМОГА: Ти ЗОБОВ'ЯЗАНИЙ виправляти граматику, відмінки, роди та числа у відповідях гравців! Слова гравців не повинні стирчати криво. Змінюй закінчення слів так, щоб історія читалася як ідеальний літературний твір.
-ПЕРЕКЛАД: Якщо будь-які відповіді гравців написані іншими мовами (наприклад, російською чи англійською), ти ПОВИНЕН автоматично перекласти їх на УКРАЇНСЬКУ мову під час формування історії. Вся історія повинна бути виключно українською.
-Пиши лише текст оповідання, без жодних вступів чи форматування. Лише суцільний текст українською мовою.`
-        : `You are the ultimate generator of absurd stories for the game "Chepuha".
-Your goal: create a coherent, very funny text that unites all provided player answers.
-ATTENTION: The main theme of the story is "${templateName}". You MUST use this theme as the core universe or context of the story (mention terms, names, and events from this theme).
-CRITICAL REQUIREMENT: You MUST fix the grammar, cases, and plurals in the players' answers! Change the word endings so they fit organically and grammatically perfect into the sentences.
-TRANSLATION: If any player answers are written in other languages (for example, Russian or Ukrainian), you MUST automatically translate them to ENGLISH while writing the story. The entire story must be exclusively in English.
-Write ONLY the story text, with no introductions or formatting. Just plain text in English.`;
+        ? `Ти — генератор коротких абсурдних історій для гри "Чепуха".
+Твоя мета: створити КОРОТКУ, зв'язну, смішну історію з відповідей гравців.
+Тема: "${templateName}". Використовуй цю тему як контекст.
+ВАЖЛИВО:
+1. Кожну відповідь гравця оберни у тег: <ans>відповідь</ans>. Це КРИТИЧНО!
+2. Між відповідями додавай МІНІМУМ тексту — лише 3-5 слів для зв'язку.
+3. Виправляй відмінки та граматику відповідей.
+4. Переклади все на українську.
+5. Максимум 4-6 речень. БЕЗ довгих описів!
+Пиши ТІЛЬКИ текст історії.`
+        : `You are a generator of short absurd stories for the game "Chepuha".
+Goal: create a SHORT, coherent, funny story from player answers.
+Theme: "${templateName}". Use this theme as context.
+IMPORTANT:
+1. Wrap each player answer in: <ans>answer</ans>. This is CRITICAL!
+2. Add MINIMAL text between answers — only 3-5 words to connect them.
+3. Fix grammar and cases in answers.
+4. Translate everything to English.
+5. Maximum 4-6 sentences. NO long descriptions!
+Write ONLY the story text.`;
 
     const userPrompt = language === 'uk'
-        ? `Напиши коротку, динамічну історію (5-8 речень) з цих відповідей:\n${answerList}\n\nІсторія має бути веселою, абсурдною, з несподіваною кінцівкою. Не забувай виправляти відмінки у відповідях!`
-        : `Write a short, dynamic story (5-8 sentences) using these answers:\n${answerList}\n\nThe story must be funny, absurd, with an unexpected ending. Do not forget to fix grammatical cases in the answers!`;
+        ? `Напиши коротку історію (4-6 речень) з цих відповідей. Обов'язково оберни кожну відповідь у <ans></ans>:\n${answerList}`
+        : `Write a short story (4-6 sentences) using these answers. Wrap each answer in <ans></ans>:\n${answerList}`;
 
     return await callGroq([
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
-    ], 1500, seed, 2, false);
+    ], 600, seed, 2, false);
 }
 
 /**
@@ -205,7 +213,50 @@ Output format: STRICTLY a JSON object with keys "universe" (your brief analysis 
     }
 }
 
-const ttsCache = new Map<string, Promise<string>>();
+const ttsCache = new Map<string, string>();
+
+// Local English-to-Cyrillic phonetic transliteration map
+const TRANSLITERATION_MAP: Record<string, string> = {
+    'th': 'з', 'sh': 'ш', 'ch': 'ч', 'ph': 'ф', 'wh': 'в',
+    'ck': 'к', 'gh': 'г', 'ng': 'нг', 'tion': 'шн', 'sion': 'жн',
+    'ight': 'айт', 'ough': 'оу', 'oo': 'у', 'ee': 'і',
+    'ea': 'і', 'ou': 'ау', 'ow': 'оу', 'ai': 'ей', 'ay': 'ей',
+    'oi': 'ой', 'oy': 'ой', 'au': 'о', 'aw': 'о',
+    'a': 'а', 'b': 'б', 'c': 'к', 'd': 'д', 'e': 'е', 'f': 'ф',
+    'g': 'г', 'h': 'х', 'i': 'і', 'j': 'дж', 'k': 'к', 'l': 'л',
+    'm': 'м', 'n': 'н', 'o': 'о', 'p': 'п', 'q': 'к', 'r': 'р',
+    's': 'с', 't': 'т', 'u': 'у', 'v': 'в', 'w': 'в', 'x': 'кс',
+    'y': 'й', 'z': 'з'
+};
+
+function transliterateWord(word: string): string {
+    let result = '';
+    let i = 0;
+    const lower = word.toLowerCase();
+    while (i < lower.length) {
+        let matched = false;
+        // Try longest match first (4, 3, 2 chars)
+        for (let len = 4; len >= 1; len--) {
+            const substr = lower.substring(i, i + len);
+            if (TRANSLITERATION_MAP[substr]) {
+                result += TRANSLITERATION_MAP[substr];
+                i += len;
+                matched = true;
+                break;
+            }
+        }
+        if (!matched) {
+            result += lower[i];
+            i++;
+        }
+    }
+    return result;
+}
+
+function transliterateEnglishWords(text: string): string {
+    // Find sequences of Latin characters and transliterate them
+    return text.replace(/[A-Za-z]+/g, (match) => transliterateWord(match));
+}
 
 /**
  * Prepare and clean text specifically for the TTS engine.
@@ -215,20 +266,29 @@ const ttsCache = new Map<string, Promise<string>>();
 export function prepareTextForTTS(
     rawText: string,
     language: 'uk' | 'en' = 'uk'
-): Promise<string> {
+): string {
+    if (ttsCache.has(rawText)) {
+        return ttsCache.get(rawText)!;
+    }
+
     // Add longer pauses for punctuation
     let localText = rawText.replace(/\./g, ' ... ');
     localText = localText.replace(/,/g, ' - ');
-    localText = localText.replace(/<[^>]*>?/gm, ''); // remove HTML tags
+    localText = localText.replace(/<[^>]*>?/gm, '');
     
     // Remove gender parenthesis e.g. "сказав(-ла)" -> "сказав"
     localText = localText.replace(/\(-[а-яА-Яa-zA-ZіІїЇєЄґҐ]+\)/g, '');
     
-    // Add spaces between long sequences of numbers so the TTS doesn't read it as billions
-    // For example "1111111" -> "1 1 1 1 1 1 1"
+    // Add spaces between long sequences of numbers
     localText = localText.replace(/(\d)(?=\d)/g, '$1 ');
 
-    return Promise.resolve(localText);
+    // Transliterate English words to Cyrillic phonetics for Ukrainian TTS
+    if (language === 'uk' && /[A-Za-z]/.test(localText)) {
+        localText = transliterateEnglishWords(localText);
+    }
+
+    ttsCache.set(rawText, localText);
+    return localText;
 }
 
 /**

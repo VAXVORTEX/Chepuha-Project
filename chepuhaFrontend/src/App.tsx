@@ -161,7 +161,7 @@ const getInitialState = (): AppState => {
 };
 
 export const AVAILABLE_COLORS = [
-  '#e52929', '#ff4e50', '#8b0000',
+  '#B22222', '#ff4e50', '#8b0000',
   '#ff8c00', '#ffa500', '#e5a629',
   '#ffd700', '#ffff00', '#f9d423', '#fafad2',
   '#29a62b', '#24c431', '#00ff00', '#32cd32', '#008000', '#adff2f', '#98fb98', '#00fa9a',
@@ -329,7 +329,11 @@ function App() {
           questionTypes: q,
           questions: q,
           fallbacks: Array(12).fill(['...']),
-          buildStory: () => ''
+          buildStory: (answers: string[]) => {
+              const filtered = answers.filter(a => a && a !== '__REMOVE_ME__' && a.trim());
+              if (filtered.length === 0) return 'Історія не була згенерована.';
+              return filtered.join('. ') + '.';
+          }
       } as any;
   }
   const { savedGames, saveGameToHistory } = useHistory();
@@ -512,7 +516,10 @@ function App() {
           }
 
           const coloredAnswers = fullAnswers.map((ans, idx) => {
-            if (!parsedColorHighlight) return ans;
+            if (!parsedColorHighlight) {
+              if (ans === "__REMOVE_ME__") return ans;
+              return `<span style="color: #8B0000; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 3px rgba(0,0,0,0.5); -webkit-text-stroke: 0.5px #000;">${ans}</span>`;
+            }
             const roundIndex = indices.indexOf(idx);
             const originalAnswer = roundIndex !== -1
               ? (s.answers || []).find((a: any) => a.position_in_sheet === (roundIndex + 1))
@@ -525,7 +532,7 @@ function App() {
             }
             const ansOwnerId = typeof originalAnswer.player_id === 'object' && originalAnswer.player_id !== null ? originalAnswer.player_id.id : originalAnswer.player_id;
             const ansOwner = typeof originalAnswer.player_id === 'object' && originalAnswer.player_id !== null ? originalAnswer.player_id : players.find(p => String(p.id) === String(ansOwnerId));
-            const color = ansOwner?.color || (String(ansOwnerId) === String(playerId) ? (playerColor || '#e52929') : '#e52929');
+            const color = ansOwner?.color || (String(ansOwnerId) === String(playerId) ? (playerColor || '#8B0000') : '#8B0000');
 
             return ReactDOMServer.renderToStaticMarkup(
               renderThemedNickname(ans, color, 24, true, true)
@@ -554,6 +561,28 @@ function App() {
                 language as 'uk' | 'en',
                 storySeed
               );
+              // Convert <ans>...</ans> tags to colored spans
+              if (parsedColorHighlight) {
+                let ansIdx = 0;
+                const usedAnswers = fullAnswers.filter(a => a && a.trim() && !a.includes('__REMOVE_ME__'));
+                storyText = storyText.replace(/<ans>(.*?)<\/ans>/g, (_, ansText) => {
+                  const origIdx = indices[ansIdx % indices.length];
+                  const originalAnswer = (s.answers || []).find((a: any) => a.position_in_sheet === (ansIdx + 1));
+                  const ansOwnerId = originalAnswer ? (typeof originalAnswer.player_id === 'object' && originalAnswer.player_id !== null ? originalAnswer.player_id.id : originalAnswer.player_id) : null;
+                  const ansOwner = ansOwnerId ? (typeof originalAnswer.player_id === 'object' && originalAnswer.player_id !== null ? originalAnswer.player_id : players.find(p => String(p.id) === String(ansOwnerId))) : null;
+                  const color = ansOwner?.color || (String(ansOwnerId) === String(playerId) ? (playerColor || '#8B0000') : '#8B0000');
+                  ansIdx++;
+                  return ReactDOMServer.renderToStaticMarkup(
+                    renderThemedNickname(ansText, color, 24, true, true)
+                  );
+                });
+              } else {
+                storyText = storyText.replace(/<ans>(.*?)<\/ans>/g, (_, ansText) => {
+                  return `<span style="color: #8B0000; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 3px rgba(0,0,0,0.5); -webkit-text-stroke: 0.5px #000;">${ansText}</span>`;
+                });
+              }
+              // Clean any remaining <ans> tags that weren't matched
+              storyText = storyText.replace(/<\/?ans>/g, '');
             } catch (aiErr) {
               console.warn('[Chepuha] AI story generation failed, using template fallback:', aiErr);
               storyText = activeTemplate.buildStory(coloredAnswers, language, String(sessionId || 'local'), String(sessionId || 'local'));

@@ -46,10 +46,15 @@
         content: '';
         position: absolute;
         top: 0; left: 0; bottom: 0;
-        width: 0%;
+        width: var(--progress, 0%);
         background-color: #ff3333; /* Red progress bar */
         z-index: 1;
         opacity: 1;
+        transition: width 0.5s ease-out;
+    }
+
+    &.loading::before {
+        width: var(--progress, 0%);
     }
 
     &:hover:not(.disabled) {
@@ -62,10 +67,6 @@
         cursor: not-allowed;
     }
 
-    &.loading::before {
-        animation: fillProgress 45s linear forwards;
-    }
-
     &.ready {
         background-color: #ff3333; /* Red when fully loaded */
         border-color: $black;
@@ -74,17 +75,6 @@
         &:hover {
             background-color: #e60000;
         }
-    }
-}
-
-@keyframes fillProgress {
-    0% {
-        width: 0%;
-        background-color: #ff5555;
-    }
-    100% {
-        width: 95%;
-        background-color: #ff5555;
     }
 }
 
@@ -163,13 +153,13 @@
     }
 
     .select {
-        font-size: 18px;
-        padding: 6px 14px;
-        min-width: 180px;
+        font-size: 14px;
+        padding: 4px 10px;
+        min-width: 140px;
     }
 
     .playBtn {
-        font-size: 36px;
-        padding: 4px;
+        font-size: 24px;
+        padding: 2px;
     }
 }

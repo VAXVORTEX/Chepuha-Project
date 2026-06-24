@@ -843,7 +843,7 @@ body.translated-ltr, body.translated-rtl {
 .red-guy-bg {
   right: 0px !important;
   left: auto !important;
-  bottom: 20px !important;
+  bottom: 100px !important;
   background-image: url("./assets/images/main_character_red.png");
   background-position: right bottom !important;
   width: 15vw;
@@ -2049,7 +2049,7 @@ body.translated-ltr, body.translated-rtl {
     height: 70px !important;
     right: 0 !important;
     left: auto !important;
-    bottom: 0px !important;
+    bottom: 60px !important;
     background-position: right bottom !important;
     z-index: 1 !important;
     pointer-events: auto !important;
@@ -2058,7 +2058,7 @@ body.translated-ltr, body.translated-rtl {
   }
 
   .is-history .red-guy-bg {
-    bottom: 0px !important;
+    bottom: 60px !important;
   }
 
 
