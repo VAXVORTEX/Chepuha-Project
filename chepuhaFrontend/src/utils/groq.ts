@@ -87,7 +87,7 @@ Write ONLY the story text, with no introductions or formatting. Just plain text 
     return await callGroq([
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
-    ], 600, seed, 2, false);
+    ], 1500, seed, 2, false);
 }
 
 /**
@@ -128,7 +128,7 @@ Return ONLY the corrected text with tags, no explanations.`;
     const refined = await callGroq([
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
-    ], 600, seed, 2, false);
+    ], 3500, seed, 2, false);
 
     return refined || rawStoryWithHtml;
 }
