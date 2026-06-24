@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styles from './RoundCard.module.scss';
 import Button from '../Button/Button';
-import Input from '../Input/Input';
+import GameInput from '../GameInput/GameInput';
 import { Phases } from '../../types/phaseVariant';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { TranslationKey } from '../../config/i18n';
@@ -16,23 +16,7 @@ interface RoundCardProps {
     hints?: string[];
     showColors?: boolean;
 }
-const getNicknameStyle = (color: string, showColors: boolean = true) => {
-    if (!showColors) return { color: '#000000', textShadow: 'none' };
-    if (color?.startsWith('special:')) return {};
-    const isBlack = !color || color === '#000000' || color === '#000';
-    return {
-        color: color || '#000000',
-        textShadow: isBlack ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000'
-    };
-};
-
-const getNicknameClassName = (color: string, showColors: boolean = true) => {
-    if (!showColors) return styles.playerName;
-    if (color?.startsWith('special:')) {
-        return `${styles.playerName} ${color.replace('special:', '')}-text`;
-    }
-    return styles.playerName;
-};
+import { renderThemedNickname } from '../../utils/nickname';
 
 export const RoundCard = ({
     playerName,
@@ -60,19 +44,9 @@ export const RoundCard = ({
     }, [hints]);
 
 
-    const getFontSize = (text: string) => {
-        if (!text) return undefined;
-        const len = text.length;
-        if (len <= 10) return "45px";
-        const baseSize = 45;
-        const scaleFactor = 10 / len;
-        const calculatedSize = Math.max(22, Math.floor(baseSize * Math.pow(scaleFactor, 1.1)));
-        return `${calculatedSize}px`;
-    };
-
     const isWaiting = phase === Phases.Waiting;
     const handleSubmit = () => {
-        if (onSubmitAnswer && answer.trim() !== '') {
+        if (onSubmitAnswer && answer.trim() !== '' && answer.length <= 500) {
             onSubmitAnswer(answer);
             setAnswer('');
         }
@@ -81,14 +55,8 @@ export const RoundCard = ({
     return (
         <div className={`${styles.roundCard} ${isWaiting ? styles.waiting : ''}`}>
             <div className={styles.header}>
-                <h2
-                    className={getNicknameClassName(playerColor || '', showColors)}
-                    style={{
-                        ...getNicknameStyle(playerColor || '', showColors),
-                        fontSize: getFontSize(playerName)
-                    }}
-                >
-                    {playerName}
+                <h2 className={styles.playerName}>
+                    {renderThemedNickname(playerName, playerColor || '', 55, showColors)}
                 </h2>
             </div>
             <div className={styles.body}>
@@ -101,16 +69,19 @@ export const RoundCard = ({
                     </div>
                 ) : (
                     <div className={styles.activeContent}>
-                        <h3 className={styles.question}>{question ? t(question as TranslationKey) : ''}</h3>
-                        <Input
-                            value={answer}
-                            onChange={setAnswer}
-                            placeholder={t('ENTER_ANSWER')}
-                            maxLength={200}
-                            autoFocus={true}
-                            onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
-                            className={styles.cardInput}
-                        />
+                        <h3 className={styles.question}>{question ? (t(question as TranslationKey) !== question && t(question as TranslationKey) ? t(question as TranslationKey) : question) : ''}</h3>
+                        <div style={{ position: 'relative', width: '100%', maxWidth: '850px', marginBottom: '40px', boxSizing: 'border-box', display: 'flex', justifyContent: 'center' }}>
+                            <GameInput
+                                value={answer}
+                                onChange={setAnswer}
+                                onEnter={handleSubmit}
+                                placeholder={t('ENTER_ANSWER')}
+                                maxLength={500}
+                                autoFocus={true}
+                                errorText={answer.length >= 500 ? t('CHAR_LIMIT_REACHED') : null}
+                                contextType="answer"
+                            />
+                        </div>
                         {hints && hints.length > 0 && (
                             <div className={styles.hintsSection}>
                                 <button

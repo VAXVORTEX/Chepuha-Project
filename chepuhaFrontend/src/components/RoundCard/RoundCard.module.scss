@@ -28,11 +28,13 @@
 
 .playerName {
   @include font-60;
-  font-size: 70px;
   color: $white;
   text-transform: uppercase;
   margin: 0;
   letter-spacing: 2px;
+  overflow-wrap: anywhere;
+  word-break: break-all;
+  padding: 0 10px;
 }
 
 .body {
@@ -154,9 +156,7 @@
     margin-bottom: 20px;
   }
 
-  .playerName {
-    font-size: 28px !important;
-  }
+
 
   .body {
     padding: 40px 15px 40px 15px;
@@ -164,7 +164,7 @@
   }
 
   .question {
-    font-size: 24px !important;
+    font-size: 30px !important;
     margin-bottom: 40px;
   }
 

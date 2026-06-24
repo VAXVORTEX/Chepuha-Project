@@ -4,11 +4,13 @@ interface InputProps {
     value: string;
     onChange: (value: string) => void;
     placeholder?: string;
-    type?: string;
+    type?: 'text' | 'textarea' | string;
     maxLength?: number;
     autoFocus?: boolean;
-    onKeyDown?: (e: React.KeyboardEvent<HTMLInputElement>) => void;
+    onKeyDown?: (e: any) => void;
     className?: string;
+    disabled?: boolean;
+    style?: React.CSSProperties;
 }
 const Input: React.FC<InputProps> = React.memo(({
     value,
@@ -18,21 +20,57 @@ const Input: React.FC<InputProps> = React.memo(({
     maxLength,
     autoFocus,
     onKeyDown,
-    className = ''
+    className = '',
+    disabled,
+    style
 }) => {
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const textareaRef = React.useRef<HTMLTextAreaElement>(null);
+
+    const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         onChange(e.target.value);
+        if (textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        }
     };
+
+    React.useEffect(() => {
+        if (type !== 'text' && textareaRef.current) {
+            textareaRef.current.style.height = 'auto';
+            textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+        }
+    }, [value, type]);
+
+    if (type === 'text') {
+        return (
+            <input
+                className={`${styles.input} ${className}`}
+                style={style}
+                type="text"
+                value={value}
+                onChange={(e) => onChange(e.target.value)}
+                placeholder={placeholder}
+                maxLength={maxLength || 500}
+                autoFocus={autoFocus}
+                onKeyDown={onKeyDown}
+                disabled={disabled}
+            />
+        );
+    }
+
     return (
-        <input
+        <textarea
+            ref={textareaRef}
             className={`${styles.input} ${className}`}
-            type={type}
+            style={{ ...style, resize: 'none', overflow: 'hidden' }}
             value={value}
             onChange={handleChange}
             placeholder={placeholder}
-            maxLength={maxLength}
+            maxLength={maxLength || 500}
             autoFocus={autoFocus}
             onKeyDown={onKeyDown}
+            disabled={disabled}
+            rows={1}
         />
     );
 });
