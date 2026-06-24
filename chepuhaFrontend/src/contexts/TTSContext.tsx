@@ -81,8 +81,8 @@ export const TTSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         return promise;
     }, [currentVoice]);
 
-    const playAbortControllerRef = useRef<AbortController | null>(null);
-    const currentPlayIdRef = useRef<number>(0);
+    const playAbortControllerRef = React.useRef<AbortController | null>(null);
+    const currentPlayIdRef = React.useRef<number>(0);
 
     const checkAudioReady = useCallback((text: string, voice?: string) => {
         if (!text) return false;
