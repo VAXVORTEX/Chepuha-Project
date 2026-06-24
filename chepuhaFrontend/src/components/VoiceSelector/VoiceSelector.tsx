@@ -79,7 +79,7 @@ const VoiceSelector: React.FC<VoiceSelectorProps> = ({ selectedVoice, onChange, 
                 <button 
                     className={styles.playBtn} 
                     onClick={(isPlaying || isPaused) ? onStop : onPlay}
-                    disabled={isLoading || (!isReady && !isPlaying && !isPaused)}
+                    disabled={isLoading}
                     title={(isPlaying || isPaused) ? "Остановить полностью" : "Начать озвучку"}
                 >
                     {isLoading ? '⏳' : (isPlaying || isPaused) ? '⏹️' : '🔊'}

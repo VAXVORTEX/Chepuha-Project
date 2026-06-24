@@ -85,12 +85,12 @@ export const TTSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const currentPlayIdRef = useRef<number>(0);
 
     const checkAudioReady = useCallback((text: string, voice?: string) => {
+        if (!text) return false;
+        const cleanText = text.replace(/<[^>]*>?/gm, '');
         const targetVoice = voice || currentVoice;
-        let cleanText = preprocessText(text);
-        if (cleanText.length > 300) cleanText = cleanText.substring(0, 300);
         const cacheKey = `${cleanText}_${targetVoice}`;
-        return blobCache.current.has(cacheKey);
-    }, [currentVoice]);
+        return cachedKeys.has(cacheKey) || blobCache.current.has(cacheKey);
+    }, [currentVoice, cachedKeys]);
 
     const playTTS = useCallback(async (text: string, voice?: string) => {
         if (isPlaying) {
@@ -106,13 +106,9 @@ export const TTSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         currentPlayIdRef.current = playId;
         
         if (!text) return;
-        let cleanText = preprocessText(text);
+        const cleanText = text.replace(/<[^>]*>?/gm, '');
         if (!cleanText.trim()) return;
         
-        if (cleanText.length > 300) {
-            cleanText = cleanText.substring(0, 300);
-        }
-
         const targetVoice = voice || currentVoice;
         const cacheKey = `${cleanText}_${targetVoice}`;
         
@@ -131,13 +127,13 @@ export const TTSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             if (currentPlayIdRef.current !== playId) return;
 
             if (!url) {
-                let finalText = await prepareTextForTTS(cleanText);
-                
-                if (currentPlayIdRef.current !== playId) return;
-
-                if (finalText.length > 400) {
-                    finalText = finalText.substring(0, 400);
+                // Truncate only for the actual request to HF, to avoid limits
+                let textForHF = cleanText;
+                if (textForHF.length > 500) {
+                    textForHF = textForHF.substring(0, 500);
                 }
+
+                let finalText = await prepareTextForTTS(textForHF);
 
                 playAbortControllerRef.current = new AbortController();
                 const response = await fetch(`https://kikk22320-chepuha-tts.hf.space/tts`, {
@@ -211,14 +207,6 @@ export const TTSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     useEffect(() => {
         fetch('https://kikk22320-chepuha-tts.hf.space/').catch(() => {});
     }, []);
-
-    const checkAudioReady = useCallback((text: string, voice?: string) => {
-        if (!text) return false;
-        const cleanText = text.replace(/<[^>]*>?/gm, '');
-        const targetVoice = voice || currentVoice;
-        const cacheKey = `${cleanText}_${targetVoice}`;
-        return cachedKeys.has(cacheKey);
-    }, [cachedKeys, currentVoice]);
 
     return (
         <TTSContext.Provider value={{

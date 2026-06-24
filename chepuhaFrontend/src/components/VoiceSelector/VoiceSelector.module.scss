@@ -63,7 +63,7 @@
     }
 
     &.loading::before {
-        animation: fillProgress 15s linear forwards;
+        animation: fillProgress 45s linear forwards;
     }
 
     &.ready {

@@ -219,50 +219,16 @@ export function prepareTextForTTS(
     // Add longer pauses for punctuation
     let localText = rawText.replace(/\./g, ' ... ');
     localText = localText.replace(/,/g, ' - ');
-
-    if (!isGroqAvailable()) return Promise.resolve(localText);
+    localText = localText.replace(/<[^>]*>?/gm, ''); // remove HTML tags
     
-    const cacheKey = `${language}_${localText}`;
-    if (ttsCache.has(cacheKey)) {
-        return ttsCache.get(cacheKey)!;
-    }
+    // Remove gender parenthesis e.g. "сказав(-ла)" -> "сказав"
+    localText = localText.replace(/\(-[а-яА-Яa-zA-ZіІїЇєЄґҐ]+\)/g, '');
+    
+    // Add spaces between long sequences of numbers so the TTS doesn't read it as billions
+    // For example "1111111" -> "1 1 1 1 1 1 1"
+    localText = localText.replace(/(\d)(?=\d)/g, '$1 ');
 
-    const promise = (async () => {
-        const systemPrompt = language === 'uk'
-            ? `Ти — експерт з підготовки тексту для озвучення (Text-to-Speech).
-Твоє завдання: адаптувати текст так, щоб синтезатор мовлення прочитав його ідеально.
-ПРАВИЛА:
-1. ЗВИЧАЙНІ ЧИСЛА (роки, кількість тощо): замінюй на слова, ідеально УЗГОДЖУЮЧИ ЇХ З КОНТЕКСТОМ (відмінок, рід, число). Наприклад: "з 5 друзями" -> "з п'ятьма друзями".
-2. НІКНЕЙМИ ТА ID (наприклад, "Player007", "кіт11"): читай кожну цифру окремо ("нуль нуль сім"), А НЕ як математичні тисячі чи сотні!
-3. БЕЗГЛУЗДИЙ СПАМ ЦИФР (наприклад, "1111111111"): НІКОЛИ не читай це як мільйони чи мільярди. Просто скажи цифру кілька разів протяжно (наприклад, "один один один...") або резюмуй ("дуже багато одиниць"), щоб зекономити час.
-4. АБСОЛЮТНО ВИДАЛИ будь-які дужки з варіантами закінчень (наприклад "видав(-ла)"). Залиш лише правильне дієслово!
-5. Видали всі HTML-теги.
-НАЙГОЛОВНІШЕ ПРАВИЛО: Поверни ЛИШЕ фінальний текст. Без вступних чи завершальних слів (наприклад НЕ ПИШИ "Ось підготовлений текст"). НІЯКОГО ЗАЙВОГО ТЕКСТУ, лише результат.`
-            : `You are an expert in preparing text for Text-to-Speech.
-RULES:
-1. Normal numbers: Convert to words perfectly matching grammar context.
-2. Nicknames/IDs (e.g. "Player007"): Read digit by digit ("zero zero seven"), NEVER as thousands/hundreds.
-3. Random spam (e.g. "11111111"): NEVER read as millions/billions. Just read the digit a few times ("one one one...") or summarize it.
-4. Remove gender parentheses (e.g. "said(-ed)"). Remove HTML tags.
-CRITICAL RULE: Return ONLY the final text. No conversational filler like "Here is the text". Just the text.`;
-
-        const userPrompt = localText;
-
-        try {
-            const refined = await callGroq([
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userPrompt }
-            ], 600, undefined, 2, false);
-            return refined || localText;
-        } catch (e) {
-            console.error("Failed to prepare TTS text via Groq", e);
-            ttsCache.delete(cacheKey); // clear failed promise so it can be retried
-            return localText;
-        }
-    })();
-
-    ttsCache.set(cacheKey, promise);
-    return promise;
+    return Promise.resolve(localText);
 }
 
 /**
