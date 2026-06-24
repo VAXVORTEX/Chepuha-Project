@@ -124,16 +124,8 @@ export const TTSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 }
             }
 
-            if (currentPlayIdRef.current !== playId) return;
-
             if (!url) {
-                // Truncate only for the actual request to HF, to avoid limits
-                let textForHF = cleanText;
-                if (textForHF.length > 500) {
-                    textForHF = textForHF.substring(0, 500);
-                }
-
-                let finalText = await prepareTextForTTS(textForHF);
+                let finalText = await prepareTextForTTS(cleanText);
 
                 playAbortControllerRef.current = new AbortController();
                 const response = await fetch(`https://kikk22320-chepuha-tts.hf.space/tts`, {

@@ -68,7 +68,7 @@
   height: 100%;
   min-height: 0;
   overflow-y: auto;
-  padding: 20px 50px 20px 50px;
+  padding: 20px 33px 20px 33px;
   box-sizing: border-box;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -160,8 +160,9 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
+  margin-top: 10px;
   margin-bottom: 6px;
   flex-shrink: 0;
 }
@@ -182,13 +183,13 @@
 }
 
 .controlBtn {
-  padding: 4px 16px;
+  padding: 3px 12px;
   background-color: $gray-medium;
   color: $white;
   border-radius: 40px;
   border: none;
   cursor: pointer;
-  @include font-pangolin(24);
+  @include font-pangolin(20);
   transition: background 0.2s, opacity 0.3s, transform 0.1s;
   box-shadow: 0 4px 6px rgba(0,0,0,0.3);
   user-select: none;
@@ -225,9 +226,9 @@
   color: #000000;
   border: 2px solid #555;
   border-radius: 8px;
-  padding: 6px 10px;
+  padding: 4px 8px;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 0.9rem;
   font-weight: bold;
   outline: none;
   cursor: pointer;
@@ -350,7 +351,7 @@
   }
 
   .part {
-    padding: 20px 45px;
+    padding: 20px 24px;
     -webkit-overflow-scrolling: touch;
     will-change: transform;
   }
@@ -411,18 +412,20 @@
   }
 
   .storyControls {
-    gap: 10px;
+    gap: 8px;
+    margin-top: 5px;
     margin-bottom: 4px;
   }
 
   .controlBtn {
-    font-size: 12px;
-    padding: 2px 6px;
+    font-size: 10px;
+    padding: 2px 5px;
   }
 
   .ttsBtn {
-    width: 25px;
-    height: 25px;
+    width: 20px;
+    height: 20px;
+    font-size: 0.9rem;
   }
 
   .zoomLabel {

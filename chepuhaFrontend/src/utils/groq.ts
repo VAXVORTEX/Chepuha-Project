@@ -128,7 +128,7 @@ Return ONLY the corrected text with tags, no explanations.`;
     const refined = await callGroq([
         { role: 'system', content: systemPrompt },
         { role: 'user', content: userPrompt }
-    ], 3500, seed, 2, false);
+    ], 1500, seed, 2, false);
 
     return refined || rawStoryWithHtml;
 }

@@ -834,21 +834,21 @@ body.translated-ltr, body.translated-rtl {
   background-image: url("./assets/images/main_character_yellow.png");
   background-position: left bottom !important;
   display: block;
-  width: 20vw;
-  max-width: 300px;
-  height: 350px;
+  width: 15vw;
+  max-width: 180px;
+  height: 220px;
   z-index: 1;
 }
 
 .red-guy-bg {
   right: 0px !important;
   left: auto !important;
-  bottom: 50px !important;
+  bottom: 20px !important;
   background-image: url("./assets/images/main_character_red.png");
   background-position: right bottom !important;
-  width: 20vw;
-  max-width: 300px;
-  height: 350px;
+  width: 15vw;
+  max-width: 180px;
+  height: 220px;
   z-index: 1;
 }
 
@@ -2049,7 +2049,7 @@ body.translated-ltr, body.translated-rtl {
     height: 70px !important;
     right: 0 !important;
     left: auto !important;
-    bottom: 50px !important;
+    bottom: 0px !important;
     background-position: right bottom !important;
     z-index: 1 !important;
     pointer-events: auto !important;
@@ -2058,7 +2058,7 @@ body.translated-ltr, body.translated-rtl {
   }
 
   .is-history .red-guy-bg {
-    bottom: 5px !important;
+    bottom: 0px !important;
   }
 
 
