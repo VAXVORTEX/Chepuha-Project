@@ -1,0 +1,31 @@
+import { supabase } from './supabaseClient';
+import type { Round, QuestionType, RoundStatus } from './types';
+
+export interface CreateRoundPayload {
+    session_id?: string;
+    round_number: number;
+    question_type: QuestionType;
+    rounds_status?: RoundStatus;
+    started_at?: string;
+}
+
+export async function createRound(payload: CreateRoundPayload): Promise<Round> {
+    const { data, error } = await supabase
+        .from('rounds')
+        .insert(payload)
+        .select('id, round_number, question_type, rounds_status, started_at, completed_at, session_id')
+        .single();
+    if (error) throw error;
+    return data as Round;
+}
+
+
+export async function getRoundsBySession(sessionId: string): Promise<Round[]> {
+    const { data, error } = await supabase
+        .from('rounds')
+        .select('id, round_number, question_type, rounds_status, started_at, completed_at, session_id')
+        .eq('session_id', sessionId)
+        .order('round_number', { ascending: true });
+    if (error) throw error;
+    return data || [];
+}

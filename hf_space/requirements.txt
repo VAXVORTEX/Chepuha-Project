@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+torch
+torchaudio
+soundfile
+rvc-python==0.1.5
+# force rebuild 4
+omegaconf
+huggingface-hub

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import './index.scss'
 import App from './App'
 import { LanguageProvider } from './contexts/LanguageContext';
+import { TTSProvider } from './contexts/TTSContext';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -12,7 +13,9 @@ const root = createRoot(rootElement);
 root.render(
   <StrictMode>
     <LanguageProvider>
-      <App />
+      <TTSProvider>
+        <App />
+      </TTSProvider>
     </LanguageProvider>
   </StrictMode>
 );

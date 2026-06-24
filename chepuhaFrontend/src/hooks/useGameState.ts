@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../api/supabaseClient';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { supabase } from '@api/supabaseClient';
 import {
     getGameSession,
     getPlayersBySession,
@@ -9,7 +9,7 @@ import {
     type Player,
     type Round,
     type Answer,
-} from '../api';
+} from '@api';
 
 interface GameState {
     session: GameSession | null;
@@ -32,8 +32,11 @@ export function useGameState(sessionId: string | null) {
         dataReady: false,
     });
 
+    const fetchLock = useRef(false);
+
     const fetchState = useCallback(async () => {
-        if (!sessionId) return;
+        if (!sessionId || fetchLock.current) return;
+        fetchLock.current = true;
         try {
 
             const [sessionData, playersData, roundsData] = await Promise.all([
@@ -57,21 +60,29 @@ export function useGameState(sessionId: string | null) {
                 }
             }
 
-
-            setGameState((prev) => ({
-                session: sessionData || prev.session,
-                players: playersData || prev.players,
-                rounds: roundsData || prev.rounds,
-                activeRoundId: activeRound?.id || null,
-                currentAnswers: activeRoundAnswers || [],
-                error: null,
-                dataReady: true,
-            }));
+            setGameState((prev) => {
+                const newState = {
+                    session: sessionData || prev.session,
+                    players: playersData || prev.players,
+                    rounds: roundsData || prev.rounds,
+                    activeRoundId: activeRound?.id || null,
+                    currentAnswers: activeRoundAnswers || [],
+                    error: null,
+                    dataReady: true,
+                };
+                
+                if (JSON.stringify(prev) === JSON.stringify(newState)) {
+                    return prev;
+                }
+                return newState;
+            });
         } catch (err: any) {
 
             if (err instanceof TypeError || String(err).includes('Failed to fetch')) {
                 setGameState((prev) => ({ ...prev, error: 'NETWORK_ERROR' }));
             }
+        } finally {
+            fetchLock.current = false;
         }
     }, [sessionId]);
 
@@ -116,7 +127,6 @@ export function useGameState(sessionId: string | null) {
                         if (payload.eventType === 'DELETE' && payload.old) {
                             setGameState(prev => ({ ...prev, players: prev.players.filter(p => p.id !== (payload.old as any).id) }));
                         }
-                        fetchState();
                     }
                 )
                 .on(
@@ -124,10 +134,18 @@ export function useGameState(sessionId: string | null) {
                     { event: '*', schema: 'public', table: 'rounds', filter: `session_id=eq.${sessionId}` },
                     (payload) => {
                         if (payload?.new) {
+                            const newRound = payload.new as any;
                             setGameState(prev => {
-                                const newRound = payload.new as any;
                                 const exists = prev.rounds.some(r => r.id === newRound.id);
-                                return { ...prev, rounds: exists ? prev.rounds.map(r => r.id === newRound.id ? newRound : r) : [...prev.rounds, newRound] };
+                                const updatedRounds = exists ? prev.rounds.map(r => r.id === newRound.id ? newRound : r) : [...prev.rounds, newRound];
+                                const sorted = [...updatedRounds].sort((a: any, b: any) => (b.round_number || 0) - (a.round_number || 0));
+                                const activeRound = sorted[0] || null;
+                                return {
+                                    ...prev,
+                                    rounds: updatedRounds,
+                                    activeRoundId: activeRound?.id || prev.activeRoundId,
+                                    currentAnswers: activeRound?.id !== prev.activeRoundId ? [] : prev.currentAnswers,
+                                };
                             });
                         }
                         if (payload) fetchState();
@@ -150,24 +168,39 @@ export function useGameState(sessionId: string | null) {
                                 return prev;
                             });
                         }
-                        if (payload && Date.now() % 5 === 0) fetchState();
                     }
                 )
                 .subscribe((status) => {
+                    if (status === 'SUBSCRIBED') {
+                        setGameState((prev) => ({ ...prev, error: null }));
+                    } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+                        // Let realtime auto-reconnect handle it, but fetch state explicitly to avoid desync
+                        fetchState();
+                    }
                 });
 
-            const pollInterval = setInterval(() => {
+            // 1. Fallback polling interval in case websocket goes silently dead (common on mobile)
+            const fallbackInterval = setInterval(() => {
                 fetchState();
-            }, 1000);
+            }, 10000); // 10 seconds
+
+            // 2. Visibility change to immediately sync when returning to app
+            const handleVisibilityChange = () => {
+                if (document.visibilityState === 'visible') {
+                    fetchState();
+                }
+            };
+            document.addEventListener('visibilitychange', handleVisibilityChange);
 
             return () => {
+                clearInterval(fallbackInterval);
+                document.removeEventListener('visibilitychange', handleVisibilityChange);
                 supabase.removeChannel(sessionChannel);
-                clearInterval(pollInterval);
             };
         } catch (err) {
             const pollInterval = setInterval(() => {
                 fetchState();
-            }, 1000);
+            }, 1500);
             return () => clearInterval(pollInterval);
         }
     }, [fetchState, sessionId]);

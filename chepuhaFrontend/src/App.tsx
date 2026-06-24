@@ -12,6 +12,7 @@ import JoinCard from "./components/JoinCard/JoinCard";
 import WaitCard from "./components/WaitCard/WaitCard";
 import HomeIcon from "./components/HomeIcon/HomeIcon";
 import Input from "./components/Input/Input";
+import GameInput from "./components/GameInput/GameInput";
 import GameResult from "./components/GameResult/GameResult";
 import logoImage from "./assets/images/Logo.png";
 import logoImageEng from "./assets/images/Chepuha_eng.png";
@@ -25,12 +26,12 @@ const STATE_STORAGE_KEY = "chepuhaActiveGameState";
 import { useGameState } from "./hooks/useGameState";
 import {
   createGameSession,
+  getGameSession,
   createPlayer,
   updateGameSession,
   updatePlayer,
   updatePlayersBySession,
   createRound,
-  createStorySheet,
   createStorySheetsBatch,
   submitAnswer,
   getAnswersByRound,
@@ -40,10 +41,14 @@ import {
   getStorySheetsBySession,
   getRoundsBySession,
   getPlayersBySession,
-} from "./api";
+  updateStorySheetQuestion,
+} from "@api";
 import { TEMPLATES } from "./config/templates";
 import { useLanguage } from "./contexts/LanguageContext";
-import { Player } from "./api/types";
+import { Player } from "@api/types";
+import { renderThemedNickname, getFontSize, getNicknameStyle, getNicknameClassName } from "./utils/nickname";
+import ReactDOMServer from 'react-dom/server';
+import { generateAIStory, isGroqAvailable, refineStoryWithAI, generateCustomQuestions, generateNextQuestion } from './utils/groq';
 
 export interface AppState {
   phase: Phases;
@@ -68,7 +73,7 @@ export interface AppState {
   myStorySheetId: string | null;
   playerCount: number;
   roundStartedAt: string | null;
-  allStorySheets: { playerId: string, sheetId: string }[];
+  allStorySheets: { playerId: string, sheetId: string, current_ai_question?: string | null }[];
   lobbyCreatedAt: number | null;
   answeredRoundId: string | null;
   isJoining: boolean;
@@ -156,36 +161,30 @@ const getInitialState = (): AppState => {
 };
 
 export const AVAILABLE_COLORS = [
-  // Plain colors ordered by hue: red -> orange -> yellow -> green -> blue -> purple -> pink -> neutrals
   '#e52929', '#ff4e50', '#8b0000',
   '#ff8c00', '#ffa500', '#e5a629',
-  '#ffd700', '#ffff00', '#fafad2',
+  '#ffd700', '#ffff00', '#f9d423', '#fafad2',
   '#29a62b', '#24c431', '#00ff00', '#32cd32', '#008000', '#adff2f', '#98fb98', '#00fa9a',
   '#2962e5', '#2c5ed3', '#00bfff', '#0000ff', '#00008b', '#4682b4', '#87ceeb', '#add8e6',
   '#9c29e5', '#8a2be2', '#4b0082', '#9932cc', '#ba55d3', '#e6e6fa',
-  '#f9d423', '#000000', '#ffffff',
+  '#000000', '#ffffff',
 
-  // Animated gradients
-  'special:rainbow', 'special:fire-gradient', 'special:ice-gradient', 'special:gold',
-  'special:nebula', 'special:sunset', 'special:solar', 'special:cyberpunk',
-
-  // Flags
   'special:flag-ua', 'special:flag-de', 'special:flag-jp', 'special:flag-pl',
   'special:flag-it', 'special:flag-es', 'special:flag-br', 'special:flag-ca',
   'special:flag-bi', 'special:flag-pan', 'special:flag-ace', 'special:flag-nonbinary',
 
-  // Gender/pride
   'special:gender-pride', 'special:gender-trans', 'special:flag-lesbian',
   'special:flag-gay-mlm',
   'special:flag-intersex', 'special:flag-genderqueer', 'special:flag-polysexual',
 
-  // Themes
+  'special:fire-gradient', 'special:gold', 'special:ice-gradient',
+
+  'special:rainbow', 'special:solar', 'special:nebula', 'special:cyberpunk',
   'special:pirate-caribbean', 'special:cyber-samurai-iconic',
 
-  // Premium gradients
-  'special:stellar', 'special:deep-purple', 'special:cyan-burst', 'special:golden-rod',
-  'special:mint-fresh', 'special:royal-red', 'special:electric-blue', 'special:neon-pink', 'special:silver-streak',
-  'special:bronze-age'
+  'special:royal-red', 'special:golden-rod', 'special:bronze-age',
+  'special:mint-fresh', 'special:stellar', 'special:cyan-burst', 'special:electric-blue', 'special:deep-purple',
+  'special:neon-pink', 'special:silver-streak'
 ];
 
 const GAME_LENGTH_INDICES: Record<number, number[]> = {
@@ -194,87 +193,32 @@ const GAME_LENGTH_INDICES: Record<number, number[]> = {
   12: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
 };
 
-const getNicknameStyle = (color: string) => {
-  const isDark = color === '#000000' || color === '#000' || color === '#8b0000' || color === '#4b0082';
-  const isSpecial = color?.startsWith('special:');
-  const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
-
-  if (isSpecial) {
-    return { textShadow: 'none' };
-  }
-
-  return {
-    color: color || '#000000',
-    textShadow: isDark ? 'none' : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000',
-    WebkitTextStroke: isDark ? 'none' : (isPC ? '1.5px black' : '0.8px black')
-  } as React.CSSProperties;
-};
-
-const getNicknameClassName = (color: string) => {
-  if (color?.startsWith('special:')) {
-    return `player-name ${color.replace('special:', '')}-text`;
-  }
-  return 'player-name';
-};
-
-
-const getFontSize = (text: string, baseSizeArg: number = 24) => {
-  if (!text) return undefined;
-  const len = text.length;
-  const isPC = window.innerWidth > 768;
-
-  const baseSize = isPC ? 90 : 54;
-
-  if (len <= 6) return `${baseSize}px`;
-
-
-  const scaleFactor = 6 / len;
-
-  const minSize = isPC ? 36 : 18;
-  const calculatedSize = Math.max(minSize, Math.floor(baseSize * Math.pow(scaleFactor, 0.6)));
-  return `${calculatedSize}px`;
-};
-
-const renderThemedNickname = (name: string, color: string, defaultSize: number = 36, showHighlight: boolean = true) => {
-  const themeClass = getNicknameClassName(color);
-  const theme = color.startsWith('special:') ? color.replace('special:', '') : '';
-  const style = showHighlight ? getNicknameStyle(color) : { color: '#000000', textShadow: 'none' };
-  const fontSize = getFontSize(name, defaultSize);
-
-  const content = (
-    <span className={themeClass + (!showHighlight ? ' no-highlight' : '') + " notranslate"} translate="no" style={{ ...style, fontSize }}>
-      {name}
-    </span>
-  );
-
-  if (showHighlight && (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic')) {
-    return (
-      <span className={`${theme}-bg inline-wrapper`}>
-        {content}
-      </span>
-    );
-  }
-
-  return content;
-};
-
 
 const PlayerItem = memo(({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, crownImage, showColorPicker }: any) => {
   const defaultColor = AVAILABLE_COLORS[i % AVAILABLE_COLORS.length];
   const activeColor = isMe && playerColor ? playerColor : (p.color || defaultColor);
+  const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
 
   return (
     <div key={p.id || String(i)} className="player-item" data-player-id={p.id}>
-      <div className="player-name-wrapper">
-        {i === 0 && <img src={crownImage} alt="Host" className="crown-icon" />}
-        {renderThemedNickname(p.nickname, activeColor, 36, showColorPicker)}
-        {isMe && showColorPicker && (
-          <div className="inline-color-picker">
-            <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
-            <div className={classNames("inline-color-swatch", activeColor?.startsWith('special:') ? activeColor.replace('special:', '') : '')} style={!activeColor?.startsWith('special:') ? { background: activeColor } : {}} />
-            <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
-          </div>
-        )}
+      <div className="player-name-wrapper-new">
+        <div className="player-side-container left">
+          {i === 0 && <img src={crownImage} alt="Host" className="crown-icon-new" />}
+        </div>
+        {(() => {
+          const baseSize = isPC ? 75 : 40;
+          const fontSize = getFontSize(p.nickname, baseSize);
+          return renderThemedNickname(p.nickname, activeColor, baseSize, showColorPicker, false, true, fontSize);
+        })()}
+        <div className="player-side-container right">
+          {isMe && showColorPicker && (
+            <div className="inline-color-picker-new">
+              <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
+              <div className={classNames("inline-color-swatch", activeColor?.startsWith('special:') ? activeColor.replace('special:', '') : '')} style={!activeColor?.startsWith('special:') ? { background: activeColor } : {}} />
+              <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -297,9 +241,19 @@ const safeApiCall = async (apiFunc: any, payload: any) => {
 
 function App() {
   const [appState, setAppState] = useState<AppState>(getInitialState);
+  const [showCustomPrompt, setShowCustomPrompt] = useState(false);
+  const [customTopic, setCustomTopic] = useState("");
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
 
   const [serverTimeOffset, setServerTimeOffset] = useState(0);
   const playersListRef = useRef<HTMLDivElement>(null);
+  const [logoPop, setLogoPop] = useState(false);
+
+  const triggerLogoPop = () => {
+    setLogoPop(true);
+    playSecretMusic();
+    setTimeout(() => setLogoPop(false), 300);
+  };
 
   useEffect(() => {
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -351,7 +305,7 @@ function App() {
   const derivedJoinedCount = parsedStoryMode
     ? finishedCount
     : Math.min(
-      hookMatch ? Math.max(joinedCount, currentAnswers.length) : joinedCount,
+      Math.max(joinedCount, currentAnswers.length),
       derivedTotalCount > 0 ? derivedTotalCount : Infinity
     );
 
@@ -362,14 +316,26 @@ function App() {
   }, [language]);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const transitionLockRef = useRef(false);
+  const transitionLockSetAtRef = useRef<number>(0);
   const currentRoundIdRef = useRef(currentRoundId);
   const currentRoundRef = useRef(currentRound);
 
-  const activeTemplate = TEMPLATES[actualTemplateKey] || TEMPLATES.classic;
+  let activeTemplate = TEMPLATES[actualTemplateKey] || TEMPLATES.classic;
+  if (actualTemplateKey === 'custom_ai' && tParts.length > 5) {
+      const q = tParts.slice(6);
+      activeTemplate = {
+          id: 'custom_ai',
+          name: tParts[5] || 'custom_ai',
+          questionTypes: q,
+          questions: q,
+          fallbacks: Array(12).fill(['...']),
+          buildStory: () => ''
+      } as any;
+  }
   const { savedGames, saveGameToHistory } = useHistory();
 
 
-  const CAROUSEL_TEMPLATES = ['random', ...Object.keys(TEMPLATES)];
+  const CAROUSEL_TEMPLATES = ['custom_ai', 'random', ...Object.keys(TEMPLATES)];
   const [carouselIndex, setCarouselIndex] = useState<number>(() => {
     const savedIdx = localStorage.getItem('chepuhaCarouselIdx');
     if (savedIdx !== null) return parseInt(savedIdx, 10);
@@ -456,20 +422,29 @@ function App() {
 
 
   useEffect(() => {
-    if (isHost && sessionId && isLobby) {
-      const packedTemplate = `${selectedTemplate}|${gameLength}|${storyMode ? '1' : '0'}|${hintsEnabled ? '1' : '0'}|${colorHighlight ? '1' : '0'}`;
-      updateGameSession(sessionId, { template: packedTemplate }).catch(err => {
-        console.error("Failed to update game session template:", err);
-      });
+    if (isHost && sessionId && isLobby && session) {
+      let packedTemplate = `${selectedTemplate}|${gameLength}|${storyMode ? '1' : '0'}|${hintsEnabled ? '1' : '0'}|${colorHighlight ? '1' : '0'}`;
+      
+      if (selectedTemplate === 'custom_ai' && session.template) {
+        const parts = session.template.split('|');
+        if (parts.length > 5) {
+          packedTemplate += '|' + parts.slice(5).join('|');
+        }
+      }
+
+      if (session.template && packedTemplate !== session.template) {
+        updateGameSession(sessionId, { template: packedTemplate }).catch(err => {
+          console.error("Failed to update game session template:", err);
+        });
+      }
     }
-  }, [isHost, sessionId, isLobby, selectedTemplate, gameLength, storyMode, hintsEnabled, colorHighlight]);
+  }, [isHost, sessionId, isLobby, selectedTemplate, gameLength, storyMode, hintsEnabled, colorHighlight, session]);
 
 
   useEffect(() => {
     if (sessionId && playerId && playerColor) {
       updatePlayer(playerId, { color: playerColor }).catch((err) => {
         if (String(err.message).includes('column') || String(err.message).includes('schema cache')) {
-          // Expected during DB migration
         } else {
           console.error("Failed to update player color sync:", err);
         }
@@ -504,13 +479,14 @@ function App() {
     if (!sessionId) return;
     try {
       const sheets = await getStorySheetsBySession(sessionId);
-      const built = (sheets || [])
+      const built = await Promise.all((sheets || [])
 
-        .map(s => {
-          const sorted = [...(s.answers || [])].sort((a, b) => a.position_in_sheet - b.position_in_sheet);
+        .map(async s => {
+          try {
+            const sorted = [...(s.answers || [])].sort((a, b) => a.position_in_sheet - b.position_in_sheet);
           const p = s.player_id as any;
 
-          const sheetOwnerId = typeof s.player_id === 'object' ? s.player_id.id : s.player_id;
+          const sheetOwnerId = typeof s.player_id === 'object' && s.player_id !== null ? s.player_id.id : s.player_id;
           const ownerFromList = players.find(p => String(p.id) === String(sheetOwnerId));
           const nick = p?.nickname || ownerFromList?.nickname || 'Гравець';
           const pAnswers = sorted.map(a => a.answer_text);
@@ -522,8 +498,16 @@ function App() {
           });
           for (let i = 0; i < 12; i++) {
             if (!fullAnswers[i]) {
-              const pool = activeTemplate.fallbacks[i] || ["..."];
-              fullAnswers[i] = pool[Math.floor(Math.random() * pool.length)];
+              if (indices.includes(i)) {
+                const fbArr = (language === 'en' && activeTemplate.fallbacksEn) ? activeTemplate.fallbacksEn : activeTemplate.fallbacks;
+                const pool = fbArr[i] || ["..."];
+                const hashStr = String(sessionId || "") + String(sheetOwnerId) + i;
+                let hash = 0;
+                for (let k = 0; k < hashStr.length; k++) hash += hashStr.charCodeAt(k);
+                fullAnswers[i] = pool[hash % pool.length];
+              } else {
+                fullAnswers[i] = "__REMOVE_ME__";
+              }
             }
           }
 
@@ -536,53 +520,87 @@ function App() {
 
 
             if (!originalAnswer) {
-              return `<span lang="uk" style="color: #ffffff; font-weight: normal; text-shadow: none; -webkit-text-stroke: none; opacity: 0.9;">${ans}</span>`;
+              if (ans === "__REMOVE_ME__") return ans;
+              return `<span lang="uk" style="color: #ffffff; text-shadow: none; -webkit-text-stroke: none;">${ans}</span>`;
             }
-            const ansOwnerId = typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id.id : originalAnswer.player_id;
-            const ansOwner = typeof originalAnswer.player_id === 'object' ? originalAnswer.player_id : players.find(p => String(p.id) === String(ansOwnerId));
-            const color = ansOwner?.color || (String(ansOwnerId) === String(playerId) ? playerColor : '#e52929');
-            const isSpecial = color?.startsWith('special:');
-            let style = `color: ${isSpecial ? 'transparent' : color}; font-weight: bold;`;
-            let className = '';
+            const ansOwnerId = typeof originalAnswer.player_id === 'object' && originalAnswer.player_id !== null ? originalAnswer.player_id.id : originalAnswer.player_id;
+            const ansOwner = typeof originalAnswer.player_id === 'object' && originalAnswer.player_id !== null ? originalAnswer.player_id : players.find(p => String(p.id) === String(ansOwnerId));
+            const color = ansOwner?.color || (String(ansOwnerId) === String(playerId) ? (playerColor || '#e52929') : '#e52929');
 
-            if (isSpecial) {
-              const theme = color.replace('special:', '');
-              className = ` class="${theme}-text"`;
-              style = 'color: transparent;';
-              if (theme === 'pirate-caribbean' || theme === 'cyber-samurai-iconic') {
-                return `<span class="${theme}-bg inline-wrapper"><span lang="uk"${className}>${ans}</span></span>`;
-              }
-            } else {
-              const isDark = color === '#000000' || color === '#000' || color === '#8b0000' || color === '#4b0082';
-              const shadow = isDark 
-                ? '0 0 2px #fff, 0 0 5px rgba(255,255,255,0.5)' 
-                : '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 2px 4px rgba(0,0,0,0.5)';
-              const stroke = isDark ? '-webkit-text-stroke: 0.5px #fff;' : '-webkit-text-stroke: 1.5px black;';
-              style += ` text-shadow: ${shadow}; ${stroke}`;
-            }
-            return `<span lang="uk"${className} style="${style}">${ans}</span>`;
+            return ReactDOMServer.renderToStaticMarkup(
+              renderThemedNickname(ans, color, 24, true, true)
+            );
           });
 
           const sheetOwner = players.find(p => String(p.id) === String(sheetOwnerId));
           const sheetOwnerColor = sheetOwner?.color || (String(sheetOwnerId) === String(playerId) ? (playerColor || '#ffffff') : '#ffffff');
 
+          const isAIMode = actualTemplateKey === 'custom_ai';
+
+          const seedStr = String(sessionId || "") + String(sheetOwnerId);
+          let storySeed = 0;
+          for (let k = 0; k < seedStr.length; k++) {
+            storySeed = ((storySeed << 5) - storySeed) + seedStr.charCodeAt(k);
+            storySeed |= 0;
+          }
+          storySeed = Math.abs(storySeed);
+
+          let storyText: string;
+          if (isAIMode && isGroqAvailable()) {
+            try {
+              storyText = await generateAIStory(
+                fullAnswers.filter(a => a && a.trim() && !a.includes('__REMOVE_ME__')),
+                isAIMode ? activeTemplate.name : t('GENERAL'),
+                language as 'uk' | 'en',
+                storySeed
+              );
+            } catch (aiErr) {
+              console.warn('[Chepuha] AI story generation failed, using template fallback:', aiErr);
+              storyText = activeTemplate.buildStory(coloredAnswers, language, String(sessionId || 'local'), String(sessionId || 'local'));
+              if (storyText.includes("__REMOVE_ME__")) {
+                storyText = storyText.replace(/[^.!?]*__REMOVE_ME__[^.!?]*([.!?]\s*|$)/g, '').trim();
+              }
+            }
+          } else {
+            storyText = activeTemplate.buildStory(coloredAnswers, language, String(sessionId || 'local'), String(sessionId || 'local'));
+            if (storyText.includes("__REMOVE_ME__")) {
+              storyText = storyText.replace(/[^.!?]*__REMOVE_ME__[^.!?]*([.!?]\s*|$)/g, '').replace(/\s+/g, ' ').trim();
+            }
+            if (isGroqAvailable()) {
+               try {
+                  storyText = await refineStoryWithAI(storyText, language as 'uk' | 'en', storySeed);
+               } catch (aiErr) {
+                  console.warn('[Chepuha] AI refinement failed:', aiErr);
+               }
+            }
+          }
+
           return {
             playerName: nick,
-            story: activeTemplate.buildStory(coloredAnswers, language, String(sessionId || 'local'), String(s.id || Math.random())),
+            story: storyText,
             answers: fullAnswers,
-            templateId: activeTemplate.id,
+            templateId: isAIMode ? 'classic' : activeTemplate.id,
             playerColor: sheetOwnerColor
           };
-        });
-
+        } catch (innerErr) {
+          console.error('[Chepuha] Error building story for sheet:', innerErr);
+          return {
+            playerName: 'Unknown',
+            story: 'Error generating story',
+            answers: [],
+            templateId: 'classic',
+            playerColor: '#ffffff'
+          };
+        }
+        })
+      );
+      
       if (built.length > 0) {
+        // Sort deterministically (e.g., by player order or name) so all players see the same "first" story
+        built.sort((a, b) => a.playerName.localeCompare(b.playerName));
+        
+        setAppState(prev => ({ ...prev, allStories: built, storyIndex: 0 }));
 
-        const hasAnySheets = built.length > 0;
-        if (!hasAnySheets) return;
-
-        setAppState(prev => ({ ...prev, allStories: built }));
-
-        updateGameSession(sessionId, { session_status: 'completed' }).catch(() => { });
         const hostPlayer = players.find(p => p.player_order === 1) || players[0];
         const hostName = hostPlayer ? hostPlayer.nickname : 'Невідомо';
         const date = new Date().toLocaleString('uk-UA', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
@@ -604,7 +622,7 @@ function App() {
   useEffect(() => {
     if (!didGameStart || !playerId || !sessionId) return;
     if (!dataReady) return;
-    if (isTransitioning || transitionLockRef.current) return;
+    if (isHost && (isTransitioning || transitionLockRef.current)) return;
 
     const sorted = [...(rounds || [])].sort((a: any, b: any) => b.round_number - a.round_number);
     const latestRound = sorted[0];
@@ -623,10 +641,10 @@ function App() {
         return String(aPlayerId) === String(playerId) && String(aRoundId) === String(latestRound.id);
       }) || (String(answeredRoundId) === String(latestRound.id))) {
         newPhase = Phases.Waiting;
-      } else if (myPlayer.players_status === 'finished') {
-        newPhase = Phases.End;
       }
 
+      currentRoundIdRef.current = latestRound.id;
+      currentRoundRef.current = latestRound.round_number;
       setAppState(prev => ({
         ...prev,
         currentRoundId: latestRound.id,
@@ -634,8 +652,9 @@ function App() {
         roundStartedAt: latestRound.started_at || prev.roundStartedAt,
         phase: newPhase,
         joinedCount: 0,
-        answeredRoundId: null
+        answeredRoundId: newPhase === Phases.Waiting ? latestRound.id : null
       }));
+      refreshState();
     }
     if (String(latestRound.id) === String(currentRoundId) || isStory) {
       if (session?.session_status === 'completed' && phase !== Phases.End && phase !== Phases.History) {
@@ -650,14 +669,9 @@ function App() {
         return String(aPlayerId) === String(playerId) && String(aRoundId) === String(currentRoundId);
       }) || String(answeredRoundId) === String(currentRoundId))) {
         setAppState(prev => ({ ...prev, phase: Phases.Waiting }));
-      } else if (myPlayer.players_status === 'finished' && phase !== Phases.End && phase !== Phases.History) {
-        if (!transitionLockRef.current) {
-          fetchFinalStoryResult();
-          setAppState(prev => ({ ...prev, phase: Phases.End }));
-        }
       }
     }
-  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, currentAnswers, rounds, isTransitioning, fetchFinalStoryResult, dataReady, answeredRoundId]);
+  }, [didGameStart, playerId, players, phase, sessionId, currentRound, currentRoundId, currentAnswers, rounds, isTransitioning, fetchFinalStoryResult, dataReady, answeredRoundId, refreshState, isHost]);
 
   useEffect(() => {
     if (!session || !sessionId || !playerId) return;
@@ -722,7 +736,7 @@ function App() {
         const sheets = await getStorySheetsBySession(sessionId);
 
         if (Array.isArray(sheets) && sheets.length > 0) {
-          setAppState(prev => ({ ...prev, allStorySheets: sheets.map((s: any) => ({ playerId: s.player_id?.id || s.player_id, sheetId: s.id })) }));
+          setAppState(prev => ({ ...prev, allStorySheets: sheets.map((s: any) => ({ playerId: s.player_id?.id || s.player_id, sheetId: s.id, current_ai_question: s.current_ai_question })) }));
         }
 
         const mySheet = (sheets || []).find((s: any) => (s.player_id?.id || s.player_id) === playerId);
@@ -776,7 +790,15 @@ function App() {
     if (!session || !currentRoundId || !sessionId || !didGameStart) return;
     if (phase !== Phases.Waiting && phase !== Phases.Main) return;
     const interval = setInterval(async () => {
-      if (isTransitioning || transitionLockRef.current) return;
+      if (isTransitioning || transitionLockRef.current) {
+        if (transitionLockRef.current && Date.now() - transitionLockSetAtRef.current > 15000) {
+          console.warn("[Chepuha] Transition lock held >15s, force-releasing");
+          transitionLockRef.current = false;
+          transitionLockSetAtRef.current = 0;
+          setIsTransitioning(false);
+        }
+        return;
+      }
       try {
         const liveRoundId = currentRoundIdRef.current;
         if (!liveRoundId) return;
@@ -807,14 +829,49 @@ function App() {
         const allFinished = isStory && freshPlayers.every(p => p.players_status === 'finished');
 
 
-
         const shouldTransition = (!isStory && (curAnswers.length >= total || (isHost && timePassed > maxTime))) ||
           (isStory && (allFinished || (isHost && timePassed > 1800)));
 
         if (shouldTransition) {
-          if (!isHost) return;
+          if (!isHost) {
+            try {
+              const freshRounds = await getRoundsBySession(sessionId);
+              const sortedFresh = [...(freshRounds || [])].sort((a: any, b: any) => b.round_number - a.round_number);
+              const latestFresh = sortedFresh[0];
+              if (latestFresh && latestFresh.id !== currentRoundIdRef.current && latestFresh.round_number > currentRoundRef.current) {
+                let clientPhase = Phases.Main;
+                try {
+                  const latestAnswers = await getAnswersByRound(latestFresh.id);
+                  const hasAnswered = latestAnswers.some((a: any) => {
+                    const aid = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : a.player_id;
+                    return String(aid) === String(playerId);
+                  });
+                  if (hasAnswered) clientPhase = Phases.Waiting;
+                } catch { }
+                currentRoundIdRef.current = latestFresh.id;
+                currentRoundRef.current = latestFresh.round_number;
+                setAppState(prev => ({
+                  ...prev,
+                  currentRoundId: latestFresh.id,
+                  currentRound: latestFresh.round_number,
+                  roundStartedAt: latestFresh.started_at || prev.roundStartedAt,
+                  phase: clientPhase,
+                  joinedCount: 0,
+                  answeredRoundId: clientPhase === Phases.Waiting ? latestFresh.id : null
+                }));
+                refreshState();
+              } else if (session?.session_status === 'completed') {
+                fetchFinalStoryResult();
+                setAppState(prev => ({ ...prev, phase: Phases.End }));
+              }
+            } catch (err) {
+              console.warn('[Chepuha] Non-host round check failed:', err);
+            }
+            return;
+          }
           setIsTransitioning(true);
           transitionLockRef.current = true;
+          transitionLockSetAtRef.current = Date.now();
 
           if (isHost && curAnswers.length < total) {
             const playerIdsWhoAnswered = new Set(curAnswers.map(a =>
@@ -829,7 +886,8 @@ function App() {
                 return sid === p.id;
               });
               if (pSheet) {
-                const fallbackPool = activeTemplate.fallbacks[currentRound - 1] ?? ["..."];
+                const fbArr757 = (language === 'en' && activeTemplate.fallbacksEn) ? activeTemplate.fallbacksEn : activeTemplate.fallbacks;
+                const fallbackPool = fbArr757[currentRound - 1] ?? ["..."];
                 await submitAnswer({
                   answer_text: fallbackPool[Math.floor(Math.random() * fallbackPool.length)],
                   position_in_sheet: currentRound,
@@ -845,14 +903,39 @@ function App() {
             if (isHost) {
               const ts = new Date().toISOString();
               const nextRoundNum = currentRound + 1;
-              const nextRound = await safeApiCall(createRound, {
-                session_id: sessionId,
-                round_number: nextRoundNum,
-                question_type: activeTemplate.questionTypes[GAME_LENGTH_INDICES[gameLength]?.[nextRoundNum - 1] ?? (nextRoundNum - 1)],
-                rounds_status: 'active',
-                started_at: ts,
-              });
-              if (!nextRound) return;
+
+              let nextRound = null;
+              try {
+                const existingRounds = await getRoundsBySession(sessionId);
+                nextRound = existingRounds.find((r: any) => r.round_number === nextRoundNum) || null;
+                if (nextRound) console.warn("[Chepuha] Round", nextRoundNum, "already exists, reusing");
+              } catch { }
+
+              if (!nextRound) {
+                for (let attempt = 0; attempt < 3 && !nextRound; attempt++) {
+                  try {
+                    nextRound = await safeApiCall(createRound, {
+                      session_id: sessionId,
+                      round_number: nextRoundNum,
+                      question_type: (activeTemplate.id === 'custom_ai' ? TEMPLATES.classic.questionTypes : activeTemplate.questionTypes)[GAME_LENGTH_INDICES[gameLength]?.[nextRoundNum - 1] ?? (nextRoundNum - 1)],
+                      rounds_status: 'active',
+                      started_at: ts,
+                    });
+                  } catch (retryErr) {
+                    console.warn(`[Chepuha] createRound attempt ${attempt + 1}/3 failed:`, retryErr);
+                    if (attempt < 2) await new Promise(r => setTimeout(r, 1500));
+                  }
+                }
+              }
+
+              if (!nextRound) {
+                console.error("[Chepuha] All createRound attempts failed — releasing lock");
+                setIsTransitioning(false);
+                transitionLockRef.current = false;
+                transitionLockSetAtRef.current = 0;
+                return;
+              }
+
               updatePlayersBySession(sessionId, { players_status: 'playing' }).catch(() => { });
               currentRoundIdRef.current = nextRound.id;
               currentRoundRef.current = nextRoundNum;
@@ -867,6 +950,7 @@ function App() {
               setTimeout(() => {
                 setIsTransitioning(false);
                 transitionLockRef.current = false;
+                transitionLockSetAtRef.current = 0;
               }, 500);
             }
           } else {
@@ -882,16 +966,81 @@ function App() {
               setAppState(prev => ({ ...prev, phase: Phases.End }));
               setIsTransitioning(false);
               transitionLockRef.current = false;
+              transitionLockSetAtRef.current = 0;
             }
           }
         }
       } catch (err) {
+        console.error("[Chepuha] Transition error, releasing lock:", err);
         setIsTransitioning(false);
         transitionLockRef.current = false;
+        transitionLockSetAtRef.current = 0;
       }
     }, 500);
     return () => clearInterval(interval);
   }, [phase, session?.id, currentRoundId, playerCount, players.length, currentRound, isHost, sessionId, fetchFinalStoryResult, roundStartedAt, activeTemplate, didGameStart, isTransitioning]);
+
+  useEffect(() => {
+    if (phase !== Phases.Waiting || !didGameStart || !sessionId || !currentRoundId) return;
+
+    const runRecoveryCheck = async () => {
+      try {
+        const freshRounds = await getRoundsBySession(sessionId);
+        const sorted = [...(freshRounds || [])].sort((a: any, b: any) => b.round_number - a.round_number);
+        const latestRound = sorted[0];
+
+        if (latestRound && latestRound.id !== currentRoundId && latestRound.round_number > currentRound) {
+          console.warn("[Chepuha] Recovery: found newer round", latestRound.round_number, "— forcing transition");
+
+          let recoveryPhase = Phases.Main;
+          try {
+            const answers = await getAnswersByRound(latestRound.id);
+            const hasAnswered = answers.some((a: any) => {
+              const aid = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : a.player_id;
+              return String(aid) === String(playerId);
+            });
+            if (hasAnswered) recoveryPhase = Phases.Waiting;
+          } catch { }
+
+          currentRoundIdRef.current = latestRound.id;
+          currentRoundRef.current = latestRound.round_number;
+          setAppState(prev => ({
+            ...prev,
+            currentRoundId: latestRound.id,
+            currentRound: latestRound.round_number,
+            roundStartedAt: latestRound.started_at || prev.roundStartedAt,
+            phase: recoveryPhase,
+            joinedCount: 0,
+            answeredRoundId: recoveryPhase === Phases.Waiting ? latestRound.id : null
+          }));
+          refreshState();
+          return;
+        }
+
+        try {
+          const freshSession = await getGameSession(sessionId);
+          if (freshSession?.session_status === 'completed' && phaseRef.current !== Phases.End) {
+            console.warn("[Chepuha] Recovery: game completed while stuck in Waiting");
+            fetchFinalStoryResult();
+            setAppState(prev => ({ ...prev, phase: Phases.End }));
+          }
+        } catch { }
+      } catch (err) {
+        console.warn("[Chepuha] Recovery check failed:", err);
+      }
+    };
+
+    let recoveryInterval: ReturnType<typeof setInterval> | null = null;
+    const recoveryTimeout = setTimeout(() => {
+      runRecoveryCheck();
+      recoveryInterval = setInterval(runRecoveryCheck, 4000);
+    }, 5000);
+
+    return () => {
+      clearTimeout(recoveryTimeout);
+      if (recoveryInterval) clearInterval(recoveryInterval);
+    };
+  }, [phase, didGameStart, sessionId, currentRoundId, currentRound, playerId, refreshState, fetchFinalStoryResult]);
 
   const generateRoomCode = () => {
     const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -903,6 +1052,7 @@ function App() {
   };
 
   const goHome = () => {
+    setShowCustomPrompt(false);
     setAppState(prev => ({
       ...prev,
       phase: Phases.Main,
@@ -933,6 +1083,7 @@ function App() {
 
   const doShowCreateScreen = () => {
     localStorage.removeItem(STATE_STORAGE_KEY);
+    setShowCustomPrompt(false);
     setAppState(prev => ({
       ...prev,
       roomCode: generateRoomCode(),
@@ -958,26 +1109,35 @@ function App() {
     }));
   };
 
-  const handleNicknameChange = (value: string) => {
+  const handleNicknameChange = useCallback((value: string) => {
     if (value.length <= 25) {
       setAppState(prev => ({ ...prev, nickname: value, error: "" }));
+      localStorage.setItem('chepuha_nickname', value);
     } else {
       setAppState(prev => ({ ...prev, error: String(t('ERR_NICK_LONG' as any)) }));
     }
-  };
+  }, [t]);
 
   const goToLobby = async () => {
     if (!nickname || !nickname.trim()) {
       setAppState(prev => ({ ...prev, error: String(t('ERR_NICKNAME' as any)) }));
       return;
     }
+    
+    const currentTemplate = CAROUSEL_TEMPLATES[carouselIndex];
+    if (currentTemplate === 'custom_ai') {
+      setShowCustomPrompt(true);
+      return;
+    }
+
     try {
-      let templateToSave = selectedTemplate;
+      let templateToSave = currentTemplate;
       if (templateToSave === 'random') {
         const tKeys = Object.keys(TEMPLATES);
         templateToSave = tKeys[Math.floor(Math.random() * tKeys.length)];
       }
 
+      const isAIMode = selectedTemplate === 'custom_ai';
       const packedTemplate = `${templateToSave}|${gameLength}|${storyMode ? '1' : '0'}|${hintsEnabled ? '1' : '0'}|${colorHighlight ? '1' : '0'}`;
 
       const newSession = await createGameSession({
@@ -1011,6 +1171,51 @@ function App() {
     }
   };
 
+  const handleCustomTopicSubmit = async () => {
+    if (!customTopic.trim()) return;
+    setIsGeneratingQuestions(true);
+    setAppState(prev => ({ ...prev, error: "" }));
+    try {
+      const questions = await generateCustomQuestions(customTopic, gameLength, language as 'uk' | 'en');
+      
+      const packedTemplate = `custom_ai|${gameLength}|${storyMode ? '1' : '0'}|${hintsEnabled ? '1' : '0'}|${colorHighlight ? '1' : '0'}|${customTopic}|${questions.join('|')}`;
+
+      const newSession = await createGameSession({
+        session_name: roomCode,
+        max_players: 12,
+        session_status: 'waiting',
+        template: packedTemplate,
+      });
+      setAppState(prev => ({ ...prev, sessionId: newSession.id, selectedTemplate: 'custom_ai' }));
+
+      const hostColor = AVAILABLE_COLORS[0];
+      const hostPlayer = await safeApiCall(createPlayer, {
+        nickname,
+        session_id: newSession.id,
+        players_status: 'joined',
+        player_order: 1,
+        color: hostColor,
+      });
+      setAppState(prev => ({
+        ...prev,
+        playerId: hostPlayer.id,
+        playerColor: hostColor,
+        isHost: true,
+        isLobby: true,
+        lobbyCreatedAt: Date.now()
+      }));
+      localStorage.setItem('chepuhaUserPrefs', JSON.stringify({ nickname, roomCode }));
+      await refreshState();
+      
+      setShowCustomPrompt(false);
+    } catch (err: any) {
+      setAppState(prev => ({ ...prev, error: String(t('ERR_CREATE' as any)) + err.message }));
+    } finally {
+      setIsGeneratingQuestions(false);
+    }
+  };
+
+
   const doShowJoinScreen = () => {
     localStorage.removeItem(STATE_STORAGE_KEY);
     setAppState(prev => ({
@@ -1037,7 +1242,6 @@ function App() {
       if (!targetSession) {
         return setAppState(prev => ({ ...prev, isJoining: false, error: String(t('ERR_NOT_FOUND' as any)) }));
       }
-
 
 
       setAppState(prev => ({ ...prev, nickname: nick, roomCode: code }));
@@ -1077,8 +1281,6 @@ function App() {
         }
 
 
-
-
         const finishJoin = () => {
           setAppState(prev => ({
             ...prev,
@@ -1097,6 +1299,7 @@ function App() {
             isCreatingLobby: false,
             isJoining: false,
             gameLength: targetSession.template ? (parseInt(targetSession.template.split('|')[1]) as 6 | 9 | 12) : 9,
+            selectedTemplate: targetSession.template ? targetSession.template.split('|')[0] : prev.selectedTemplate,
             storyMode: targetSession.template ? targetSession.template.split('|')[2] === '1' : false,
             hintsEnabled: targetSession.template ? targetSession.template.split('|')[3] === '1' : true,
             colorHighlight: targetSession.template ? targetSession.template.split('|')[4] === '1' : true,
@@ -1109,7 +1312,7 @@ function App() {
         const currentLocalColor = appState.playerColor;
         const takenColors = (existingPlayers || []).map((p: Player) => p.color?.toLowerCase()).filter(Boolean);
         const availableUnique = AVAILABLE_COLORS.filter(c => !takenColors.includes(c.toLowerCase()));
-        
+
         let guestColor = availableUnique.length > 0 ? availableUnique[0] : AVAILABLE_COLORS[0];
         if (currentLocalColor && !takenColors.includes(currentLocalColor.toLowerCase())) {
           guestColor = currentLocalColor;
@@ -1135,6 +1338,7 @@ function App() {
             isCreatingLobby: false,
             isJoining: false,
             gameLength: targetSession.template ? (parseInt(targetSession.template.split('|')[1]) as 6 | 9 | 12) : 9,
+            selectedTemplate: targetSession.template ? targetSession.template.split('|')[0] : prev.selectedTemplate,
             storyMode: targetSession.template ? targetSession.template.split('|')[2] === '1' : false,
             hintsEnabled: targetSession.template ? targetSession.template.split('|')[3] === '1' : true,
             colorHighlight: targetSession.template ? targetSession.template.split('|')[4] === '1' : true,
@@ -1155,15 +1359,30 @@ function App() {
 
   const doGameStart = async () => {
     if (!sessionId) return;
+    
+    // Ping Hugging Face space with the base voice to wake it up and load Silero
+    fetch(`https://kikk22320-chepuha-tts.hf.space/tts?text=а&voice=mykyta`).catch(() => {});
+    
     try {
       let gameTemplate = activeTemplate;
+      let finalTemplateKey = selectedTemplate;
+      
       if (selectedTemplate === 'random') {
         const keys = Object.keys(TEMPLATES);
-        const randomKey = keys[Math.floor(Math.random() * keys.length)];
-        gameTemplate = TEMPLATES[randomKey];
-        const packed = `${randomKey}|${gameLength}|${storyMode ? '1' : '0'}|${hintsEnabled ? '1' : '0'}|${colorHighlight ? '1' : '0'}`;
-        await updateGameSession(sessionId, { template: packed });
+        finalTemplateKey = keys[Math.floor(Math.random() * keys.length)];
+        gameTemplate = TEMPLATES[finalTemplateKey];
       }
+      
+      let packed = `${finalTemplateKey}|${gameLength}|${storyMode ? '1' : '0'}|${hintsEnabled ? '1' : '0'}|${colorHighlight ? '1' : '0'}`;
+      
+      if (selectedTemplate === 'custom_ai' && session?.template && session.template.startsWith('custom_ai|')) {
+        const parts = session.template.split('|');
+        if (parts.length > 5) {
+          packed = `${finalTemplateKey}|${gameLength}|${storyMode ? '1' : '0'}|${hintsEnabled ? '1' : '0'}|${colorHighlight ? '1' : '0'}|${parts.slice(5).join('|')}`;
+        }
+      }
+      
+      await updateGameSession(sessionId, { template: packed });
 
       const sheetsToCreate = players.map(p => ({
         game_session_id: sessionId,
@@ -1175,7 +1394,8 @@ function App() {
 
       const newSheets = createdSheets.map((s: any) => ({
         playerId: s.player_id as string,
-        sheetId: s.id
+        sheetId: s.id,
+        current_ai_question: s.current_ai_question
       }));
 
       const mySheet = createdSheets.find((s: any) => s.player_id === playerId);
@@ -1186,7 +1406,7 @@ function App() {
 
       const ts = new Date().toISOString();
 
-      const targetGameLength = session?.template ? (parseInt(session.template.split('|')[1]) as 6 | 9 | 12) : gameLength;
+      const targetGameLength = gameLength; // Always use the host's current local state since we just saved it
 
       let firstRoundId = "";
       if (storyMode) {
@@ -1196,7 +1416,7 @@ function App() {
           const created = await safeApiCall(createRound, {
             session_id: sessionId,
             round_number: i + 1,
-            question_type: gameTemplate.questionTypes[targetIndices[i] ?? i] as QuestionType,
+            question_type: (gameTemplate.id === 'custom_ai' ? TEMPLATES.classic.questionTypes : gameTemplate.questionTypes)[targetIndices[i] ?? i] as QuestionType,
             rounds_status: 'active',
             started_at: ts,
           });
@@ -1207,7 +1427,7 @@ function App() {
         const firstRound = await safeApiCall(createRound, {
           session_id: sessionId,
           round_number: 1,
-          question_type: gameTemplate.questionTypes[GAME_LENGTH_INDICES[targetGameLength]?.[0] ?? 0] as QuestionType,
+          question_type: (gameTemplate.id === 'custom_ai' ? TEMPLATES.classic.questionTypes : gameTemplate.questionTypes)[GAME_LENGTH_INDICES[targetGameLength]?.[0] ?? 0] as QuestionType,
           rounds_status: 'active',
           started_at: ts,
         });
@@ -1256,7 +1476,8 @@ function App() {
     }
 
     const isMissing = answer.trim() === "" || answer.trim() === "Час вийшов";
-    const fallbackPool = activeTemplate.fallbacks[currentRound - 1] ?? [""];
+    const fbArr1184 = (language === 'en' && activeTemplate.fallbacksEn) ? activeTemplate.fallbacksEn : activeTemplate.fallbacks;
+    const fallbackPool = fbArr1184[currentRound - 1] ?? [""];
     const cleanAnswer = isMissing
       ? fallbackPool[Math.floor(Math.random() * fallbackPool.length)]
       : answer;
@@ -1273,16 +1494,54 @@ function App() {
         indices.forEach((qIndex, i) => { fullAnswers[qIndex] = updatedAnswers[i]; });
         for (let i = 0; i < 12; i++) {
           if (!fullAnswers[i]) {
-            const pool = activeTemplate.fallbacks[i] || ["..."];
-            fullAnswers[i] = pool[Math.floor(Math.random() * pool.length)];
+            if (indices.includes(i)) {
+              const fbArr1201 = (language === 'en' && activeTemplate.fallbacksEn) ? activeTemplate.fallbacksEn : activeTemplate.fallbacks;
+              const pool = fbArr1201[i] || ["..."];
+              fullAnswers[i] = pool[Math.floor(Math.random() * pool.length)];
+            } else {
+              fullAnswers[i] = "__REMOVE_ME__";
+            }
           }
+        }
+
+        let localStory = activeTemplate.buildStory(fullAnswers, language, String(sessionId || 'local'), String(sessionId || 'local'));
+        if (localStory.includes("__REMOVE_ME__")) {
+          localStory = localStory.replace(/[^.!?]*__REMOVE_ME__[^.!?]*([.!?]\s*|$)/g, '').replace(/\s+/g, ' ').trim();
+        }
+
+        const isAIMode = activeTemplate.id === 'custom_ai';
+        const seedStr = String(sessionId || "local") + String(nickname);
+        let storySeed = 0;
+        for (let k = 0; k < seedStr.length; k++) {
+          storySeed = ((storySeed << 5) - storySeed) + seedStr.charCodeAt(k);
+          storySeed |= 0;
+        }
+        storySeed = Math.abs(storySeed);
+
+        if (isAIMode && isGroqAvailable()) {
+          try {
+            localStory = await generateAIStory(
+              fullAnswers.filter(a => a && a.trim() && !a.includes('__REMOVE_ME__')),
+              customTopic || t('GENERAL'),
+              language as 'uk' | 'en',
+              storySeed
+            );
+          } catch (aiErr) {
+            console.warn('[Chepuha] SinglePlayer AI story generation failed, using template fallback:', aiErr);
+          }
+        } else if (isGroqAvailable()) {
+           try {
+              localStory = await refineStoryWithAI(localStory, language as 'uk' | 'en', storySeed);
+           } catch (aiErr) {
+              console.warn('[Chepuha] SinglePlayer AI refinement failed:', aiErr);
+           }
         }
 
         setAppState(prev => ({
           ...prev,
           allStories: [{
             playerName: nickname,
-            story: activeTemplate.buildStory(fullAnswers, language, String(sessionId || 'local'), String(Math.random())),
+            story: localStory,
             answers: updatedAnswers,
             templateId: activeTemplate.id
           }],
@@ -1295,7 +1554,7 @@ function App() {
       let safeSheets = allStorySheets;
       if (safeSheets.length === 0) {
         const fetched = await getStorySheetsBySession(sessionId);
-        safeSheets = fetched.map((s: any) => ({ playerId: s.player_id?.id || s.player_id, sheetId: s.id }));
+        safeSheets = fetched.map((s: any) => ({ playerId: s.player_id?.id || s.player_id, sheetId: s.id, current_ai_question: s.current_ai_question }));
         if (safeSheets.length > 0) setAppState(prev => ({ ...prev, allStorySheets: safeSheets }));
       }
       let targetSheet = myStorySheetId || safeSheets.find(s => s.playerId === playerId)?.sheetId;
@@ -1315,8 +1574,22 @@ function App() {
         story_sheet_id: targetSheet,
       });
 
+      if (activeTemplate.id === 'custom_ai' && targetSheet && currentRound < gameLength && isGroqAvailable()) {
+        (async () => {
+          try {
+            const { data } = await supabase.from('answers').select('answer_text').eq('story_sheet_id', targetSheet).order('position_in_sheet', { ascending: true });
+            const sheetAnswers = (data || []).map(a => a.answer_text);
+            const nextQ = await generateNextQuestion(customTopic || 'Своя гра', sheetAnswers, language as 'uk' | 'en');
+            await updateStorySheetQuestion(targetSheet, nextQ);
+          } catch(e) {
+            console.error("AI question error:", e);
+          }
+        })();
+      }
+
       const isStory = parsedStoryMode;
       const isLastRound = currentRound === gameLength;
+      const isSolo = players.length <= 1;
 
       await updatePlayer(playerId, { players_status: isLastRound ? 'finished' : 'playing' });
       refreshState();
@@ -1326,9 +1599,25 @@ function App() {
       setIsTransitioning(false);
 
 
+      let nextPhase = Phases.Waiting;
+      if (isStory) {
+        if (isLastRound) {
+          if (isSolo) {
+            fetchFinalStoryResult();
+            nextPhase = Phases.End;
+          } else {
+            nextPhase = Phases.Waiting;
+          }
+        } else {
+          nextPhase = Phases.Main;
+        }
+      }
+
       setAppState(prev => ({
         ...prev,
-        phase: Phases.Waiting,
+        phase: nextPhase,
+        currentRound: isStory && !isLastRound ? prev.currentRound + 1 : prev.currentRound,
+        currentRoundId: isStory && !isLastRound ? (rounds.find(r => r.round_number === prev.currentRound + 1)?.id || null) : prev.currentRoundId,
         answeredRoundId: currentRoundId,
         error: ""
       }));
@@ -1348,7 +1637,7 @@ function App() {
   });
 
   return (
-    <div className="app-view">
+    <div className={classNames("app-view", phase === Phases.History && "is-history")} lang={language}>
       {roomCode && !didGameStart && isLobby && phase !== Phases.Join && phase !== Phases.History && phase !== Phases.End && (
         <div className="create-game-pc-code-wrapper">
           <GameCode code={roomCode} className="gameCodePos create-code-mobile" />
@@ -1357,11 +1646,15 @@ function App() {
 
       {!didGameStart && !isCreatingLobby && phase === Phases.Main && !isLobby && (
         <>
-          <div className="logo-wrapper" onClick={playSecretMusic} style={{ cursor: 'pointer' }}>
-            <img src={language === 'en' ? logoImageEng : logoImage} alt="Чепуха Лого" className="logo" />
-            <div className="logo-boy-hitbox hitbox-1" />
-            <div className="logo-boy-hitbox hitbox-2" />
-            <div className="logo-boy-hitbox hitbox-3" />
+          <div className="logo-wrapper">
+            <img
+              src={language === 'en' ? logoImageEng : logoImage}
+              alt="Чепуха Лого"
+              className={classNames("logo", { "logo-pop-active": logoPop })}
+            />
+            <div className="logo-boy-hitbox hitbox-1" onClick={triggerLogoPop} />
+            <div className="logo-boy-hitbox hitbox-2" onClick={triggerLogoPop} />
+            <div className="logo-boy-hitbox hitbox-3" onClick={triggerLogoPop} />
           </div>
           <div className="menu-buttons">
             <Button
@@ -1405,22 +1698,21 @@ function App() {
           <div className="create-game-pc-code-wrapper">
             {roomCode && <GameCode code={roomCode} className="gameCodePos create-code-mobile" />}
           </div>
-          <div className="create-game-container" style={{ pointerEvents: 'none' }}>
-            <div className="input-card" style={{ pointerEvents: 'auto' }}>
-              <Input
-                value={nickname}
-                onChange={handleNicknameChange}
-                placeholder={t('ENTER_NICK_PLACEHOLDER')}
-                className={`nickname-input ${error ? "error" : ""}`}
-                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && goToLobby()}
-              />
-            </div>
-            <span className="error-message" style={{ minHeight: '24px', display: 'block', pointerEvents: 'auto' }}>{error || '\u00A0'}</span>
+          <div className="create-game-container">
+            <GameInput
+              value={nickname}
+              onChange={handleNicknameChange}
+              onEnter={goToLobby}
+              placeholder={t('ENTER_NICK_PLACEHOLDER')}
+              errorText={error}
+              maxLength={25}
+              contextType="nickname"
+            />
 
-            {}
-            <div className="create-options-row" style={{ pointerEvents: 'auto' }}>
+            { }
+            <div className="create-options-row">
 
-              {}
+              { }
               <div className="carousel-section">
                 <h3 className="template-title" style={{ marginBottom: "15px", whiteSpace: "nowrap", textAlign: "center" }}>{t('CHOOSE_STORY')}</h3>
                 <div
@@ -1435,7 +1727,7 @@ function App() {
                     {[-2, -1, 0, 1, 2].map(offset => {
                       const idx = (carouselIndex + offset + CAROUSEL_TEMPLATES.length) % CAROUSEL_TEMPLATES.length;
                       const id = CAROUSEL_TEMPLATES[idx];
-                      const label = id === 'random' ? t('RANDOM' as any) : (t(id.toUpperCase() as any) || id);
+                      const label = id === 'random' ? t('RANDOM' as any) : id === 'custom_ai' ? '🤖 Щі Розповідь' : (t(id.toUpperCase() as any) || id);
                       const isCenter = offset === 0;
                       return (
                         <div
@@ -1455,11 +1747,11 @@ function App() {
                 </div>
               </div>
 
-              {}
+              { }
               <div className="game-settings-container">
                 <div className="game-settings-section">
 
-                  {}
+                  { }
                   <div className="game-length-picker">
                     <h3 className="template-title">{t('GAME_LENGTH_TITLE' as any)}</h3>
                     {([6, 9, 12] as Array<6 | 9 | 12>).map(len => (
@@ -1473,9 +1765,9 @@ function App() {
                     ))}
                   </div>
 
-                  {}
+                  { }
                   <div className="extra-options">
-                    {}
+                    { }
                     <label className={`toggle-option ${colorHighlight ? 'toggle-option--active' : ''}`} onClick={() => setAppState(prev => ({ ...prev, colorHighlight: !prev.colorHighlight }))}>
                       <span className="toggle-label">🎨 {t('OPTS_HIGHLIGHTS' as any)}</span>
                       <div className="toggle-switch">
@@ -1483,7 +1775,7 @@ function App() {
                       </div>
                     </label>
 
-                    {}
+                    { }
                     <label className={`toggle-option ${hintsEnabled ? 'toggle-option--active' : ''}`} onClick={() => setAppState(prev => ({ ...prev, hintsEnabled: !prev.hintsEnabled }))}>
                       <span className="toggle-label">💡 {t('OPTS_HINTS' as any)}</span>
                       <div className="toggle-switch">
@@ -1491,7 +1783,7 @@ function App() {
                       </div>
                     </label>
 
-                    {}
+                    { }
                     <div style={{ position: 'relative', width: '100%' }}>
                       <label className={`toggle-option ${storyMode ? 'toggle-option--active' : ''}`} onClick={() => setAppState(prev => ({ ...prev, storyMode: !prev.storyMode }))}>
                         <span className="toggle-label">🕹 {t('STORY_MODE' as any)}</span>
@@ -1507,7 +1799,7 @@ function App() {
               </div>
             </div>
 
-            <div style={{ pointerEvents: 'auto' }}>
+            <div>
               <Button
                 label={t('CREATE_GAME')}
                 variant="primary"
@@ -1530,43 +1822,93 @@ function App() {
           <div className="lobby-container">
             <div className="lobby-info">
               <h2 className="lobby-text label-and-nick notranslate" translate="no">
-                <span className="label-part">{t('YOUR_NICK')}</span>
-                <div className="nick-scroll-container">
-                  {renderThemedNickname(nickname, playerColor, 64, parsedColorHighlight)}
-                </div>
+                {(() => {
+                  const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
+                  const baseSize = isPC ? 75 : 40;
+                  const fontSize = getFontSize(nickname, baseSize);
+                  return (
+                    <div className="label-and-nick-flex" style={{ fontSize }}>
+                      <span className="label-part" style={{ fontSize: 'inherit' }}>{(t('YOUR_NICK') as string).replace(':', '')}: </span>
+                      <div className="nick-part" style={{ fontSize: 'inherit' }}>
+                        {renderThemedNickname(nickname, playerColor, baseSize, parsedColorHighlight, false, true, fontSize)}
+                      </div>
+                    </div>
+                  );
+                })()}
               </h2>
               <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
-              <div 
-                ref={playersListRef}
-                className={`players-list ${(players.length >= 4) ? 'has-many-players' : ''}`}
-              >
-                {players.length > 0 ? (
-                  players.map((p, i) => (
-                    <PlayerItem
-                      key={p.id || String(i)}
-                      p={p}
-                      i={i}
-                      isMe={String(p.id) === String(playerId) || (i === 0 && nickname === p.nickname)}
-                      playerColor={playerColor}
-                      cycleColor={cycleColor}
-                      AVAILABLE_COLORS={AVAILABLE_COLORS}
-                      crownImage={crownImage}
-                      showColorPicker={parsedColorHighlight}
-                    />
-                  ))
-                ) : (
-                  <PlayerItem
-                    p={{ id: 'temp', nickname }}
-                    i={0}
-                    isMe={true}
-                    playerColor={playerColor}
-                    cycleColor={cycleColor}
-                    AVAILABLE_COLORS={AVAILABLE_COLORS}
-                    crownImage={crownImage}
-                    showColorPicker={parsedColorHighlight}
-                  />
-                )}
-              </div>
+              {(() => {
+                const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
+                const hasThemedPlayers = players.some(p => p.color?.startsWith('special:'));
+
+                const getListHeight = () => {
+                  const padding = 20;
+                  const playersToMeasure = players.length > 0 ? players : [{ color: '' }];
+
+                  if (isPC) {
+                    const stdH = 75;
+                    const specialH = 107;
+                    const gap = 12;
+                    let total = 0;
+                    for (let i = 0; i < 4; i++) {
+                      const p = playersToMeasure[i] || playersToMeasure[0];
+                      total += (p.color?.startsWith('special:') ? specialH : stdH) + gap;
+                    }
+                    const p5 = playersToMeasure[4] || playersToMeasure[0];
+                    total += (p5.color?.startsWith('special:') ? specialH : stdH) * 0.5;
+                    return total + padding;
+                  } else {
+                    const stdH = 48;
+                    const specialH = 56;
+                    const gap = 6;
+                    let total = 0;
+                    for (let i = 0; i < 4; i++) {
+                      const p = playersToMeasure[i] || playersToMeasure[0];
+                      total += (p.color?.startsWith('special:') ? specialH : stdH) + gap;
+                    }
+                    const p5 = playersToMeasure[4] || playersToMeasure[0];
+                    total += (p5.color?.startsWith('special:') ? specialH : stdH) * 0.5;
+                    return total + padding;
+                  }
+                };
+
+                const dynamicHeight = getListHeight();
+
+                return (
+                  <div
+                    ref={playersListRef}
+                    className={`players-list ${hasThemedPlayers ? 'has-themed-names' : ''} ${(players.length >= 4) ? 'has-many-players' : ''}`}
+                    style={{ height: `${dynamicHeight}px` }}
+                  >
+                    {players.length > 0 ? (
+                      players.map((p, i) => (
+                        <PlayerItem
+                          key={p.id || String(i)}
+                          p={p}
+                          i={i}
+                          isMe={String(p.id) === String(playerId) || (i === 0 && nickname === p.nickname)}
+                          playerColor={playerColor}
+                          cycleColor={cycleColor}
+                          AVAILABLE_COLORS={AVAILABLE_COLORS}
+                          crownImage={crownImage}
+                          showColorPicker={parsedColorHighlight}
+                        />
+                      ))
+                    ) : (
+                      <PlayerItem
+                        p={{ id: 'temp', nickname }}
+                        i={0}
+                        isMe={true}
+                        playerColor={playerColor}
+                        cycleColor={cycleColor}
+                        AVAILABLE_COLORS={AVAILABLE_COLORS}
+                        crownImage={crownImage}
+                        showColorPicker={parsedColorHighlight}
+                      />
+                    )}
+                  </div>
+                );
+              })()}
             </div>
             <div className="error-message" style={{ color: "red", minHeight: '24px' }}>
               {pollError ? (t(pollError as any) || pollError) : '\u00A0'}
@@ -1645,6 +1987,24 @@ function App() {
 
               const rawQuestion = roundQuestions[currentRound - 1];
 
+              if (baseTemplate.id === 'custom_ai' && currentRound > 1) {
+                // Find which sheet the player is holding
+                let heldSheetId = null;
+                if ((allStorySheets || []).length > 0 && (players || []).length > 0) {
+                  const sortedPlayers = [...players].sort((a, b) => String(a.id).localeCompare(String(b.id)));
+                  const myIndex = sortedPlayers.findIndex(p => p.id === playerId);
+                  let targetIndex = (myIndex - (currentRound - 1)) % sortedPlayers.length;
+                  if (targetIndex < 0) targetIndex += sortedPlayers.length;
+                  const targetPlayerId = sortedPlayers[targetIndex]?.id;
+                  heldSheetId = allStorySheets.find(s => s.playerId === targetPlayerId)?.sheetId;
+                }
+                const heldSheetObj = heldSheetId ? allStorySheets.find(s => s.sheetId === heldSheetId) : null;
+                // If it has a generated question, use it, else fallback to standard
+                if (heldSheetObj && heldSheetObj.current_ai_question) {
+                  return heldSheetObj.current_ai_question;
+                }
+              }
+
               if (rawQuestion?.startsWith('MATH_DYN_')) {
                 const indexPart = parseInt(rawQuestion.split('_')[2] || "0", 10);
                 const seedStr = String(sessionId || roomCode || "guest") + String(playerId || "");
@@ -1656,7 +2016,7 @@ function App() {
             })()}
             playerTotal={derivedTotalCount}
             onSubmitAnswer={doAnswerSubmit}
-            hints={parsedHintsEnabled ? (activeTemplate.fallbacks[currentRound - 1] || []) : undefined}
+            hints={parsedHintsEnabled ? ((language === 'en' && activeTemplate.fallbacksEn ? activeTemplate.fallbacksEn : activeTemplate.fallbacks)[currentRound - 1] || []) : undefined}
             showColors={parsedColorHighlight}
           />
         </>
@@ -1693,21 +2053,77 @@ function App() {
           stories={allStories}
           storyIndex={storyIndex}
           onPrev={() => setAppState(prev => ({ ...prev, storyIndex: Math.max(0, prev.storyIndex - 1) }))}
-          onNext={() => setAppState(prev => ({ ...prev, storyIndex: Math.min(prev.allStories.length - 1, prev.storyIndex + 1) }))}
+          onNext={() => setAppState(prev => ({ ...prev, storyIndex: Math.min((prev.allStories?.length || 1) - 1, prev.storyIndex + 1) }))}
           myNickname={nickname || "Гравець"}
           phase={phase}
           onHome={() => setAppState(prev => ({ ...prev, selectedHistoryGame: null }))}
+          onSave={() => {}}
         />
       )}
 
-      {(isCreatingLobby || isLobby || phase === Phases.Join || (didGameStart && phase === Phases.Waiting)) && phase !== Phases.End && phase !== Phases.History && (
+      {(isLobby || phase === Phases.End) && (
         <>
-          <div className="yellow-guy-bg" onClick={playSecretMusic} />
-          <div className="red-guy-bg" onClick={playSecretMusic} />
+          <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: phase === Phases.End ? 10000 : undefined }} />
+          <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: phase === Phases.End ? 10000 : undefined }} />
         </>
       )}
 
-      {}
+
+      { }
+      {showCustomPrompt && (
+        <div className="custom-prompt-overlay" 
+             onClick={() => setShowCustomPrompt(false)}
+             style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          zIndex: 9999
+        }}>
+          <div className="input-card" 
+               onClick={(e) => e.stopPropagation()}
+               style={{ padding: 'clamp(15px, 5vw, 50px)', boxSizing: 'border-box', textAlign: 'center', maxWidth: '1400px', width: '98%', flexDirection: 'column', display: 'flex', alignItems: 'center' }}>
+            <h2 className="template-title" style={{ marginBottom: 'clamp(10px, 2vw, 20px)', fontSize: 'clamp(24px, 5vw, 64px)', whiteSpace: 'normal', lineHeight: '1.2', color: '#fff', textShadow: '4px 4px 8px rgba(0,0,0,0.8), -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000', textAlign: 'center' }}>{t('CUSTOM_TOPIC') || 'Введіть власну тему:'}</h2>
+            <div className="custom-topic-wrapper">
+              <button 
+                onClick={() => setShowCustomPrompt(false)} 
+                disabled={isGeneratingQuestions}
+                style={{ width: 'clamp(41px, 10vw, 74px)', height: 'clamp(41px, 10vw, 74px)', borderRadius: '50%', background: '#ff4d4f', border: 'none', color: 'white', cursor: 'pointer', zIndex: 10, fontSize: 'clamp(20px, 6vw, 32px)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isGeneratingQuestions ? 0.5 : 1, flexShrink: 0 }}
+                title={t('BACK')}
+              >
+                ✕
+              </button>
+              
+              <Input
+                type="text"
+                maxLength={50}
+                autoFocus={true}
+                value={customTopic}
+                onChange={setCustomTopic}
+                placeholder=""
+                onKeyDown={(e: any) => { 
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleCustomTopicSubmit(); 
+                  }
+                }}
+                disabled={isGeneratingQuestions}
+                style={{ border: 'none', background: 'transparent', maxWidth: '100%', padding: '0 5px', width: '100%', boxSizing: 'border-box', fontSize: 'clamp(20px, 4vw, 48px)', outline: 'none', boxShadow: 'none', textAlign: 'center', alignSelf: 'center' }}
+              />
+              
+              <button 
+                onClick={handleCustomTopicSubmit} 
+                disabled={isGeneratingQuestions || !customTopic.trim()}
+                style={{ width: 'clamp(41px, 10vw, 74px)', height: 'clamp(41px, 10vw, 74px)', borderRadius: '50%', background: '#52c41a', border: 'none', color: 'white', cursor: 'pointer', zIndex: 10, fontSize: 'clamp(20px, 6vw, 32px)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: (isGeneratingQuestions || !customTopic.trim()) ? 0.5 : 1, flexShrink: 0 }}
+                title="Створити"
+              >
+                {isGeneratingQuestions ? "⏳" : "✓"}
+              </button>
+            </div>
+            {error && <span className="error-message" style={{ display: 'block', marginTop: '15px' }}>{error}</span>}
+          </div>
+        </div>
+      )}
+
       {(isCreatingLobby || isLobby || phase === Phases.Join) && phase !== Phases.End && phase !== Phases.History && (
         <HomeIcon onClick={goHome} className="homeIconPos" />
       )}

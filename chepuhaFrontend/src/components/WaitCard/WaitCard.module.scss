@@ -10,8 +10,13 @@
   width: 100vw;
   margin: 0;
   box-sizing: border-box;
-  padding: 150px 20px;
-  box-sizing: border-box;
+  padding: 100px 20px;
+  overflow-x: hidden;
+  pointer-events: none;
+
+  @media (max-width: 768px) {
+    min-height: 100dvh;
+  }
 }
 
 .container {
@@ -24,6 +29,7 @@
   gap: 30px;
   max-width: 1000px;
   margin-top: -100px;
+  pointer-events: auto;
 }
 
 .nickLabel {
@@ -31,6 +37,21 @@
   color: #000000;
   margin: 0;
   margin-bottom: 10px;
+
+  @media (max-width: 768px) {
+    font-size: 32px;
+    line-height: 1.1;
+  }
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+
+  .labelPart {
+    white-space: nowrap;
+  }
 }
 
 .nickText {
@@ -119,14 +140,16 @@
 }
 
 @media (max-width: 768px) {
-  .container {
-    margin-top: 50px;
-    gap: 20px;
+  .wrapper {
+    padding: 20px 15px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
   }
 
-  .nickText {
-    font-size: 32px !important;
+  .container {
+    margin-top: -10vh;
+    gap: 15px;
   }
+
 
   .countText {
     font-size: 28px !important;

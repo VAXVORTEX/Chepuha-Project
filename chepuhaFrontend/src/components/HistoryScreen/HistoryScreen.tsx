@@ -18,10 +18,10 @@ const HistoryScreen: React.FC<HistoryScreenProps> = ({ games, onSelectGame, onHo
                 <div className={styles.box}>
                     <h2 className={styles.title}>{t('HISTORY_24H')}</h2>
                     <div className={styles.list}>
-                        {games.length === 0 ? (
+                        {!Array.isArray(games) || games.length === 0 ? (
                             <p className={styles.emptyText}>{t('NO_HISTORY')}</p>
                         ) : (
-                            games.map((g) => (
+                            games.filter(g => g && g.id).map((g) => (
                                 <div key={g.id} className={styles.gameItem} onClick={() => onSelectGame(g)}>
                                     <div className={styles.gameInfo}>
                                         <span className={styles.date}>{g.date}</span>
@@ -41,7 +41,6 @@ const HistoryScreen: React.FC<HistoryScreenProps> = ({ games, onSelectGame, onHo
                         </button>
                     </div>
                 </div>
-                <div className={styles.shadow}></div>
             </div>
         </div>
     );

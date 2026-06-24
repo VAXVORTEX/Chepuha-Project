@@ -5,8 +5,9 @@ import Button from "../Button/Button";
 import HomeIcon from "../HomeIcon/HomeIcon";
 import { playSecretMusic } from "../../utils/audio";
 import { Phases } from "../../types/phaseVariant";
-import Input from "../Input/Input";
+import GameInput from "../GameInput/GameInput";
 import { useLanguage } from "../../contexts/LanguageContext";
+import { getFontSize } from "../../utils/nickname";
 interface JoinCardProps {
   initialNick?: string;
   initialRoom?: string;
@@ -41,53 +42,31 @@ const JoinCard: React.FC<JoinCardProps> = ({
     <div className={styles.wrapper}>
       <div className={styles.container}>
         <div className={styles.form}>
-          <div className={styles.inputWrapper}>
-            <Input
-              value={nickInputValue}
-              onChange={(value) => {
-                if (value.length <= 25) {
-                  setNickInputValue(value);
-                  setIsSubmitted(false);
-                }
-              }}
-              placeholder={t('ENTER_NICK_PLACEHOLDER')}
-              onKeyDown={(e) => e.key === 'Enter' && doJoinClick()}
-              className={styles.input}
-            />
-            <span
-              className={styles.errorText}
-              style={{ visibility: (nickInputValue.length >= 25 || errors?.nick || (isSubmitted && !nickInputValue.trim())) ? 'visible' : 'hidden' }}
-            >
-              {nickInputValue.length >= 25
-                ? t('ERR_NICK_LONG')
-                : (errors?.nick || (isSubmitted && !nickInputValue.trim())
-                  ? (errors?.nick || t('NICKNAME_REQUIRED'))
-                  : 'ERROR')}
-            </span>
-          </div>
-          <div className={styles.inputWrapper}>
-            <Input
-              value={roomInputValue}
-              onChange={(val) => {
-                const upper = val.toUpperCase();
-                if (upper.length <= 8) {
-                  setRoomInputValue(upper);
-                  setIsSubmitted(false);
-                }
-              }}
-              onKeyDown={(e) => e.key === 'Enter' && doJoinClick()}
-              placeholder={t('ENTER_ROOM_PLACEHOLDER')}
-              className={styles.input}
-            />
-            <span
-              className={styles.errorText}
-              style={{ visibility: (errors?.room || (isSubmitted && !roomInputValue.trim())) ? 'visible' : 'hidden' }}
-            >
-              {(errors?.room || (isSubmitted && !roomInputValue.trim()))
-                ? (errors?.room || t('ROOM_NOT_FOUND'))
-                : 'ERROR'}
-            </span>
-          </div>
+          <GameInput
+            value={nickInputValue}
+            onChange={(val) => {
+              setNickInputValue(val);
+              setIsSubmitted(false);
+            }}
+            onEnter={doJoinClick}
+            placeholder={t('ENTER_NICK_PLACEHOLDER')}
+            errorText={errors?.nick || (isSubmitted && !nickInputValue.trim() ? t('NICKNAME_REQUIRED') : null)}
+            maxLength={25}
+            contextType="nickname"
+          />
+          <GameInput
+            value={roomInputValue}
+            onChange={(val) => {
+              setRoomInputValue(val.toUpperCase());
+              setIsSubmitted(false);
+            }}
+            onEnter={doJoinClick}
+            placeholder={t('ENTER_ROOM_PLACEHOLDER')}
+            errorText={errors?.room || (isSubmitted && !roomInputValue.trim() ? t('ROOM_NOT_FOUND') : null)}
+            maxLength={8}
+            isRoomCode={true}
+            contextType="room"
+          />
           <div className={styles.submitBlock}>
             <Button
               label={loading ? t('JOINING') : t('JOIN_GAME')}

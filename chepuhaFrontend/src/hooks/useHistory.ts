@@ -47,7 +47,7 @@ export function useHistory() {
             }
             const newGame: SavedGame = {
                 ...game,
-                id: crypto.randomUUID(),
+                id: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
                 timestamp: Date.now()
             };
             parsed = [newGame, ...parsed];
