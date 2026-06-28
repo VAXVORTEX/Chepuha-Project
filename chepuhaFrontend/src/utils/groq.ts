@@ -152,15 +152,16 @@ export async function generateCustomQuestions(
     const systemPrompt = language === 'uk'
         ? `Ти — розумний ведучий гри "Чепуха".
 Тобі дадуть тему: "${topic}".
-СПОЧАТКУ: Зрозумій, що це за тема (наприклад, "TBOI" — це гра The Binding of Isaac, "Mewgenics" — гра про котів-мутантів). Якщо це ім'я (наприклад, "Johnny Silverhand"), обов'язково розпізнай, з якого він всесвіту (Cyberpunk 2077, а не пірати чи інше). Визнач найбільш логічний та популярний всесвіт.
-ЗАБОРОНЕНО: Не використовуй саму назву теми як об'єкт чи ім'я персонажа у питаннях (НІКОЛИ не пиши "Що зробив TBOI?" або "Який торт купив TBOI?").
-ЗАВДАННЯ: Створи ${count} питань українською мовою, які базуються на лорі, предметах, персонажах чи механіках САМЕ ЦЬОГО розпізнаного всесвіту.
+СПОЧАТКУ: Зрозумій, що це за тема (наприклад, "TBOI" — це гра The Binding of Isaac). Якщо це ім'я (наприклад, "Johnny Silverhand"), розпізнай його всесвіт. 
+КРИТИЧНО: Якщо тема — це набір випадкових букв або незрозуміле слово (наприклад, "РТПТТ", "фіввв", "asdasd"), ТИ ЗОБОВ'ЯЗАНИЙ використовувати САМЕ ЦЕ СЛОВО як головного героя чи явище у своїх питаннях! (наприклад: "Хто такий РТПТТ?", "Що зробив РТПТТ?"). Не вигадуй інших людей, питай саме про це слово!
+КРИТИЧНО 2: Якщо тема — це англомовна гра (наприклад "Cult of the Lamb"), твої питання ПОВИННІ бути про культ, ягня, пожертви та специфічний лор цієї гри! Ніяких випадкових дітей чи людей. ТІЛЬКИ лор цієї гри, але українською мовою.
+ЗАБОРОНЕНО: Не використовуй назву гри як ім'я персонажа (не пиши "Що зробив Cult of the Lamb?").
+ЗАВДАННЯ: Створи ${count} питань українською мовою.
 ПРАВИЛА:
-1. Питання мають бути СУПЕР ПРОСТИМИ та КОРОТКИМИ (максимум 4-6 слів), зрозумілими навіть дитині. Не ускладнюй.
-2. Вони мають провокувати смішну історію про цей всесвіт.
-3. Питання мають йти логічним ланцюжком (Хто? З ким? Де? Що зробили? Що сказали? Чим все закінчилось?), щоб історія плавно розвивалась.
-4. Всі питання мають бути УНІКАЛЬНИМИ. Не повторюйся.
-Формат відповіді: СУВОРО JSON об'єкт з ключами "universe" (твій короткий висновок, звідки ця тема) та "questions" (масив рядків-питань).`
+1. Питання мають бути СУПЕР ПРОСТИМИ та КОРОТКИМИ (максимум 4-6 слів).
+2. Питання мають йти логічним ланцюжком (Хто? З ким? Де? Що зробили? Що сказали? Чим все закінчилось?).
+3. Всі питання мають бути УНІКАЛЬНИМИ.
+Формат відповіді: СУВОРО JSON об'єкт з ключами "universe" (твій висновок) та "questions" (масив рядків-питань).`
         : `You are a smart host for the "Nonsense" game.
 Topic: "${topic}".
 FIRST: Understand what the topic is (e.g. "TBOI" means The Binding of Isaac). If it's a specific name like "Johnny Silverhand", recognize that he is from Cyberpunk 2077 (not a pirate). Determine the most popular universe.
@@ -208,8 +209,34 @@ Output format: STRICTLY a JSON object with keys "universe" (your brief analysis 
         throw new Error('Invalid array returned');
     } catch (e) {
         console.error("Failed to parse custom questions JSON from Groq", e);
-        // Fallbacks
-        return Array(count).fill(language === 'uk' ? `Що сталось у світі ${topic}?` : `What happened in ${topic}?`);
+        const fallbackQuestions = language === 'uk' ? [
+            `Хто такий ${topic}?`,
+            `Де був ${topic}?`,
+            `З ким зустрівся ${topic}?`,
+            `Що сказав ${topic}?`,
+            `Що несподіваного зробив ${topic}?`,
+            `Чим все закінчилось для ${topic}?`,
+            `Який секрет приховує ${topic}?`,
+            `Куди зник ${topic}?`,
+            `Яка мрія у ${topic}?`,
+            `Що знайшов ${topic}?`,
+            `Чого боїться ${topic}?`,
+            `Яка суперсила у ${topic}?`
+        ] : [
+            `Who is ${topic}?`,
+            `Where was ${topic}?`,
+            `Who did ${topic} meet?`,
+            `What did ${topic} say?`,
+            `What unexpected thing did ${topic} do?`,
+            `How did it end for ${topic}?`,
+            `What secret does ${topic} hide?`,
+            `Where did ${topic} disappear to?`,
+            `What is ${topic}'s dream?`,
+            `What did ${topic} find?`,
+            `What is ${topic} afraid of?`,
+            `What superpower does ${topic} have?`
+        ];
+        return fallbackQuestions.slice(0, count);
     }
 }
 
@@ -297,28 +324,74 @@ export function prepareTextForTTS(
 export async function generateNextQuestion(
     topic: string,
     previousAnswers: string[],
+    myPreviousAnswers: string[],
+    roundInfo: { currentRound: number, gameLength: number, isSolo: boolean },
     language: 'uk' | 'en' = 'uk'
 ): Promise<string> {
-    const systemPrompt = language === 'uk'
-        ? `Ти — розумний ведучий гри "Чепуха". Тема: "${topic}".
-Тобі дадуть список попередніх відповідей для конкретної історії.
-Твоє завдання: згенерувати ЛОГІЧНЕ, СУПЕР КОРОТКЕ (максимум 3-5 слів) і СМІШНЕ наступне запитання, яке буде продовжувати сюжет.
-ПРАВИЛА:
-1. Якщо відповідей немає, запитай "Хто?" або "Кого зустріли?".
-2. Якщо є "Хто" і "З ким", запитай "Де вони були?".
-3. Орієнтуйся на контекст!
-Поверни ТІЛЬКИ текст питання.`
-        : `You are a smart host for the "Nonsense" game. Topic: "${topic}".
-Generate a LOGICAL, SUPER SHORT (max 3-5 words), and FUNNY next question that continues the plot of these specific answers.
-Return ONLY the text of the question.`;
+    let questionType: 'normal' | 'sheet_followup' | 'player_followup' = 'normal';
+    const { currentRound, gameLength, isSolo } = roundInfo;
 
-    const answerList = previousAnswers.length > 0 
-        ? previousAnswers.map((a, i) => `${i + 1}. ${a}`).join('\n')
-        : (language === 'uk' ? 'Ще немає відповідей. Це перший раунд.' : 'No answers yet.');
+    if (isSolo) {
+       if (gameLength === 6 && currentRound === 3) questionType = 'player_followup';
+       else if (gameLength === 9 && (currentRound === 3 || currentRound === 6)) questionType = 'player_followup';
+       else if (gameLength === 12 && (currentRound === 3 || currentRound === 6 || currentRound === 9)) questionType = 'player_followup';
+    } else {
+       if (gameLength === 6) {
+           if (currentRound === 3) questionType = 'sheet_followup';
+           else if (currentRound === 5) questionType = 'player_followup';
+       } else if (gameLength === 9) {
+           if (currentRound === 3 || currentRound === 6) questionType = 'sheet_followup';
+           else if (currentRound === 5 || currentRound === 8) questionType = 'player_followup';
+       } else if (gameLength === 12) {
+           if (currentRound === 3 || currentRound === 6 || currentRound === 9) questionType = 'sheet_followup';
+           else if (currentRound === 11) questionType = 'player_followup';
+       }
+    }
 
-    const userPrompt = language === 'uk'
-        ? `Попередні відповіді:\n${answerList}\n\nЗгенеруй наступне коротке запитання.`
-        : `Previous answers:\n${answerList}\n\nGenerate the next short question.`;
+    if (previousAnswers.length === 0) {
+        questionType = 'normal';
+    }
+    if (questionType === 'player_followup' && myPreviousAnswers.length === 0) {
+        questionType = 'sheet_followup'; 
+    }
+
+    let systemPrompt = language === 'uk'
+        ? `Ти — розумний ведучий гри "Чепуха". Тема: "${topic}".\nТвоє завдання: згенерувати СУПЕР КОРОТКЕ (максимум 3-7 слів) і СМІШНЕ запитання.\nАБСОЛЮТНО ЗАБОРОНЕНО: ніколи не повторюй одне й те саме питання! Щоразу вигадуй нове дієслово або новий напрямок.\nПоверни ТІЛЬКИ текст питання.`
+        : `You are a smart host for the "Nonsense" game. Topic: "${topic}".\nGenerate a SUPER SHORT (max 3-7 words), and FUNNY question.\nABSOLUTELY FORBIDDEN: never repeat the same question twice! Always invent a new verb or direction.\nReturn ONLY the text of the question.`;
+
+    let userPrompt = '';
+
+    if (questionType === 'player_followup') {
+        const lastMyAns = myPreviousAnswers[myPreviousAnswers.length - 1];
+        if (language === 'uk') {
+            systemPrompt += `\nСПЕЦІАЛЬНЕ ПРАВИЛО: Гравцю потрібно задати УТОЧНЮЮЧЕ або ПРОВОКАЦІЙНЕ питання щодо його ОСОБИСТОЇ минулої відповіді на іншому аркуші. Згадай цю відповідь і спитай, чому він так сказав, або як це стосується поточної ситуації. Наприклад "А чому ти минулого разу сказав, що [його відповідь]?" або "Як [його відповідь] пов'язана з цим?"`;
+            userPrompt = `Його особиста минула відповідь: "${lastMyAns}".\nПоточна історія на аркуші: ${previousAnswers.join(' -> ')}.\nЗгенеруй питання до нього.`;
+        } else {
+            systemPrompt += `\nSPECIAL RULE: Ask a PROVOCATIVE follow-up question about the player's OWN past answer from another sheet. Ask why they said it, or how it relates to the current situation.`;
+            userPrompt = `Their past answer: "${lastMyAns}".\nCurrent story on this sheet: ${previousAnswers.join(' -> ')}.\nGenerate the question.`;
+        }
+    } else if (questionType === 'sheet_followup') {
+        const lastSheetAns = previousAnswers[previousAnswers.length - 1];
+        if (language === 'uk') {
+            systemPrompt += `\nСПЕЦІАЛЬНЕ ПРАВИЛО: Задай УТОЧНЮЮЧЕ питання до ОСТАННЬОЇ відповіді попереднього гравця на цьому аркуші. Спитай деталь, причину або дивну обставину про цю відповідь. (наприклад "Чому саме [відповідь]?" або "Що він зробив з [відповідь]?")`;
+            userPrompt = `Остання відповідь попереднього гравця: "${lastSheetAns}".\nЗгенеруй уточнююче питання.`;
+        } else {
+            systemPrompt += `\nSPECIAL RULE: Ask a FOLLOW-UP question about the VERY LAST answer given by the previous player on this sheet. Ask for a detail, reason, or weird circumstance about it.`;
+            userPrompt = `Last answer: "${lastSheetAns}".\nGenerate the follow-up question.`;
+        }
+    } else {
+        const answerList = previousAnswers.length > 0 
+            ? previousAnswers.map((a, i) => `${i + 1}. ${a}`).join('\n')
+            : (language === 'uk' ? 'Ще немає відповідей. Це перший раунд.' : 'No answers yet.');
+        
+        if (language === 'uk') {
+            systemPrompt += `\nПРАВИЛА:\n1. Якщо відповідей немає, запитай "Хто?" або "Кого зустріли?".\n2. Продовжуй сюжет логічно, але абсурдно.`;
+            userPrompt = `Попередні відповіді:\n${answerList}\n\nЗгенеруй наступне коротке запитання.`;
+        } else {
+            systemPrompt += `\nRULES:\n1. If no answers, ask "Who?".\n2. Continue the plot logically but absurdly.`;
+            userPrompt = `Previous answers:\n${answerList}\n\nGenerate the next short question.`;
+        }
+    }
 
     try {
         const question = await callGroq([

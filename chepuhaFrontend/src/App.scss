@@ -701,8 +701,8 @@ body.translated-ltr, body.translated-rtl {
 
 .homeIconPos {
   position: absolute;
-  bottom: 0px !important;
-  right: 0px !important;
+  bottom: 10px !important;
+  right: 10px !important;
   width: 120px;
   height: 120px;
   background-color: rgba(255, 255, 255, 0.2);
@@ -717,7 +717,7 @@ body.translated-ltr, body.translated-rtl {
   transform-origin: bottom right;
 
   &:hover {
-    transform: scale(1.2);
+    transform: scale(1.05);
   }
 
   img {
@@ -843,7 +843,7 @@ body.translated-ltr, body.translated-rtl {
 .red-guy-bg {
   right: 0px !important;
   left: auto !important;
-  bottom: 100px !important;
+  bottom: 150px !important;
   background-image: url("./assets/images/main_character_red.png");
   background-position: right bottom !important;
   width: 15vw;
@@ -1970,8 +1970,8 @@ body.translated-ltr, body.translated-rtl {
     position: absolute !important;
     width: 60px !important;
     height: 60px !important;
-    bottom: 65px !important;
-    right: 20px !important;
+    bottom: 45px !important;
+    right: 15px !important;
     background-color: rgba(255, 255, 255, 0.2) !important;
     border: 3px solid #000000 !important;
     border-radius: 50% !important;
@@ -2037,7 +2037,7 @@ body.translated-ltr, body.translated-rtl {
   .yellow-guy-bg {
     width: 70px !important;
     height: 70px !important;
-    left: 0 !important;
+    left: 5px !important;
     right: auto !important;
     bottom: 0 !important;
     background-position: left bottom !important;
@@ -2047,9 +2047,9 @@ body.translated-ltr, body.translated-rtl {
   .red-guy-bg {
     width: 70px !important;
     height: 70px !important;
-    right: 0 !important;
+    right: 10px !important;
     left: auto !important;
-    bottom: 60px !important;
+    bottom: 100px !important;
     background-position: right bottom !important;
     z-index: 1 !important;
     pointer-events: auto !important;
@@ -2058,7 +2058,7 @@ body.translated-ltr, body.translated-rtl {
   }
 
   .is-history .red-guy-bg {
-    bottom: 60px !important;
+    bottom: 95px !important;
   }
 
 

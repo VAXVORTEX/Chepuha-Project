@@ -24,6 +24,7 @@ import { playSecretMusic, secretAudio } from "./utils/audio";
 import { mathProblems } from "./config/mathProblems";
 const STATE_STORAGE_KEY = "chepuhaActiveGameState";
 import { useGameState } from "./hooks/useGameState";
+import { supabase } from "@api/supabaseClient";
 import {
   createGameSession,
   getGameSession,
@@ -1606,9 +1607,14 @@ function App() {
       if (activeTemplate.id === 'custom_ai' && targetSheet && currentRound < gameLength && isGroqAvailable()) {
         (async () => {
           try {
-            const { data } = await supabase.from('answers').select('answer_text').eq('story_sheet_id', targetSheet).order('position_in_sheet', { ascending: true });
-            const sheetAnswers = (data || []).map(a => a.answer_text);
-            const nextQ = await generateNextQuestion(customTopic || 'Своя гра', sheetAnswers, language as 'uk' | 'en');
+            const [{ data: sheetData }, { data: myData }] = await Promise.all([
+                supabase.from('answers').select('answer_text').eq('story_sheet_id', targetSheet).order('position_in_sheet', { ascending: true }),
+                supabase.from('answers').select('answer_text').eq('player_id', playerId).order('position_in_sheet', { ascending: true })
+            ]);
+            const sheetAnswers = (sheetData || []).map(a => a.answer_text);
+            const myAnswers = (myData || []).map(a => a.answer_text);
+            const roundInfo = { currentRound, gameLength, isSolo: (players || []).length === 1 };
+            const nextQ = await generateNextQuestion(customTopic || 'Своя гра', sheetAnswers, myAnswers, roundInfo, language as 'uk' | 'en');
             await updateStorySheetQuestion(targetSheet, nextQ);
           } catch(e) {
             console.error("AI question error:", e);
