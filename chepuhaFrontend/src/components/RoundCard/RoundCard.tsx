@@ -101,13 +101,13 @@ export const RoundCard = ({
                             </div>
                         )}
                         <div className={styles.buttonContainer}>
-                            <Button
-                                label={t('SAVE')}
-                                variant='secondary'
-                                phase={Phases.Main}
+                            <button
+                                className={styles.answerButton}
                                 onClick={handleSubmit}
                                 disabled={!answer.trim()}
-                            />
+                            >
+                                {t('SAVE')}
+                            </button>
                         </div>
                     </div>
                 )}

@@ -67,7 +67,7 @@ const GameResult: React.FC<ResultProps> = ({
     return 5; // default = 1.25 (increased by 2 steps)
   });
 
-  const { playTTS, stopTTS, pauseTTS, resumeTTS, preloadTTS, checkAudioReady, isPlaying, isPaused, isLoading, currentVoice, setCurrentVoice } = useTTS();
+  const { playTTS, stopTTS, pauseTTS, resumeTTS, preloadTTS, checkAudioReady, isPlaying, isPaused, isLoading, loadingProgress, currentVoice, setCurrentVoice } = useTTS();
 
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
@@ -247,6 +247,7 @@ const GameResult: React.FC<ResultProps> = ({
                     isPaused={isPaused}
                     isLoading={isLoading && !isAudioReady}
                     isReady={isAudioReady}
+                    loadingProgress={loadingProgress}
                   />
                 </div>
                 

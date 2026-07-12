@@ -196,3 +196,24 @@
     padding: 6px 15px;
   }
 }
+
+.answerButton {
+  background-color: $gray-dark;
+  color: $white;
+  font-size: 34px;
+  padding: 22px 70px;
+  border: 2px solid $black;
+  border-radius: 14px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  transition: background-color 0.2s, transform 0.1s;
+  min-width: 300px;
+}
+.answerButton:active {
+  transform: scale(0.95);
+}
+.answerButton:disabled {
+  background-color: #aaaaaa;
+  cursor: not-allowed;
+}

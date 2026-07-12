@@ -4,6 +4,7 @@ import './index.scss'
 import App from './App'
 import { LanguageProvider } from './contexts/LanguageContext';
 import { TTSProvider } from './contexts/TTSContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -12,10 +13,12 @@ if (!rootElement) {
 const root = createRoot(rootElement);
 root.render(
   <StrictMode>
-    <LanguageProvider>
-      <TTSProvider>
-        <App />
-      </TTSProvider>
-    </LanguageProvider>
+    <ErrorBoundary>
+      <LanguageProvider>
+        <TTSProvider>
+          <App />
+        </TTSProvider>
+      </LanguageProvider>
+    </ErrorBoundary>
   </StrictMode>
 );

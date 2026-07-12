@@ -15,4 +15,15 @@ export default defineConfig({
       '@supabase/supabase-js': path.dirname(require.resolve('@supabase/supabase-js/package.json'))
     },
   },
+  build: {
+    chunkSizeWarningLimit: 1000,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          supabase: ['@supabase/supabase-js']
+        }
+      }
+    }
+  }
 })

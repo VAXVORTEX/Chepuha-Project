@@ -684,6 +684,7 @@ export const TEMPLATES: Record<string, StoryTemplate> = {
         }
     }
 };
+
 export function parseLegacyStory(story: string): { templateId: string, answers: string[] } | null {
     return null;
 }

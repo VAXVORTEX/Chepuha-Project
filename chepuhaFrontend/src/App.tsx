@@ -24,6 +24,7 @@ import { playSecretMusic, secretAudio } from "./utils/audio";
 import { mathProblems } from "./config/mathProblems";
 const STATE_STORAGE_KEY = "chepuhaActiveGameState";
 import { useGameState } from "./hooks/useGameState";
+import { supabase } from "@api/supabaseClient";
 import {
   createGameSession,
   getGameSession,
@@ -49,6 +50,24 @@ import { Player } from "@api/types";
 import { renderThemedNickname, getFontSize, getNicknameStyle, getNicknameClassName } from "./utils/nickname";
 import ReactDOMServer from 'react-dom/server';
 import { generateAIStory, isGroqAvailable, refineStoryWithAI, generateCustomQuestions, generateNextQuestion } from './utils/groq';
+
+// --- NEW IMPORTS ---
+import { useServerTimeOffset } from './hooks/useServerTimeOffset';
+import { useLobbyTimer } from './hooks/useLobbyTimer';
+import { useCarousel } from './hooks/useCarousel';
+import { usePlayerColor } from './hooks/usePlayerColor';
+import { useStoryBuilder } from './hooks/useStoryBuilder';
+import { useAnswerSubmission } from './hooks/useAnswerSubmission';
+import { useRoundTransitions } from './hooks/useRoundTransitions';
+import { AVAILABLE_COLORS } from './config/colors';
+import { GAME_LENGTH_INDICES } from './config/gameSettings';
+import MainMenu from './components/MainMenu/MainMenu';
+import CreateGameScreen from './components/CreateGameScreen/CreateGameScreen';
+import LobbyScreen from './components/LobbyScreen/LobbyScreen';
+import PlayerList from './components/PlayerList/PlayerList';
+import CustomTopicModal from './components/CustomTopicModal/CustomTopicModal';
+// -------------------
+
 
 export interface AppState {
   phase: Phases;
@@ -125,6 +144,10 @@ const getInitialState = (): AppState => {
       const p = JSON.parse(prefs);
       defaultState.nickname = p.nickname || '';
       defaultState.roomCode = p.roomCode || '';
+      if (p.gameLength !== undefined) defaultState.gameLength = p.gameLength;
+      if (p.storyMode !== undefined) defaultState.storyMode = p.storyMode;
+      if (p.hintsEnabled !== undefined) defaultState.hintsEnabled = p.hintsEnabled;
+      if (p.colorHighlight !== undefined) defaultState.colorHighlight = p.colorHighlight;
     }
 
     const saved = localStorage.getItem(STATE_STORAGE_KEY);
@@ -160,71 +183,6 @@ const getInitialState = (): AppState => {
   return defaultState;
 };
 
-export const AVAILABLE_COLORS = [
-  '#e52929', '#ff4e50', '#8b0000',
-  '#ff8c00', '#ffa500', '#e5a629',
-  '#ffd700', '#ffff00', '#f9d423', '#fafad2',
-  '#29a62b', '#24c431', '#00ff00', '#32cd32', '#008000', '#adff2f', '#98fb98', '#00fa9a',
-  '#2962e5', '#2c5ed3', '#00bfff', '#0000ff', '#00008b', '#4682b4', '#87ceeb', '#add8e6',
-  '#9c29e5', '#8a2be2', '#4b0082', '#9932cc', '#ba55d3', '#e6e6fa',
-  '#000000', '#ffffff',
-
-  'special:flag-ua', 'special:flag-de', 'special:flag-jp', 'special:flag-pl',
-  'special:flag-it', 'special:flag-es', 'special:flag-br', 'special:flag-ca',
-  'special:flag-bi', 'special:flag-pan', 'special:flag-ace', 'special:flag-nonbinary',
-
-  'special:gender-pride', 'special:gender-trans', 'special:flag-lesbian',
-  'special:flag-gay-mlm',
-  'special:flag-intersex', 'special:flag-genderqueer', 'special:flag-polysexual',
-
-  'special:fire-gradient', 'special:gold', 'special:ice-gradient',
-
-  'special:rainbow', 'special:solar', 'special:nebula', 'special:cyberpunk',
-  'special:pirate-caribbean', 'special:cyber-samurai-iconic',
-
-  'special:royal-red', 'special:golden-rod', 'special:bronze-age',
-  'special:mint-fresh', 'special:stellar', 'special:cyan-burst', 'special:electric-blue', 'special:deep-purple',
-  'special:neon-pink', 'special:silver-streak'
-];
-
-const GAME_LENGTH_INDICES: Record<number, number[]> = {
-  6: [0, 1, 2, 3, 4, 5],
-  9: [0, 1, 2, 3, 4, 5, 6, 7, 8],
-  12: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
-};
-
-
-const PlayerItem = memo(({ p, i, isMe, playerColor, cycleColor, AVAILABLE_COLORS, crownImage, showColorPicker }: any) => {
-  const defaultColor = AVAILABLE_COLORS[i % AVAILABLE_COLORS.length];
-  const activeColor = isMe && playerColor ? playerColor : (p.color || defaultColor);
-  const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
-
-  return (
-    <div key={p.id || String(i)} className="player-item" data-player-id={p.id}>
-      <div className="player-name-wrapper-new">
-        <div className="player-side-container left">
-          {i === 0 && <img src={crownImage} alt="Host" className="crown-icon-new" />}
-        </div>
-        {(() => {
-          const baseSize = isPC ? 75 : 40;
-          const fontSize = getFontSize(p.nickname, baseSize);
-          return renderThemedNickname(p.nickname, activeColor, baseSize, showColorPicker, false, true, fontSize);
-        })()}
-        <div className="player-side-container right">
-          {isMe && showColorPicker && (
-            <div className="inline-color-picker-new">
-              <button className="inline-color-arrow" onClick={() => cycleColor(-1)}>◀</button>
-              <div className={classNames("inline-color-swatch", activeColor?.startsWith('special:') ? activeColor.replace('special:', '') : '')} style={!activeColor?.startsWith('special:') ? { background: activeColor } : {}} />
-              <button className="inline-color-arrow" onClick={() => cycleColor(1)}>▶</button>
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-});
-
-
 const safeApiCall = async (apiFunc: any, payload: any) => {
   try {
     return await apiFunc(payload);
@@ -245,39 +203,14 @@ function App() {
   const [customTopic, setCustomTopic] = useState("");
   const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
 
-  const [serverTimeOffset, setServerTimeOffset] = useState(0);
+  const serverTimeOffset = useServerTimeOffset();
   const playersListRef = useRef<HTMLDivElement>(null);
   const [logoPop, setLogoPop] = useState(false);
 
   const triggerLogoPop = () => {
     setLogoPop(true);
     playSecretMusic();
-    setTimeout(() => setLogoPop(false), 300);
   };
-
-  useEffect(() => {
-    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-    const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-    if (!supabaseUrl || !supabaseAnonKey) return;
-    fetch(`${supabaseUrl}/auth/v1/health`, {
-      method: 'GET',
-      headers: {
-        'apikey': supabaseAnonKey
-      }
-    })
-      .then(res => {
-        const dateHeader = res.headers.get('date');
-        if (dateHeader) {
-          const sTime = Date.parse(dateHeader);
-          if (!isNaN(sTime)) {
-            setServerTimeOffset(Date.now() - sTime);
-          }
-        }
-      })
-      .catch(err => {
-        console.warn("Failed to fetch server time offset:", err);
-      });
-  }, []);
 
   const { phase, didGameStart, currentRound, userAnswers, isCreatingLobby, isLobby, nickname, roomCode, selectedTemplate, error, allStories, storyIndex, selectedHistoryGame, joinedCount, totalCount, sessionId, playerId, isHost, currentRoundId, myStorySheetId, playerCount, roundStartedAt, allStorySheets, lobbyCreatedAt, answeredRoundId, gameLength, storyMode, hintsEnabled, colorHighlight, playerColor } = appState;
   const { session, players, rounds, currentAnswers, activeRoundId: hookActiveRoundId, error: pollError, refreshState, dataReady } = useGameState(sessionId);
@@ -329,56 +262,22 @@ function App() {
           questionTypes: q,
           questions: q,
           fallbacks: Array(12).fill(['...']),
-          buildStory: () => ''
+          buildStory: (answers: string[]) => {
+              const filtered = answers.filter(a => a && a !== '__REMOVE_ME__' && a.trim());
+              if (filtered.length === 0) return 'Історія не була згенерована.';
+              return filtered.join('. ') + '.';
+          }
       } as any;
   }
   const { savedGames, saveGameToHistory } = useHistory();
 
 
-  const CAROUSEL_TEMPLATES = ['custom_ai', 'random', ...Object.keys(TEMPLATES)];
-  const [carouselIndex, setCarouselIndex] = useState<number>(() => {
-    const savedIdx = localStorage.getItem('chepuhaCarouselIdx');
-    if (savedIdx !== null) return parseInt(savedIdx, 10);
-    return 0;
-  });
+  const { carouselIndex, setCarouselIndex, moveCarousel: moveCarouselHook, CAROUSEL_TEMPLATES } = useCarousel();
   const carouselRef = useRef<HTMLDivElement>(null);
+  const moveCarousel = (dir: 1 | -1) => moveCarouselHook(dir, setAppState);
 
-  const moveCarousel = (dir: 1 | -1) => {
-    setCarouselIndex(prev => {
-      const next = (prev + dir + CAROUSEL_TEMPLATES.length) % CAROUSEL_TEMPLATES.length;
-      const chosen = CAROUSEL_TEMPLATES[next];
-      localStorage.setItem('chepuhaCarouselIdx', String(next));
-      setAppState(ps => ({ ...ps, selectedTemplate: chosen === 'random' ? 'random' : chosen }));
-      return next;
-    });
-  };
-
-  const cycleColor = (direction: -1 | 1) => {
-    setAppState(prev => {
-      const idx = AVAILABLE_COLORS.indexOf(prev.playerColor || '#000000');
-      const currentIdx = idx === -1 ? 0 : idx;
-      let nextIdx = (currentIdx + direction + AVAILABLE_COLORS.length) % AVAILABLE_COLORS.length;
-
-
-      const takenColors = (players || []).map(p => p.color).filter(c => c && c !== prev.playerColor);
-      let attempts = 0;
-      while (takenColors.includes(AVAILABLE_COLORS[nextIdx]) && attempts < AVAILABLE_COLORS.length) {
-        nextIdx = (nextIdx + direction + AVAILABLE_COLORS.length) % AVAILABLE_COLORS.length;
-        attempts++;
-      }
-
-      const newColor = AVAILABLE_COLORS[nextIdx];
-      if (playerId) {
-
-        updatePlayer(playerId, { color: newColor }).catch((err) => {
-          if (String(err.message).includes('column') || String(err.message).includes('schema cache')) {
-            console.warn("DB 'color' column missing, skipping sync.");
-          }
-        });
-      }
-      return { ...prev, playerColor: newColor };
-    });
-  };
+  const { cycleColor: cycleColorHook } = usePlayerColor();
+  const cycleColor = (direction: -1 | 1) => cycleColorHook(direction, playerId, players || [], setAppState);
 
 
   const touchStartY = useRef<number>(0);
@@ -453,10 +352,17 @@ function App() {
   }, [sessionId, playerId, playerColor]);
 
   useEffect(() => {
-    if (nickname || roomCode) {
-      localStorage.setItem('chepuhaUserPrefs', JSON.stringify({ nickname, roomCode }));
+    if (nickname || roomCode || gameLength || storyMode || hintsEnabled || colorHighlight) {
+      localStorage.setItem('chepuhaUserPrefs', JSON.stringify({ 
+        nickname, 
+        roomCode,
+        gameLength,
+        storyMode,
+        hintsEnabled,
+        colorHighlight
+      }));
     }
-  }, [nickname, roomCode]);
+  }, [nickname, roomCode, gameLength, storyMode, hintsEnabled, colorHighlight]);
 
   useEffect(() => {
     const imagesToPreload = [
@@ -512,7 +418,10 @@ function App() {
           }
 
           const coloredAnswers = fullAnswers.map((ans, idx) => {
-            if (!parsedColorHighlight) return ans;
+            if (!parsedColorHighlight) {
+              if (ans === "__REMOVE_ME__") return ans;
+              return `<span style="color: #8B0000; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 3px rgba(0,0,0,0.5); -webkit-text-stroke: 0.5px #000;">${ans}</span>`;
+            }
             const roundIndex = indices.indexOf(idx);
             const originalAnswer = roundIndex !== -1
               ? (s.answers || []).find((a: any) => a.position_in_sheet === (roundIndex + 1))
@@ -525,7 +434,7 @@ function App() {
             }
             const ansOwnerId = typeof originalAnswer.player_id === 'object' && originalAnswer.player_id !== null ? originalAnswer.player_id.id : originalAnswer.player_id;
             const ansOwner = typeof originalAnswer.player_id === 'object' && originalAnswer.player_id !== null ? originalAnswer.player_id : players.find(p => String(p.id) === String(ansOwnerId));
-            const color = ansOwner?.color || (String(ansOwnerId) === String(playerId) ? (playerColor || '#e52929') : '#e52929');
+            const color = ansOwner?.color || (String(ansOwnerId) === String(playerId) ? (playerColor || '#8B0000') : '#8B0000');
 
             return ReactDOMServer.renderToStaticMarkup(
               renderThemedNickname(ans, color, 24, true, true)
@@ -554,6 +463,28 @@ function App() {
                 language as 'uk' | 'en',
                 storySeed
               );
+              // Convert <ans>...</ans> tags to colored spans
+              if (parsedColorHighlight) {
+                let ansIdx = 0;
+                const usedAnswers = fullAnswers.filter(a => a && a.trim() && !a.includes('__REMOVE_ME__'));
+                storyText = storyText.replace(/<ans>(.*?)<\/ans>/g, (_, ansText) => {
+                  const origIdx = indices[ansIdx % indices.length];
+                  const originalAnswer = (s.answers || []).find((a: any) => a.position_in_sheet === (ansIdx + 1));
+                  const ansOwnerId = originalAnswer ? (typeof originalAnswer.player_id === 'object' && originalAnswer.player_id !== null ? originalAnswer.player_id.id : originalAnswer.player_id) : null;
+                  const ansOwner = ansOwnerId ? (typeof originalAnswer.player_id === 'object' && originalAnswer.player_id !== null ? originalAnswer.player_id : players.find(p => String(p.id) === String(ansOwnerId))) : null;
+                  const color = ansOwner?.color || (String(ansOwnerId) === String(playerId) ? (playerColor || '#8B0000') : '#8B0000');
+                  ansIdx++;
+                  return ReactDOMServer.renderToStaticMarkup(
+                    renderThemedNickname(ansText, color, 24, true, true)
+                  );
+                });
+              } else {
+                storyText = storyText.replace(/<ans>(.*?)<\/ans>/g, (_, ansText) => {
+                  return `<span style="color: #8B0000; text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 3px rgba(0,0,0,0.5); -webkit-text-stroke: 0.5px #000;">${ansText}</span>`;
+                });
+              }
+              // Clean any remaining <ans> tags that weren't matched
+              storyText = storyText.replace(/<\/?ans>/g, '');
             } catch (aiErr) {
               console.warn('[Chepuha] AI story generation failed, using template fallback:', aiErr);
               storyText = activeTemplate.buildStory(coloredAnswers, language, String(sessionId || 'local'), String(sessionId || 'local'));
@@ -745,7 +676,7 @@ function App() {
       } catch (err) {
       }
     })();
-  }, [session?.session_status, sessionId, playerId, players.length, refreshState]);
+  }, [session?.session_status, sessionId, playerId, players.length, refreshState, currentRound]);
 
   useEffect(() => { currentRoundIdRef.current = currentRoundId; }, [currentRoundId]);
   useEffect(() => { currentRoundRef.current = currentRound; }, [currentRound]);
@@ -759,299 +690,7 @@ function App() {
     }
   }, [error]);
 
-  const [lobbyTimeLeft, setLobbyTimeLeft] = useState(25 * 60);
-
-  useEffect(() => {
-    if (isLobby) {
-      const dbStart = session?.session_created_at ? Date.parse(session.session_created_at) : null;
-      const start = dbStart || lobbyCreatedAt || Date.now();
-
-      if (!lobbyCreatedAt && !dbStart) {
-        setAppState(prev => ({ ...prev, lobbyCreatedAt: start }));
-      }
-
-      const tick = setInterval(() => {
-        const now = Date.now() - serverTimeOffset;
-        const elapsed = Math.floor((now - start) / 1000);
-        const remaining = Math.max(0, 25 * 60 - elapsed);
-        setLobbyTimeLeft(remaining);
-        if (remaining <= 0) {
-          clearInterval(tick);
-          goHome();
-        }
-      }, 1000);
-      return () => clearInterval(tick);
-    } else {
-      setLobbyTimeLeft(25 * 60);
-    }
-  }, [isLobby, lobbyCreatedAt, session?.session_created_at, serverTimeOffset]);
-
-  useEffect(() => {
-    if (!session || !currentRoundId || !sessionId || !didGameStart) return;
-    if (phase !== Phases.Waiting && phase !== Phases.Main) return;
-    const interval = setInterval(async () => {
-      if (isTransitioning || transitionLockRef.current) {
-        if (transitionLockRef.current && Date.now() - transitionLockSetAtRef.current > 15000) {
-          console.warn("[Chepuha] Transition lock held >15s, force-releasing");
-          transitionLockRef.current = false;
-          transitionLockSetAtRef.current = 0;
-          setIsTransitioning(false);
-        }
-        return;
-      }
-      try {
-        const liveRoundId = currentRoundIdRef.current;
-        if (!liveRoundId) return;
-        const [curAnswers, freshPlayers] = await Promise.all([
-          getAnswersByRound(liveRoundId),
-          getPlayersBySession(sessionId)
-        ]);
-
-        if (liveRoundId !== currentRoundIdRef.current || isTransitioning || transitionLockRef.current) return;
-
-        const total = freshPlayers.length;
-        setAppState(prev => ({ ...prev, joinedCount: curAnswers.length, totalCount: total }));
-
-        if (phaseRef.current !== Phases.Waiting) return;
-
-        const now = Date.now();
-        const startedAt = roundStartedAt ? Date.parse(roundStartedAt) : now;
-        const timePassed = (now - startedAt) / 1000;
-
-        let maxTime = 130;
-        if (storyMode) {
-          if (gameLength === 6) maxTime = 480;
-          else if (gameLength === 9) maxTime = 720;
-          else if (gameLength === 12) maxTime = 900;
-        }
-
-        const isStory = !!(session?.template?.split('|')[2] === '1' || storyMode);
-        const allFinished = isStory && freshPlayers.every(p => p.players_status === 'finished');
-
-
-        const shouldTransition = (!isStory && (curAnswers.length >= total || (isHost && timePassed > maxTime))) ||
-          (isStory && (allFinished || (isHost && timePassed > 1800)));
-
-        if (shouldTransition) {
-          if (!isHost) {
-            try {
-              const freshRounds = await getRoundsBySession(sessionId);
-              const sortedFresh = [...(freshRounds || [])].sort((a: any, b: any) => b.round_number - a.round_number);
-              const latestFresh = sortedFresh[0];
-              if (latestFresh && latestFresh.id !== currentRoundIdRef.current && latestFresh.round_number > currentRoundRef.current) {
-                let clientPhase = Phases.Main;
-                try {
-                  const latestAnswers = await getAnswersByRound(latestFresh.id);
-                  const hasAnswered = latestAnswers.some((a: any) => {
-                    const aid = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : a.player_id;
-                    return String(aid) === String(playerId);
-                  });
-                  if (hasAnswered) clientPhase = Phases.Waiting;
-                } catch { }
-                currentRoundIdRef.current = latestFresh.id;
-                currentRoundRef.current = latestFresh.round_number;
-                setAppState(prev => ({
-                  ...prev,
-                  currentRoundId: latestFresh.id,
-                  currentRound: latestFresh.round_number,
-                  roundStartedAt: latestFresh.started_at || prev.roundStartedAt,
-                  phase: clientPhase,
-                  joinedCount: 0,
-                  answeredRoundId: clientPhase === Phases.Waiting ? latestFresh.id : null
-                }));
-                refreshState();
-              } else if (session?.session_status === 'completed') {
-                fetchFinalStoryResult();
-                setAppState(prev => ({ ...prev, phase: Phases.End }));
-              }
-            } catch (err) {
-              console.warn('[Chepuha] Non-host round check failed:', err);
-            }
-            return;
-          }
-          setIsTransitioning(true);
-          transitionLockRef.current = true;
-          transitionLockSetAtRef.current = Date.now();
-
-          if (isHost && curAnswers.length < total) {
-            const playerIdsWhoAnswered = new Set(curAnswers.map(a =>
-              typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : String(a.player_id)
-            ));
-            const missingPlayers = players.filter(p => !playerIdsWhoAnswered.has(p.id));
-            const sheets = await getStorySheetsBySession(sessionId);
-
-            for (const p of missingPlayers) {
-              const pSheet = sheets.find(s => {
-                const sid = typeof s.player_id === 'object' && s.player_id !== null ? (s.player_id as any).id : String(s.player_id);
-                return sid === p.id;
-              });
-              if (pSheet) {
-                const fbArr757 = (language === 'en' && activeTemplate.fallbacksEn) ? activeTemplate.fallbacksEn : activeTemplate.fallbacks;
-                const fallbackPool = fbArr757[currentRound - 1] ?? ["..."];
-                await submitAnswer({
-                  answer_text: fallbackPool[Math.floor(Math.random() * fallbackPool.length)],
-                  position_in_sheet: currentRound,
-                  player_id: p.id,
-                  round_id: currentRoundId,
-                  story_sheet_id: pSheet.id,
-                });
-              }
-            }
-          }
-
-          if (currentRound < gameLength && !isStory) {
-            if (isHost) {
-              const ts = new Date().toISOString();
-              const nextRoundNum = currentRound + 1;
-
-              let nextRound = null;
-              try {
-                const existingRounds = await getRoundsBySession(sessionId);
-                nextRound = existingRounds.find((r: any) => r.round_number === nextRoundNum) || null;
-                if (nextRound) console.warn("[Chepuha] Round", nextRoundNum, "already exists, reusing");
-              } catch { }
-
-              if (!nextRound) {
-                for (let attempt = 0; attempt < 3 && !nextRound; attempt++) {
-                  try {
-                    nextRound = await safeApiCall(createRound, {
-                      session_id: sessionId,
-                      round_number: nextRoundNum,
-                      question_type: (activeTemplate.id === 'custom_ai' ? TEMPLATES.classic.questionTypes : activeTemplate.questionTypes)[GAME_LENGTH_INDICES[gameLength]?.[nextRoundNum - 1] ?? (nextRoundNum - 1)],
-                      rounds_status: 'active',
-                      started_at: ts,
-                    });
-                  } catch (retryErr) {
-                    console.warn(`[Chepuha] createRound attempt ${attempt + 1}/3 failed:`, retryErr);
-                    if (attempt < 2) await new Promise(r => setTimeout(r, 1500));
-                  }
-                }
-              }
-
-              if (!nextRound) {
-                console.error("[Chepuha] All createRound attempts failed — releasing lock");
-                setIsTransitioning(false);
-                transitionLockRef.current = false;
-                transitionLockSetAtRef.current = 0;
-                return;
-              }
-
-              updatePlayersBySession(sessionId, { players_status: 'playing' }).catch(() => { });
-              currentRoundIdRef.current = nextRound.id;
-              currentRoundRef.current = nextRoundNum;
-              setAppState(prev => ({
-                ...prev,
-                currentRoundId: nextRound.id,
-                currentRound: nextRoundNum,
-                roundStartedAt: ts,
-                joinedCount: 0,
-                phase: Phases.Main
-              }));
-              setTimeout(() => {
-                setIsTransitioning(false);
-                transitionLockRef.current = false;
-                transitionLockSetAtRef.current = 0;
-              }, 500);
-            }
-          } else {
-            if (isHost) {
-
-              await updatePlayersBySession(sessionId, { players_status: 'finished' });
-              await updateGameSession(sessionId, { session_status: 'completed' });
-
-
-              await new Promise(r => setTimeout(r, 500));
-              await fetchFinalStoryResult();
-
-              setAppState(prev => ({ ...prev, phase: Phases.End }));
-              setIsTransitioning(false);
-              transitionLockRef.current = false;
-              transitionLockSetAtRef.current = 0;
-            }
-          }
-        }
-      } catch (err) {
-        console.error("[Chepuha] Transition error, releasing lock:", err);
-        setIsTransitioning(false);
-        transitionLockRef.current = false;
-        transitionLockSetAtRef.current = 0;
-      }
-    }, 500);
-    return () => clearInterval(interval);
-  }, [phase, session?.id, currentRoundId, playerCount, players.length, currentRound, isHost, sessionId, fetchFinalStoryResult, roundStartedAt, activeTemplate, didGameStart, isTransitioning]);
-
-  useEffect(() => {
-    if (phase !== Phases.Waiting || !didGameStart || !sessionId || !currentRoundId) return;
-
-    const runRecoveryCheck = async () => {
-      try {
-        const freshRounds = await getRoundsBySession(sessionId);
-        const sorted = [...(freshRounds || [])].sort((a: any, b: any) => b.round_number - a.round_number);
-        const latestRound = sorted[0];
-
-        if (latestRound && latestRound.id !== currentRoundId && latestRound.round_number > currentRound) {
-          console.warn("[Chepuha] Recovery: found newer round", latestRound.round_number, "— forcing transition");
-
-          let recoveryPhase = Phases.Main;
-          try {
-            const answers = await getAnswersByRound(latestRound.id);
-            const hasAnswered = answers.some((a: any) => {
-              const aid = typeof a.player_id === 'object' && a.player_id !== null ? (a.player_id as any).id : a.player_id;
-              return String(aid) === String(playerId);
-            });
-            if (hasAnswered) recoveryPhase = Phases.Waiting;
-          } catch { }
-
-          currentRoundIdRef.current = latestRound.id;
-          currentRoundRef.current = latestRound.round_number;
-          setAppState(prev => ({
-            ...prev,
-            currentRoundId: latestRound.id,
-            currentRound: latestRound.round_number,
-            roundStartedAt: latestRound.started_at || prev.roundStartedAt,
-            phase: recoveryPhase,
-            joinedCount: 0,
-            answeredRoundId: recoveryPhase === Phases.Waiting ? latestRound.id : null
-          }));
-          refreshState();
-          return;
-        }
-
-        try {
-          const freshSession = await getGameSession(sessionId);
-          if (freshSession?.session_status === 'completed' && phaseRef.current !== Phases.End) {
-            console.warn("[Chepuha] Recovery: game completed while stuck in Waiting");
-            fetchFinalStoryResult();
-            setAppState(prev => ({ ...prev, phase: Phases.End }));
-          }
-        } catch { }
-      } catch (err) {
-        console.warn("[Chepuha] Recovery check failed:", err);
-      }
-    };
-
-    let recoveryInterval: ReturnType<typeof setInterval> | null = null;
-    const recoveryTimeout = setTimeout(() => {
-      runRecoveryCheck();
-      recoveryInterval = setInterval(runRecoveryCheck, 4000);
-    }, 5000);
-
-    return () => {
-      clearTimeout(recoveryTimeout);
-      if (recoveryInterval) clearInterval(recoveryInterval);
-    };
-  }, [phase, didGameStart, sessionId, currentRoundId, currentRound, playerId, refreshState, fetchFinalStoryResult]);
-
-  const generateRoomCode = () => {
-    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    let code = "";
-    for (let i = 0; i < 8; i++) {
-      code += characters.charAt(Math.floor(Math.random() * characters.length));
-    }
-    return code;
-  };
-
-  const goHome = () => {
+  const goHome = useCallback(() => {
     setShowCustomPrompt(false);
     setAppState(prev => ({
       ...prev,
@@ -1079,7 +718,38 @@ function App() {
       playerColor: "",
     }));
     localStorage.removeItem(STATE_STORAGE_KEY);
+  }, [setAppState]);
+
+  const lobbyTimeLeft = useLobbyTimer(isLobby, session?.session_created_at || null, lobbyCreatedAt || null, serverTimeOffset, goHome, setAppState);
+
+  useRoundTransitions(
+    sessionId,
+    isHost,
+    didGameStart,
+    currentRound,
+    gameLength,
+    parsedStoryMode,
+    players,
+    playerId,
+    currentRoundId,
+    answeredRoundId,
+    activeTemplate,
+    language as string,
+    customTopic,
+    fetchFinalStoryResult,
+    setAppState
+  );
+
+  const generateRoomCode = () => {
+    const characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "";
+    for (let i = 0; i < 8; i++) {
+      code += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    return code;
   };
+
+
 
   const doShowCreateScreen = () => {
     localStorage.removeItem(STATE_STORAGE_KEY);
@@ -1162,6 +832,7 @@ function App() {
         playerColor: hostColor,
         isHost: true,
         isLobby: true,
+        roomCode: roomCode,
         lobbyCreatedAt: Date.now()
       }));
       localStorage.setItem('chepuhaUserPrefs', JSON.stringify({ nickname, roomCode }));
@@ -1384,10 +1055,27 @@ function App() {
       
       await updateGameSession(sessionId, { template: packed });
 
+      let initialAiQuestion = "";
+      if (selectedTemplate === 'custom_ai' && isGroqAvailable()) {
+         try {
+             const tGeneral = t('GENERAL') as string;
+             initialAiQuestion = await generateNextQuestion(
+                 customTopic || tGeneral || 'Своя гра', 
+                 [], 
+                 [], 
+                 { currentRound: 1, gameLength, isSolo: players.length === 1 }, 
+                 language as 'uk'|'en'
+             );
+         } catch(e) {
+             console.error("Failed to generate initial AI question:", e);
+         }
+      }
+
       const sheetsToCreate = players.map(p => ({
         game_session_id: sessionId,
         player_id: p.id,
         storysheets_status: 'in_progress' as StorySheetStatus,
+        current_ai_question: initialAiQuestion
       }));
 
       const createdSheets = await createStorySheetsBatch(sheetsToCreate);
@@ -1577,9 +1265,14 @@ function App() {
       if (activeTemplate.id === 'custom_ai' && targetSheet && currentRound < gameLength && isGroqAvailable()) {
         (async () => {
           try {
-            const { data } = await supabase.from('answers').select('answer_text').eq('story_sheet_id', targetSheet).order('position_in_sheet', { ascending: true });
-            const sheetAnswers = (data || []).map(a => a.answer_text);
-            const nextQ = await generateNextQuestion(customTopic || 'Своя гра', sheetAnswers, language as 'uk' | 'en');
+            const [{ data: sheetData }, { data: myData }] = await Promise.all([
+                supabase.from('answers').select('answer_text').eq('story_sheet_id', targetSheet).order('position_in_sheet', { ascending: true }),
+                supabase.from('answers').select('answer_text').eq('player_id', playerId).order('position_in_sheet', { ascending: true })
+            ]);
+            const sheetAnswers = (sheetData || []).map(a => a.answer_text);
+            const myAnswers = (myData || []).map(a => a.answer_text);
+            const roundInfo = { currentRound, gameLength, isSolo: (players || []).length === 1 };
+            const nextQ = await generateNextQuestion(customTopic || 'Своя гра', sheetAnswers, myAnswers, roundInfo, language as 'uk' | 'en');
             await updateStorySheetQuestion(targetSheet, nextQ);
           } catch(e) {
             console.error("AI question error:", e);
@@ -1645,283 +1338,69 @@ function App() {
       )}
 
       {!didGameStart && !isCreatingLobby && phase === Phases.Main && !isLobby && (
-        <>
-          <div className="logo-wrapper">
-            <img
-              src={language === 'en' ? logoImageEng : logoImage}
-              alt="Чепуха Лого"
-              className={classNames("logo", { "logo-pop-active": logoPop })}
-            />
-            <div className="logo-boy-hitbox hitbox-1" onClick={triggerLogoPop} />
-            <div className="logo-boy-hitbox hitbox-2" onClick={triggerLogoPop} />
-            <div className="logo-boy-hitbox hitbox-3" onClick={triggerLogoPop} />
-          </div>
-          <div className="menu-buttons">
-            <Button
-              label={t('CREATE_GAME')}
-              variant="primary"
-              phase={phase}
-              onClick={doShowCreateScreen}
-            />
-            <Button
-              label={t('JOIN_GAME')}
-              variant="primary"
-              phase={phase}
-              onClick={doShowJoinScreen}
-            />
-            <Button
-              label={t('HISTORY')}
-              variant="primary"
-              phase={phase}
-              onClick={doShowHistory}
-            />
-          </div>
-          <div className="language-selector">
-            <button
-              className={`lang-btn ${language === 'uk' ? 'active' : ''}`}
-              onClick={() => setLanguage('uk')}
-            >
-              <img src={flagUk} alt="UK" />
-            </button>
-            <button
-              className={`lang-btn ${language === 'en' ? 'active' : ''}`}
-              onClick={() => setLanguage('en')}
-            >
-              <img src={flagEn} alt="EN" />
-            </button>
-          </div>
-        </>
+        <MainMenu
+          language={language}
+          logoImage={logoImage}
+          logoImageEng={logoImageEng}
+          logoPop={logoPop}
+          triggerLogoPop={triggerLogoPop}
+          t={t}
+          phase={phase}
+          doShowCreateScreen={doShowCreateScreen}
+          doShowJoinScreen={doShowJoinScreen}
+          doShowHistory={doShowHistory}
+          setLanguage={setLanguage}
+          flagUk={flagUk}
+          flagEn={flagEn}
+        />
       )}
 
       {!didGameStart && isCreatingLobby && !isLobby && phase !== Phases.Join && (
-        <>
-          <div className="create-game-pc-code-wrapper">
-            {roomCode && <GameCode code={roomCode} className="gameCodePos create-code-mobile" />}
-          </div>
-          <div className="create-game-container">
-            <GameInput
-              value={nickname}
-              onChange={handleNicknameChange}
-              onEnter={goToLobby}
-              placeholder={t('ENTER_NICK_PLACEHOLDER')}
-              errorText={error}
-              maxLength={25}
-              contextType="nickname"
-            />
-
-            { }
-            <div className="create-options-row">
-
-              { }
-              <div className="carousel-section">
-                <h3 className="template-title" style={{ marginBottom: "15px", whiteSpace: "nowrap", textAlign: "center" }}>{t('CHOOSE_STORY')}</h3>
-                <div
-                  className="template-carousel"
-                  ref={carouselRef}
-                  onWheel={handleCarouselWheel}
-                  onTouchStart={handleCarouselTouchStart}
-                  onTouchEnd={handleCarouselTouchEnd}
-                >
-                  <button className="carousel-arrow carousel-arrow-up" onClick={() => moveCarousel(-1)}>▲</button>
-                  <div className="carousel-window">
-                    {[-2, -1, 0, 1, 2].map(offset => {
-                      const idx = (carouselIndex + offset + CAROUSEL_TEMPLATES.length) % CAROUSEL_TEMPLATES.length;
-                      const id = CAROUSEL_TEMPLATES[idx];
-                      const label = id === 'random' ? t('RANDOM' as any) : id === 'custom_ai' ? '🤖 Щі Розповідь' : (t(id.toUpperCase() as any) || id);
-                      const isCenter = offset === 0;
-                      return (
-                        <div
-                          key={idx}
-                          className={`carousel-item ${isCenter ? 'carousel-item--center' : ''} carousel-item--offset-${offset < 0 ? 'neg' : 'pos'}${Math.abs(offset)}`}
-                          onClick={() => {
-                            const steps = offset as 1 | -1 | 0;
-                            if (steps !== 0) moveCarousel(steps > 0 ? 1 : -1);
-                          }}
-                        >
-                          <span className="carousel-item-label">{label}</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <button className="carousel-arrow carousel-arrow-down" onClick={() => moveCarousel(1)}>▼</button>
-                </div>
-              </div>
-
-              { }
-              <div className="game-settings-container">
-                <div className="game-settings-section">
-
-                  { }
-                  <div className="game-length-picker">
-                    <h3 className="template-title">{t('GAME_LENGTH_TITLE' as any)}</h3>
-                    {([6, 9, 12] as Array<6 | 9 | 12>).map(len => (
-                      <label key={len} className={`length-option ${gameLength === len ? 'length-option--active' : ''}`}>
-                        <input type="radio" name="gameLength" value={len} checked={gameLength === len}
-                          onChange={() => setAppState(prev => ({ ...prev, gameLength: len }))} />
-                        <span className="length-pill">
-                          {len === 6 ? t('GAME_LENGTH_SHORT' as any) : len === 9 ? t('GAME_LENGTH_NORMAL' as any) : t('GAME_LENGTH_LONG' as any)}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-
-                  { }
-                  <div className="extra-options">
-                    { }
-                    <label className={`toggle-option ${colorHighlight ? 'toggle-option--active' : ''}`} onClick={() => setAppState(prev => ({ ...prev, colorHighlight: !prev.colorHighlight }))}>
-                      <span className="toggle-label">🎨 {t('OPTS_HIGHLIGHTS' as any)}</span>
-                      <div className="toggle-switch">
-                        <div className={`toggle-knob ${colorHighlight ? 'toggle-knob--on' : ''}`} />
-                      </div>
-                    </label>
-
-                    { }
-                    <label className={`toggle-option ${hintsEnabled ? 'toggle-option--active' : ''}`} onClick={() => setAppState(prev => ({ ...prev, hintsEnabled: !prev.hintsEnabled }))}>
-                      <span className="toggle-label">💡 {t('OPTS_HINTS' as any)}</span>
-                      <div className="toggle-switch">
-                        <div className={`toggle-knob ${hintsEnabled ? 'toggle-knob--on' : ''}`} />
-                      </div>
-                    </label>
-
-                    { }
-                    <div style={{ position: 'relative', width: '100%' }}>
-                      <label className={`toggle-option ${storyMode ? 'toggle-option--active' : ''}`} onClick={() => setAppState(prev => ({ ...prev, storyMode: !prev.storyMode }))}>
-                        <span className="toggle-label">🕹 {t('STORY_MODE' as any)}</span>
-                        <div className="toggle-switch">
-                          <div className={`toggle-knob ${storyMode ? 'toggle-knob--on' : ''}`} />
-                        </div>
-                      </label>
-                      {storyMode && <div className="story-mode-desc-container"><p className="story-mode-desc">{t('STORY_MODE_DESC' as any)}</p></div>}
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <Button
-                label={t('CREATE_GAME')}
-                variant="primary"
-                phase={phase}
-                onClick={goToLobby}
-              />
-            </div>
-          </div>
-        </>
+        <CreateGameScreen
+          roomCode={roomCode}
+          nickname={nickname}
+          error={error}
+          carouselIndex={carouselIndex}
+          carouselTemplates={CAROUSEL_TEMPLATES}
+          gameLength={gameLength}
+          colorHighlight={colorHighlight}
+          hintsEnabled={hintsEnabled}
+          storyMode={storyMode}
+          phase={phase}
+          t={t}
+          carouselRef={carouselRef}
+          onNicknameChange={handleNicknameChange}
+          onEnter={goToLobby}
+          onCarouselWheel={handleCarouselWheel}
+          onCarouselTouchStart={handleCarouselTouchStart}
+          onCarouselTouchEnd={handleCarouselTouchEnd}
+          moveCarousel={moveCarousel}
+          onGameLengthChange={(len) => setAppState(prev => ({ ...prev, gameLength: len }))}
+          onColorHighlightToggle={() => setAppState(prev => ({ ...prev, colorHighlight: !prev.colorHighlight }))}
+          onHintsEnabledToggle={() => setAppState(prev => ({ ...prev, hintsEnabled: !prev.hintsEnabled }))}
+          onStoryModeToggle={() => setAppState(prev => ({ ...prev, storyMode: !prev.storyMode }))}
+          onGoToLobby={goToLobby}
+        />
       )}
 
       {!didGameStart && isLobby && phase !== Phases.Join && (
-        <>
-          <div className="lobby-timer-display">
-            <span className="timer-title">{t('LOBBY_TIMER_TITLE' as any)}</span>
-            <span className="timer-time">
-              {Math.ceil(lobbyTimeLeft / 60)} {t('LOBBY_MIN_SUFFIX' as any)}
-            </span>
-          </div>
-          <div className="lobby-container">
-            <div className="lobby-info">
-              <h2 className="lobby-text label-and-nick notranslate" translate="no">
-                {(() => {
-                  const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
-                  const baseSize = isPC ? 75 : 40;
-                  const fontSize = getFontSize(nickname, baseSize);
-                  return (
-                    <div className="label-and-nick-flex" style={{ fontSize }}>
-                      <span className="label-part" style={{ fontSize: 'inherit' }}>{(t('YOUR_NICK') as string).replace(':', '')}: </span>
-                      <div className="nick-part" style={{ fontSize: 'inherit' }}>
-                        {renderThemedNickname(nickname, playerColor, baseSize, parsedColorHighlight, false, true, fontSize)}
-                      </div>
-                    </div>
-                  );
-                })()}
-              </h2>
-              <h3 className="lobby-subtitle">{t('PLAYER_LIST')}</h3>
-              {(() => {
-                const isPC = typeof window !== 'undefined' && window.innerWidth > 768;
-                const hasThemedPlayers = players.some(p => p.color?.startsWith('special:'));
-
-                const getListHeight = () => {
-                  const padding = 20;
-                  const playersToMeasure = players.length > 0 ? players : [{ color: '' }];
-
-                  if (isPC) {
-                    const stdH = 75;
-                    const specialH = 107;
-                    const gap = 12;
-                    let total = 0;
-                    for (let i = 0; i < 4; i++) {
-                      const p = playersToMeasure[i] || playersToMeasure[0];
-                      total += (p.color?.startsWith('special:') ? specialH : stdH) + gap;
-                    }
-                    const p5 = playersToMeasure[4] || playersToMeasure[0];
-                    total += (p5.color?.startsWith('special:') ? specialH : stdH) * 0.5;
-                    return total + padding;
-                  } else {
-                    const stdH = 48;
-                    const specialH = 56;
-                    const gap = 6;
-                    let total = 0;
-                    for (let i = 0; i < 4; i++) {
-                      const p = playersToMeasure[i] || playersToMeasure[0];
-                      total += (p.color?.startsWith('special:') ? specialH : stdH) + gap;
-                    }
-                    const p5 = playersToMeasure[4] || playersToMeasure[0];
-                    total += (p5.color?.startsWith('special:') ? specialH : stdH) * 0.5;
-                    return total + padding;
-                  }
-                };
-
-                const dynamicHeight = getListHeight();
-
-                return (
-                  <div
-                    ref={playersListRef}
-                    className={`players-list ${hasThemedPlayers ? 'has-themed-names' : ''} ${(players.length >= 4) ? 'has-many-players' : ''}`}
-                    style={{ height: `${dynamicHeight}px` }}
-                  >
-                    {players.length > 0 ? (
-                      players.map((p, i) => (
-                        <PlayerItem
-                          key={p.id || String(i)}
-                          p={p}
-                          i={i}
-                          isMe={String(p.id) === String(playerId) || (i === 0 && nickname === p.nickname)}
-                          playerColor={playerColor}
-                          cycleColor={cycleColor}
-                          AVAILABLE_COLORS={AVAILABLE_COLORS}
-                          crownImage={crownImage}
-                          showColorPicker={parsedColorHighlight}
-                        />
-                      ))
-                    ) : (
-                      <PlayerItem
-                        p={{ id: 'temp', nickname }}
-                        i={0}
-                        isMe={true}
-                        playerColor={playerColor}
-                        cycleColor={cycleColor}
-                        AVAILABLE_COLORS={AVAILABLE_COLORS}
-                        crownImage={crownImage}
-                        showColorPicker={parsedColorHighlight}
-                      />
-                    )}
-                  </div>
-                );
-              })()}
-            </div>
-            <div className="error-message" style={{ color: "red", minHeight: '24px' }}>
-              {pollError ? (t(pollError as any) || pollError) : '\u00A0'}
-            </div>
-            <div className="lobby-actions">
-              {isHost ? (
-                <Button label={t('START_GAME')} variant="primary" phase={phase} onClick={doGameStart} disabled={players.length < 1} />
-              ) : (
-                <h3 className="waiting-host-text">{t('WAITING_HOST')}</h3>
-              )}
-            </div>
-          </div>
-        </>
+        <LobbyScreen
+          lobbyTimeLeft={lobbyTimeLeft}
+          nickname={nickname}
+          playerColor={playerColor}
+          parsedColorHighlight={parsedColorHighlight}
+          players={players}
+          playerId={playerId}
+          availableColors={AVAILABLE_COLORS}
+          crownImage={crownImage}
+          pollError={pollError}
+          isHost={isHost}
+          phase={phase}
+          t={t}
+          playersListRef={playersListRef}
+          cycleColor={cycleColor}
+          onStartGame={doGameStart}
+        />
       )}
 
       {phase === Phases.Join && (
@@ -1987,7 +1466,7 @@ function App() {
 
               const rawQuestion = roundQuestions[currentRound - 1];
 
-              if (baseTemplate.id === 'custom_ai' && currentRound > 1) {
+              if (baseTemplate.id === 'custom_ai') {
                 // Find which sheet the player is holding
                 let heldSheetId = null;
                 if ((allStorySheets || []).length > 0 && (players || []).length > 0) {
@@ -2003,6 +1482,7 @@ function App() {
                 if (heldSheetObj && heldSheetObj.current_ai_question) {
                   return heldSheetObj.current_ai_question;
                 }
+                return '...';
               }
 
               if (rawQuestion?.startsWith('MATH_DYN_')) {
@@ -2061,7 +1541,7 @@ function App() {
         />
       )}
 
-      {(isLobby || phase === Phases.End) && (
+      {((isLobby && phase !== Phases.History && phase !== Phases.Join) || phase === Phases.End) && (
         <>
           <div className="yellow-guy-bg" onClick={playSecretMusic} style={{ zIndex: phase === Phases.End ? 10000 : undefined }} />
           <div className="red-guy-bg" onClick={playSecretMusic} style={{ zIndex: phase === Phases.End ? 10000 : undefined }} />
@@ -2071,57 +1551,15 @@ function App() {
 
       { }
       {showCustomPrompt && (
-        <div className="custom-prompt-overlay" 
-             onClick={() => setShowCustomPrompt(false)}
-             style={{
-          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          zIndex: 9999
-        }}>
-          <div className="input-card" 
-               onClick={(e) => e.stopPropagation()}
-               style={{ padding: 'clamp(15px, 5vw, 50px)', boxSizing: 'border-box', textAlign: 'center', maxWidth: '1400px', width: '98%', flexDirection: 'column', display: 'flex', alignItems: 'center' }}>
-            <h2 className="template-title" style={{ marginBottom: 'clamp(10px, 2vw, 20px)', fontSize: 'clamp(24px, 5vw, 64px)', whiteSpace: 'normal', lineHeight: '1.2', color: '#fff', textShadow: '4px 4px 8px rgba(0,0,0,0.8), -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000, 2px 2px 0 #000', textAlign: 'center' }}>{t('CUSTOM_TOPIC') || 'Введіть власну тему:'}</h2>
-            <div className="custom-topic-wrapper">
-              <button 
-                onClick={() => setShowCustomPrompt(false)} 
-                disabled={isGeneratingQuestions}
-                style={{ width: 'clamp(41px, 10vw, 74px)', height: 'clamp(41px, 10vw, 74px)', borderRadius: '50%', background: '#ff4d4f', border: 'none', color: 'white', cursor: 'pointer', zIndex: 10, fontSize: 'clamp(20px, 6vw, 32px)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isGeneratingQuestions ? 0.5 : 1, flexShrink: 0 }}
-                title={t('BACK')}
-              >
-                ✕
-              </button>
-              
-              <Input
-                type="text"
-                maxLength={50}
-                autoFocus={true}
-                value={customTopic}
-                onChange={setCustomTopic}
-                placeholder=""
-                onKeyDown={(e: any) => { 
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault();
-                    handleCustomTopicSubmit(); 
-                  }
-                }}
-                disabled={isGeneratingQuestions}
-                style={{ border: 'none', background: 'transparent', maxWidth: '100%', padding: '0 5px', width: '100%', boxSizing: 'border-box', fontSize: 'clamp(20px, 4vw, 48px)', outline: 'none', boxShadow: 'none', textAlign: 'center', alignSelf: 'center' }}
-              />
-              
-              <button 
-                onClick={handleCustomTopicSubmit} 
-                disabled={isGeneratingQuestions || !customTopic.trim()}
-                style={{ width: 'clamp(41px, 10vw, 74px)', height: 'clamp(41px, 10vw, 74px)', borderRadius: '50%', background: '#52c41a', border: 'none', color: 'white', cursor: 'pointer', zIndex: 10, fontSize: 'clamp(20px, 6vw, 32px)', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: (isGeneratingQuestions || !customTopic.trim()) ? 0.5 : 1, flexShrink: 0 }}
-                title="Створити"
-              >
-                {isGeneratingQuestions ? "⏳" : "✓"}
-              </button>
-            </div>
-            {error && <span className="error-message" style={{ display: 'block', marginTop: '15px' }}>{error}</span>}
-          </div>
-        </div>
+        <CustomTopicModal
+          customTopic={customTopic}
+          isGeneratingQuestions={isGeneratingQuestions}
+          error={error}
+          t={t}
+          onClose={() => setShowCustomPrompt(false)}
+          onTopicChange={setCustomTopic}
+          onSubmit={handleCustomTopicSubmit}
+        />
       )}
 
       {(isCreatingLobby || isLobby || phase === Phases.Join) && phase !== Phases.End && phase !== Phases.History && (
