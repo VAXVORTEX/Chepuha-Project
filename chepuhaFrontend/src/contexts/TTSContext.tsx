@@ -84,6 +84,12 @@ export const TTSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         let loadedChunks = 0;
         setLoadingProgress(0);
 
+        let currentFake = 0;
+        const fakeProgressInterval = setInterval(() => {
+            currentFake += (95 - currentFake) * 0.05; 
+            setLoadingProgress(Math.round(currentFake));
+        }, 300);
+
         for (const chunk of chunks) {
             if (signal?.aborted) break;
             const cacheKey = `${chunk}_${targetVoice}`;
@@ -135,9 +141,11 @@ export const TTSProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             await promise;
             preloadPromises.current.delete(cacheKey);
             loadedChunks++;
-            setLoadingProgress(Math.round((loadedChunks / chunks.length) * 100));
+            currentFake = Math.max(currentFake, Math.round((loadedChunks / chunks.length) * 100));
+            setLoadingProgress(Math.round(currentFake));
         }
         
+        clearInterval(fakeProgressInterval);
         setLoadingProgress(100);
     }, [currentVoice]);
 

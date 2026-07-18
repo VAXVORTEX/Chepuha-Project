@@ -14,7 +14,7 @@ interface GroqMessage {
     content: string;
 }
 
-async function callGroq(messages: GroqMessage[], maxTokens = 800, seed?: number, retries = 2, requireJson = false): Promise<string> {
+async function callGroq(messages: GroqMessage[], maxTokens = 800, seed?: number, retries = 2, requireJson = false, temperature = 0.8): Promise<string> {
     for (let attempt = 0; attempt <= retries; attempt++) {
         try {
             const response = await fetch(API_URL, {
@@ -26,7 +26,8 @@ async function callGroq(messages: GroqMessage[], maxTokens = 800, seed?: number,
                     messages,
                     maxTokens,
                     seed,
-                    requireJson
+                    requireJson,
+                    temperature
                 })
             });
 
@@ -120,6 +121,7 @@ export async function refineStoryWithAI(
 4. Прибирай зайву пунктуацію навколо тегів, якщо текст гравця містить символи (наприклад, якщо перед тегом стоїть двокрапка, а в тегу текст починається з "=", прибери двокрапку).
 5. Дозволяється злегка перефразовувати або змінювати слова у шаблоні навколо тегів, щоб усунути незграбність та зробити так, щоб речення звучало максимально природно (наприклад, 'їхній стан був від потужності' -> 'вони були вражені потужністю').
 6. ПЕРЕКЛАД: Якщо текст всередині тегу написаний ІНШОЮ мовою (наприклад російською або англійською), ТИ ЗОБОВ'ЯЗАНИЙ ПЕРЕКЛАСТИ ЙОГО НА УКРАЇНСЬКУ мову прямо всередині тегу.
+7. КРИТИЧНО: ПРОЧИТАЙ УВЕСЬ ТЕКСТ ВІД ПОЧАТКУ ДО КІНЦЯ. НЕ ЗРІЗАЙ текст і не видаляй випадкові слова (наприклад 'вони наві' замість 'вони навіть сказали'). Повертай повний і зв'язний текст до самої останньої крапки. Ніколи не обривай історію на половині!
 Повертай ТІЛЬКИ виправлений текст з тегами, без жодних коментарів.`
         : `You are a smart text editor for a game. You are given a text with HTML tags (like <span lang="en"...>Text</span>).
 Your task: fix grammatical cases, pronouns, and agreement in the story text so it matches the words inside the tags.
@@ -131,6 +133,7 @@ CRITICAL:
 4. Remove redundant punctuation (e.g., if a tag starts with '=', remove the preceding colon in the story).
 5. You are allowed to slightly rephrase words around the tags to make the sentence sound completely natural and remove any awkward phrasing.
 6. TRANSLATION: If the text inside the tag is written in ANOTHER language (e.g., Russian or Ukrainian), you MUST TRANSLATE IT TO ENGLISH right inside the tag.
+7. CRITICAL: READ THE ENTIRE TEXT FROM START TO FINISH. DO NOT cut the text or drop random words. Return the full, cohesive text until the very last dot. Never cut the story in half!
 Return ONLY the corrected text with tags, no explanations.`;
 
     const userPrompt = language === 'uk'
@@ -156,39 +159,48 @@ export async function generateCustomQuestions(
     const systemPrompt = language === 'uk'
         ? `Ти — розумний ведучий гри "Чепуха".
 Тобі дадуть тему: "${topic}".
-СПОЧАТКУ: Зрозумій, що це за тема. Якщо тема написана українською (наприклад "Террарія", "Терарія"), визнач відповідну англійську назву (Terraria). Якщо "TBOI" — це The Binding of Isaac. Якщо це ім'я (наприклад, "Johnny Silverhand"), розпізнай його всесвіт.
-КРИТИЧНО: Якщо тема — це набір випадкових букв або незрозуміле слово (наприклад, "РТПТТ", "фіввв", "asdasd"), ТИ ЗОБОВ'ЯЗАНИЙ використовувати САМЕ ЦЕ СЛОВО як головного героя чи явище у своїх питаннях! (наприклад: "Хто такий РТПТТ?", "Що зробив РТПТТ?"). Не вигадуй інших людей, питай саме про це слово!
-КРИТИЧНО 2: Якщо тема — це гра (наприклад "Terraria", "Террарія", "Cult of the Lamb"), твої питання ПОВИННІ бути ТІЛЬКИ про ОФІЦІЙНИЙ лор, РЕАЛЬНИХ босів, предмети та персонажів цієї гри! АБСОЛЮТНО ЗАБОРОНЕНО вигадувати неіснуючих босів, предмети чи модифікації (ніяких "Z-Deeps", "Technological Dragon" тощо, якщо їх немає в оригінальній грі)!
-ЗАБОРОНЕНО: Не використовуй назву гри як ім'я персонажа (не пиши "Що зробив Cult of the Lamb?").
+СПОЧАТКУ: Проаналізуй тему і визнач її категорію (Гра, Фільм/Книга, Відома Людина, Невідоме слово/Абревіатура). Якщо тема — це коротка ігрова абревіатура (наприклад, "MGRR", "CSGO", "GTA"), обов'язково розшифруй її у своїй "голові" (Metal Gear Rising, Counter-Strike, Grand Theft Auto) і використовуй лор повної гри!
+АДАПТАЦІЯ ПІД КАТЕГОРІЮ:
+- Якщо це ГРА (шутер, RPG, тощо): Головним героєм запитань є абстрактний "гравець", "герой" або керований об'єкт (наприклад, "танк", "робот"). ЗАБОРОНЕНО робити босів чи ворогів головними героями (вони — перешкоди, яких зустрічає гравець).
+- Якщо це ФІЛЬМ/КНИГА: Головний герой — це протагоніст твору. Питання мають базуватися на сюжеті та лиходіях.
+- Якщо це ВІДОМА ЛЮДИНА (спортсмен, блогер, історик): Головний герой — ця сама людина. Використовуй реальні факти, професію, колег (наприклад, для спортсмена — клуби, тренери).
+- Якщо це НЕВІДОМЕ СЛОВО, випадкові букви або абревіатура: НЕ РОБИ ВИГЛЯД, що це відома гра! Використовуй саме це слово як героя, або абсурдно здогадайся, що воно означає (наприклад, для абревіатури інституту питай про "ректора" чи "студента").
 ЗАВДАННЯ: Створи ${count} питань українською мовою.
 ПРАВИЛА:
-1. Питання мають бути СУПЕР ПРОСТИМИ та КОРОТКИМИ (максимум 4-6 слів).
-2. Питання мають йти логічним ланцюжком (Хто? З ким? Де? Що зробили? Що сказали? Чим все закінчилось?).
-3. Всі питання мають бути УНІКАЛЬНИМИ.
-4. Використовуй ТІЛЬКИ офіційних персонажів гри! Наприклад для Terraria: Eye of Cthulhu, King Slime, Skeletron, Wall of Flesh, The Twins, The Destroyer, Duke Fishron, Moon Lord, Plantera, Golem тощо.
-КРИТИЧНО: ВСІ ігрові специфічні терміни, імена босів, назви предметів та локацій ЗАВЖДИ пиши АНГЛІЙСЬКОЮ мовою і НІКОЛИ не перекладай! (наприклад: "Що зробив Eye of Cthulhu?", а НЕ "Що зробило Око Ктулху?"). Навіть якщо тема написана українською — терміни гри ЗАВЖДИ англійською!
-Формат відповіді: СУВОРО JSON об'єкт з ключами "universe" (твій висновок) та "questions" (масив рядків-питань).`
+1. Питання мають бути ПРОСТИМИ та КОРОТКИМИ (максимум 4-7 слів).
+2. Питання мають йти логічним ланцюжком для створення історії (Хто? Куди пішов? З ким зустрівся? Де? Що зробили? Чим все закінчилось?).
+3. Пиши ПРИРОДНОЮ українською мовою. Уникай кострубатих фраз (замість "Якого імені" пиши просто "Хто"). НІКОЛИ не замінюй слова символами (не пиши "Що зробив '?'").
+4. Всі питання мають бути УНІКАЛЬНИМИ і глибоко пов'язаними з лором теми.
+КРИТИЧНО 1: АБСОЛЮТНО ЗАБОРОНЕНО використовувати плейсхолдери або узагальнення (на кшталт "{назва}", "[зброя]"). Ти ПОВИНЕН вписувати реальні, конкретні назви з лору цієї теми!
+КРИТИЧНО 2: УВАГА! ВСІ власні назви, імена босів, імена персонажів (як Raiden, а не Райден), назви предметів, зброї, ігор, локацій та ворогів ЗАВЖДИ залишай в ОРИГІНАЛІ (виключно АНГЛІЙСЬКОЮ мовою) і НІКОЛИ не перекладай та не транслітеруй кирилицею!
+Формат відповіді: СУВОРО JSON об'єкт з ключами "universe" (твій висновок про тему) та "questions" (масив рядків-питань).`
         : `You are a smart host for the "Nonsense" game.
 Topic: "${topic}".
-FIRST: Understand what the topic is (e.g. "TBOI" means The Binding of Isaac). If it's a specific name like "Johnny Silverhand", recognize that he is from Cyberpunk 2077 (not a pirate). Determine the most popular universe.
-FORBIDDEN: Do not use the topic name itself as a character or object in the questions (NEVER write "What did TBOI do?").
-TASK: Create ${count} questions based on the lore, items, characters, or mechanics of THIS SPECIFIC universe.
+FIRST: Analyze the topic and determine its Category (Game, Movie/Book, Famous Person, Unknown Word/Abbreviation). If the topic is a short gaming acronym (e.g. "MGRR", "CSGO", "GTA"), you MUST expand it in your "head" (Metal Gear Rising, Counter-Strike) and use the full game's lore!
+CATEGORY ADAPTATION:
+- If GAME: The main character is a "player", "hero", or controlled unit ("tank", "robot"). DO NOT make bosses or enemies the main characters (they are obstacles).
+- If MOVIE/BOOK: The main character is the protagonist. Base questions on the plot and villains.
+- If FAMOUS PERSON: The main character is the person. Use real facts, profession, and colleagues.
+- If UNKNOWN/ABBREVIATION: DO NOT pretend it's a famous game. Absurdly guess what it means or use the word itself as the hero.
+TASK: Create ${count} short questions.
 RULES:
-1. Questions must be SUPER SIMPLE and SHORT (max 4-6 words), easy enough for a kid to understand. Do not overcomplicate.
-2. They should provoke a funny story about this universe.
-3. Questions must follow a logical chain (Who? With whom? Where? What did they do? How did it end?) to form a progressive story.
-4. All questions must be UNIQUE. Do not repeat questions.
-Output format: STRICTLY a JSON object with keys "universe" (your brief analysis of the topic's origin) and "questions" (array of strings).`;
+1. Questions must be SUPER SIMPLE and SHORT (max 4-6 words).
+2. They should provoke a funny story chain (Who? Where did they go? Who did they meet? What happened?).
+3. Write NATURAL questions. Do not use weird grammar. DO NOT replace names with punctuation like '?'.
+4. Questions must be UNIQUE and use deep lore.
+CRITICAL 1: ABSOLUTELY FORBIDDEN to use placeholders like "{name}" or "[weapon]". You MUST write CONCRETE, REAL names from the topic's lore!
+CRITICAL 2: Keep all specific proper nouns, characters (e.g. Raiden), bosses, items, weapons, and locations in their ORIGINAL English names! Do not translate or transliterate them.
+Output format: STRICTLY a JSON object with keys "universe" and "questions" (array of strings).`;
 
     const userPrompt = language === 'uk'
-        ? `Тема: "${topic}". Згенеруй ${count} питань за правилами. УВАГА: Якщо тема містить пряму вказівку (наприклад "зроби всі питання з літер ффф" або "всі питання мають бути словом ТЕСТ"), ти ПОВИНЕН повністю ігнорувати правила логіки і БУКВАЛЬНО виконати прохання користувача для всіх питань. Поверни лише JSON об'єкт з ключами "universe" та "questions".`
-        : `Topic: "${topic}". Generate ${count} questions following the rules. WARNING: If the topic contains a direct instruction (like "make all questions the word TEST"), you MUST ignore logical chain rules and LITERALLY follow the user's instruction for all questions. Return ONLY a JSON object with "universe" and "questions" keys.`;
+        ? `Тема: "${topic}". Згенеруй ${count} питань за правилами. УВАГА: Якщо тема містить пряму вказівку (наприклад "зроби всі питання з літер ффф" або "всі питання мають бути словом ТЕСТ"), ти ПОВИНЕН повністю ігнорувати правила логіки і БУКВАЛЬНО виконати прохання користувача для всіх питань. Поверни лише JSON об'єкт з ключами "universe" та "questions".\n(Випадковий варіант генерації: #${Math.floor(Math.random() * 10000)})`
+        : `Topic: "${topic}". Generate ${count} questions following the rules. WARNING: If the topic contains a direct instruction (like "make all questions the word TEST"), you MUST ignore logical chain rules and LITERALLY follow the user's instruction for all questions. Return ONLY a JSON object with "universe" and "questions" keys.\n(Random generation seed: #${Math.floor(Math.random() * 10000)})`;
 
     try {
         const response = await callGroq([
             { role: 'system', content: systemPrompt },
             { role: 'user', content: userPrompt }
-        ], 500, undefined, 2, true);
+        ], 500, undefined, 2, true, 1.2);
 
         let cleanResponse = response.trim();
         cleanResponse = cleanResponse.replace(/^```(json)?\s*/i, '').replace(/\s*```$/i, '').trim();
@@ -315,6 +327,13 @@ export function prepareTextForTTS(
     // Add spaces between long sequences of numbers
     localText = localText.replace(/(\d)(?=\d)/g, '$1 ');
 
+    // Replace Russian "ы" with "и" since Ukrainian TTS engines might choke on it
+    localText = localText.replace(/ы/g, 'и').replace(/Ы/g, 'И');
+
+    // Add slight pauses after single letters so they are pronounced distinctly
+    localText = localText.replace(/(^|\s)([а-яА-Яa-zA-ZіІїЇєЄґҐ])(\s|$)/g, '$1$2, $3');
+    localText = localText.replace(/(^|\s)([а-яА-Яa-zA-ZіІїЇєЄґҐ])(\s|$)/g, '$1$2, $3');
+
     // Transliterate English words to Cyrillic phonetics for Ukrainian TTS
     if (language === 'uk' && /[A-Za-z]/.test(localText)) {
         localText = transliterateEnglishWords(localText);
@@ -333,7 +352,7 @@ export async function generateNextQuestion(
     myPreviousAnswers: string[],
     roundInfo: { currentRound: number, gameLength: number, isSolo: boolean },
     language: 'uk' | 'en' = 'uk'
-): Promise<string> {
+): Promise<string | null> {
     let questionType: 'normal' | 'sheet_followup' | 'player_followup' = 'normal';
     const { currentRound, gameLength, isSolo } = roundInfo;
     const targetRound = currentRound + 1;
@@ -363,66 +382,24 @@ export async function generateNextQuestion(
         questionType = 'normal'; 
     }
 
+    if (questionType === 'normal') {
+        return null; // Return null so the system keeps the originally generated predefined question for this round
+    }
+
     let systemPrompt = language === 'uk'
-        ? `Ти — розумний ведучий гри "Чепуха". Тема: "${topic}".\nСПОЧАТКУ: Якщо тема написана українською (наприклад "Террарія" або "Терарія"), визнач що це Terraria. Завжди розпізнавай гру/фільм навіть якщо назва українською.\nТвоє завдання: згенерувати СУПЕР КОРОТКЕ (максимум 3-7 слів) і СМІШНЕ запитання.\nКРИТИЧНО: Якщо тема це набір випадкових букв (як "РТПТТ"), використовуй саме ці букви у питанні. Якщо це гра/фільм, використовуй ТІЛЬКИ ОФІЦІЙНИЙ лор, механіки та логіку цього всесвіту (наприклад, якщо мова про NPC в Террарії, питай про їх ігрові функції, а не придумуй їм власне життя). АБСОЛЮТНО ЗАБОРОНЕНО вигадувати неіснуючих босів чи модифікації!\nАБСОЛЮТНО ЗАБОРОНЕНО: ніколи не повторюй одне й те саме питання!\nКРИТИЧНО: ВСІ ігрові імена та назви (боси, локації, предмети) пиши ТІЛЬКИ АНГЛІЙСЬКОЮ! (наприклад "Що зробив Eye of Cthulhu?", а НЕ "Око Ктулху").\nПоверни ТІЛЬКИ текст питання.`
-        : `You are a smart host for the "Nonsense" game. Topic: "${topic}".\nGenerate a SUPER SHORT (max 3-7 words), and FUNNY question.\nCRITICAL: If it's a game/movie, strictly use its OFFICIAL lore and mechanics (e.g. if it's an NPC, ask about their specific in-game function, don't invent a life for them). DO NOT hallucinate or invent non-existent bosses/mods.\nABSOLUTELY FORBIDDEN: never repeat the same question twice!\nReturn ONLY the text of the question.`;
+        ? `Ти — розумний ведучий гри "Чепуха". Тема: "${topic}".\nСПОЧАТКУ: Якщо тема це абревіатура (MGRR, CSGO) або написана кирилицею (МГРР, Терарія), розшифруй її (Metal Gear Rising, Counter-Strike). Якщо це КОНКРЕТНА частина гри/спін-офф (наприклад, MGRR), використовуй лор ВИКЛЮЧНО цієї частини (Райден, кіборги), а не всієї франшизи загалом!\nТвоє завдання: згенерувати СУПЕР КОРОТКЕ (максимум 3-7 слів) і СМІШНЕ запитання.\nКРИТИЧНО: Якщо це гра, використовуй ТІЛЬКИ ОФІЦІЙНИЙ лор. АБСОЛЮТНО ЗАБОРОНЕНО вигадувати неіснуючих босів чи модифікації! АБСОЛЮТНО ЗАБОРОНЕНО використовувати плейсхолдери.\nАБСОЛЮТНО ЗАБОРОНЕНО: ніколи не повторюй питання!\nКРИТИЧНО: ВСІ власні назви (боси, локації, предмети, персонажі) пиши ТІЛЬКИ АНГЛІЙСЬКОЮ і не транслітеруй! (наприклад "Що зробив Raiden?", а НЕ "Райден").\nПоверни ТІЛЬКИ текст питання.`
+        : `You are a smart host for the "Nonsense" game. Topic: "${topic}".\nFIRST: If topic is an acronym (MGRR), expand it. If it's a specific spin-off, stick strictly to its lore, not the broad franchise.\nGenerate a SUPER SHORT (max 3-7 words), and FUNNY question.\nCRITICAL: Strictly use OFFICIAL lore. DO NOT hallucinate names or use placeholders.\nABSOLUTELY FORBIDDEN: never repeat questions! Keep all proper nouns in original English.\nReturn ONLY the text of the question.`;
 
     let userPrompt = '';
 
     if (questionType === 'player_followup') {
         const lastMyAns = myPreviousAnswers[myPreviousAnswers.length - 1];
         if (language === 'uk') {
-            systemPrompt += `\nСПЕЦІАЛЬНЕ ПРАВИЛО: Гравцю потрібно задати УТОЧНЮЮЧЕ або ПРОВОКАЦІЙНЕ питання щодо його ОСОБИСТОЇ минулої відповіді на іншому аркуші. Згадай цю відповідь і спитай, чому він так сказав, або як це стосується поточної ситуації на цьому аркуші. Наприклад "А чому ти минулого разу сказав, що [його відповідь]?" або "Як [його відповідь] пов'язана з цим?"`;
-            userPrompt = `Його особиста минула відповідь: "${lastMyAns}".\nПоточна історія на аркуші: ${previousAnswers.join(' -> ')}.\nЗгенеруй питання до нього.`;
+            systemPrompt += `\nСПЕЦІАЛЬНЕ ПРАВИЛО: Ти маєш задати УТОЧНЮЮЧЕ питання, поєднавши його минулу відповідь ("${lastMyAns}") з поточною історією. АБСОЛЮТНО ЗАБОРОНЕНО використовувати мета-фрази ("минула відповідь", "попереднє повідомлення") або питання про думку гравця ("як ви вважаєте", "на вашу думку", "як ти думаєш"). Питання має стосуватися ЛОРУ і бути ЧІТКИМ (Хто? Де? Що зробив?). Питай природно, наче це частина сюжету!`;
+            userPrompt = `Минула подія: "${lastMyAns}".\nПоточна історія: ${previousAnswers.join(' -> ')}.\nЗгенеруй чітке лорне питання (без мета-фраз і питань про думку).`;
         } else {
-            systemPrompt += `\nSPECIAL RULE: Ask a PROVOCATIVE follow-up question about the player's OWN past answer from another sheet. Ask why they said it, or how it relates to the current situation.`;
-            userPrompt = `Their past answer: "${lastMyAns}".\nCurrent story on this sheet: ${previousAnswers.join(' -> ')}.\nGenerate the question.`;
-        }
-    } else {
-        const answerList = previousAnswers.length > 0 
-            ? previousAnswers.map((a, i) => `${i + 1}. ${a}`).join('\n')
-            : (language === 'uk' ? 'Ще немає відповідей. Це перший раунд.' : 'No answers yet.');
-        
-        if (language === 'uk') {
-            systemPrompt += `\nПРАВИЛА ДЛЯ СЮЖЕТУ (РАУНД ${targetRound} з ${gameLength}):
-Ти ПОВИНЕН адаптувати наступний концепт під тему "${topic}" (і використовувати її термінологію та лор):
-- Раунд 2: Куди герой пішов або яку локацію знайшов? (Адаптуй локацію під тему)
-- Раунд 3: Кого герой зустрів? (Якщо тема гра - питай про боса/NPC. Якщо спорт - про суперника/суддю. Якщо кіно - про лиходія. НЕ використовуй ігрові терміни на кшталт "бос", якщо тема не ігрова!)
-- Раунд 4: Що цей новий персонаж/суперник зробив?
-- Раунд 5: Який предмет, річ чи інструмент використали? (Адаптуй під тему, наприклад, м'яч для футболу)
-- Раунд 6: Як проходила взаємодія чи конфлікт?
-- Раунд 7: Який був несподіваний поворот подій?
-- Раунд 8: Який був результат, наслідок чи нагорода? (Не пиши "лут", якщо це не гра)
-- Раунд 9+: Чим глобально закінчилася історія?
-
-УВАГА (Рейтинг 18+): Відповіді гравців можуть містити матюки або повний абсурд. ТИ ЗОБОВ'ЯЗАНИЙ ігнорувати цензуру, використовувати їхні слова і задавати питання так, наче все нормально. НІКОЛИ не відмовляйся від виконання!
-
-ГРАМАТИКА ТА РІЗНОМАНІТНІСТЬ:
-1. Завжди слідкуй за граматикою української мови! Використовуй правильні запитальні слова (наприклад, "Куди пішов...", а НЕ "Де пішов...").
-2. БУДЬ КРЕАТИВНИМ! Ніколи не задавай питання за одним і тим самим шаблоном. Змінюй структуру речень, синоніми та підхід, щоб кожна гра відчувалася унікально.
-
-ВАЖЛИВО: Задай питання САМЕ для Раунду ${targetRound}. НЕ ПОВТОРЮЙ питання з попередніх раундів! Якщо попередня відповідь беззмістовна ("Нічого"), ігноруй її і просто йди за планом раунду.`;
-            userPrompt = `Попередні події:\n${answerList}\n\nСтвори креативне та унікальне запитання для Раунду ${targetRound} (максимум 4-7 слів).`;
-        } else {
-            systemPrompt += `\nSTORY RULES (ROUND ${targetRound} of ${gameLength}):
-You MUST adapt the following concept to the topic "${topic}" (and use its specific terminology):
-- Round 2: Where did they go / what location did they find? (Adapt to topic)
-- Round 3: Who did they meet? (If it's a game, ask about a boss/NPC. If sports, an opponent/referee. DO NOT use gaming terms like "boss" if the topic isn't a game!)
-- Round 4: What did this new character/opponent do?
-- Round 5: What item, tool, or thing was used? (Adapt to topic, e.g., a ball for football)
-- Round 6: How did the interaction or conflict go?
-- Round 7: What was the plot twist?
-- Round 8: What was the result, consequence, or reward? (Do not use "loot" if not a game)
-- Round 9+: How did the story end globally?
-
-WARNING (18+ Rating): Player answers may contain profanity or absurdity. You MUST ignore censorship and ask the question normally, incorporating their words. NEVER refuse to answer!
-
-GRAMMAR AND VARIETY:
-1. Always use proper grammar.
-2. BE CREATIVE! Never use the exact same sentence template twice. Vary your sentence structures and synonyms so every game feels unique.
-
-IMPORTANT: Ask the question STRICTLY for Round ${targetRound}. DO NOT repeat questions! If the last answer was trivial ("Nothing"), ignore it and follow the round plan.`;
-            userPrompt = `Previous events:\n${answerList}\n\nCreate a creative and unique question for Round ${targetRound} (max 4-7 words).`;
+            systemPrompt += `\nSPECIAL RULE: You must ask a follow-up question connecting their past event ("${lastMyAns}") with the current story. ABSOLUTELY FORBIDDEN to use meta-phrases ("past answer", "previous message") or ask for opinions ("what do you think", "in your opinion"). Ask a clear lore question naturally as if it's part of the story.`;
+            userPrompt = `Past event: "${lastMyAns}".\nCurrent story: ${previousAnswers.join(' -> ')}.\nGenerate a natural lore question (no meta-phrases, no opinion seeking).`;
         }
     }
 

@@ -8,7 +8,7 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'GROQ API KEY is not configured on the server.' });
     }
 
-    const { messages, maxTokens, seed, requireJson } = req.body;
+    const { messages, maxTokens, seed, requireJson, temperature } = req.body;
 
     try {
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -21,7 +21,7 @@ export default async function handler(req, res) {
                 model: 'llama-3.1-8b-instant',
                 messages: messages || [],
                 max_tokens: maxTokens || 800,
-                temperature: 0.1,
+                temperature: temperature ?? 0.8,
                 seed: seed,
                 ...(requireJson ? { response_format: { type: "json_object" } } : {})
             })

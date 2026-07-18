@@ -34,16 +34,21 @@ export const useStoryBuilder = (
         if (!sheet) continue;
 
         let answers: string[] = [];
+        let currentSheetAnswers: any[] = [];
         try {
           const ansData = await getAnswersByRound(sheet.id);
-          const sortedAns = (ansData.data || []).sort((a, b) => (a.position_in_sheet || 0) - (b.position_in_sheet || 0));
-          answers = sortedAns.map(a => {
+          currentSheetAnswers = (ansData.data || []).sort((a, b) => (a.position_in_sheet || 0) - (b.position_in_sheet || 0));
+          answers = currentSheetAnswers.map(a => {
             if (!a) return '...';
             const ap = sortedPlayers.find(pl => pl.id === a.player_id);
             const coloredNick = ap 
               ? ReactDOMServer.renderToStaticMarkup(renderThemedNickname(ap.nickname, ap.color || '#000000', 16, false, true, false, '16px'))
               : '???';
             const answerText = a.answer_text || '...';
+            
+            if (activeTemplate.id === 'custom_ai') {
+                return `<span style="color: ${ap?.color || '#ffffff'};">${answerText}</span>`;
+            }
             return `<span class="player-tag">${coloredNick}</span> <b>${answerText}</b>`;
           });
         } catch (e) {
@@ -53,11 +58,21 @@ export const useStoryBuilder = (
         let storyHTML = '';
         if (activeTemplate.id === 'custom_ai') {
           if (answers.length > 0 && isGroqAvailable()) {
-            storyHTML = await generateAIStory(
+            const rawTextAnswers = answers.map(a => a.replace(/<[^>]*>?/gm, '').trim());
+            const rawAiStory = await generateAIStory(
               activeTemplate.name,
-              answers.map(a => a.replace(/<[^>]*>?/gm, '').trim()),
+              rawTextAnswers,
               language as 'uk' | 'en'
             );
+            
+            let ansIdx = 0;
+            storyHTML = rawAiStory.replace(/<ans>(.*?)<\/ans>/gs, (match, innerText) => {
+              const aIndex = ansIdx++;
+              const originalAnswerObj = currentSheetAnswers[aIndex];
+              const p = originalAnswerObj ? sortedPlayers.find(pl => pl.id === originalAnswerObj.player_id) : null;
+              const color = p ? p.color : '#ffffff';
+              return `<span style="color: ${color}; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); font-weight: bold;" translate="no" class="notranslate">${innerText}</span>`;
+            });
           } else {
             storyHTML = activeTemplate.buildStory(answers);
           }

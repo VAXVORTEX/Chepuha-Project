@@ -61,7 +61,9 @@ export const useAnswerSubmission = (
             const myAnswers = (myData || []).map(a => a.answer_text);
             const roundInfo = { currentRound, gameLength, isSolo: (players || []).length === 1 };
             const nextQ = await generateNextQuestion(customTopic || 'Своя гра', sheetAnswers, myAnswers, roundInfo, language as 'uk' | 'en');
-            await updateStorySheetQuestion(targetSheet, nextQ);
+            if (nextQ) {
+              await updateStorySheetQuestion(targetSheet, nextQ);
+            }
           } catch(e) {
             console.error("AI question error:", e);
           }

@@ -30,7 +30,7 @@ interface VoiceSelectorProps {
 }
 
 const VoiceSelector: React.FC<VoiceSelectorProps> = ({ selectedVoice, onChange, onPlay, onStop, onPause, onResume, isPlaying, isPaused, isLoading, isReady, loadingProgress = 0 }) => {
-    const { language } = useLanguage();
+    const { t, language } = useLanguage();
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -57,7 +57,7 @@ const VoiceSelector: React.FC<VoiceSelectorProps> = ({ selectedVoice, onChange, 
                     onClick={() => setIsOpen(!isOpen)}
                     style={{ '--progress': `${!isReady ? loadingProgress : 100}%` } as React.CSSProperties}
                 >
-                    <span>{selectedOption.name}</span>
+                    <span>{(!isReady && isLoading) ? `${t('LOADING' as any)} ${loadingProgress}%` : selectedOption.name}</span>
                 </div>
                 {isOpen && (
                     <div className={styles.dropdownMenu}>

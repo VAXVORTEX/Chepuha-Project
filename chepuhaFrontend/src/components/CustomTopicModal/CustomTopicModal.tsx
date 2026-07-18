@@ -24,7 +24,7 @@ const CustomTopicModal: React.FC<CustomTopicModalProps> = ({
   return (
     <div
       className="custom-prompt-overlay"
-      onClick={onClose}
+      onClick={!isGeneratingQuestions ? onClose : undefined}
       style={{
         position: 'fixed',
         top: 0,

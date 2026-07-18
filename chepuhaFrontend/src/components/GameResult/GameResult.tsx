@@ -41,7 +41,7 @@ const downloadAsTxt = (text: string, playerName: string) => {
 }
 
 const ZOOM_KEY = 'chepuha_story_zoom';
-const ZOOM_LEVELS = [0.7, 0.8, 0.9, 1.0, 1.1, 1.25, 1.4, 1.6, 1.8, 2.0];
+const ZOOM_LEVELS = [0.5, 0.6, 0.7, 0.85, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0];
 
 const GameResult: React.FC<ResultProps> = ({
   stories,
@@ -64,7 +64,7 @@ const GameResult: React.FC<ResultProps> = ({
       const idx = parseInt(saved, 10);
       if (idx >= 0 && idx < ZOOM_LEVELS.length) return idx;
     }
-    return 5; // default = 1.25 (increased by 2 steps)
+    return 4; // default = 1.0
   });
 
   const { playTTS, stopTTS, pauseTTS, resumeTTS, preloadTTS, checkAudioReady, isPlaying, isPaused, isLoading, loadingProgress, currentVoice, setCurrentVoice } = useTTS();
@@ -282,7 +282,7 @@ const GameResult: React.FC<ResultProps> = ({
                         onSave();
                       }}
                     >
-                      {t('SAVE' as any)}
+                      {language === 'uk' ? 'Зберегти' : 'Save'}
                     </button>
                   </div>
                 )}

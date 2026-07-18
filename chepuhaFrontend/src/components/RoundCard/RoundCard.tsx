@@ -32,7 +32,7 @@ export const RoundCard = ({
     const [answer, setAnswer] = useState('');
     const [showHints, setShowHints] = useState(false);
     const [selectedHints, setSelectedHints] = useState<string[]>([]);
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
 
     React.useEffect(() => {
         if (hints && hints.length > 0) {
@@ -106,7 +106,7 @@ export const RoundCard = ({
                                 onClick={handleSubmit}
                                 disabled={!answer.trim()}
                             >
-                                {t('SAVE')}
+                                {t('ANSWER_SUBMIT' as any) === 'ANSWER_SUBMIT' ? (language === 'uk' ? 'Відповісти' : 'Answer') : t('ANSWER_SUBMIT' as any)}
                             </button>
                         </div>
                     </div>

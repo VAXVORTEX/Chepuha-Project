@@ -78,7 +78,7 @@
   }
 
   .text {
-    @include font-pangolin(100);
+    @include font-pangolin(140);
     text-align: left;
     width: 100%;
     max-width: 100%;
@@ -357,7 +357,7 @@
   }
 
   .part .text {
-    font-size: 36px;
+    font-size: 50px;
     line-height: 1.25;
     text-align: left;
     width: 100%;

@@ -22,6 +22,7 @@ export interface LobbyScreenProps {
   playersListRef: React.RefObject<HTMLDivElement>;
   cycleColor: (dir: 1 | -1) => void;
   onStartGame: () => void;
+  isStartingGame?: boolean;
 }
 
 const LobbyScreen: React.FC<LobbyScreenProps> = ({
@@ -40,6 +41,7 @@ const LobbyScreen: React.FC<LobbyScreenProps> = ({
   playersListRef,
   cycleColor,
   onStartGame,
+  isStartingGame
 }) => {
   return (
     <>
@@ -87,11 +89,11 @@ const LobbyScreen: React.FC<LobbyScreenProps> = ({
         <div className="lobby-actions">
           {isHost ? (
             <Button
-              label={t('START_GAME')}
+              label={isStartingGame ? t('LOADING' as any) || 'Запуск...' : t('START_GAME')}
               variant="primary"
               phase={phase}
               onClick={onStartGame}
-              disabled={players.length < 1}
+              disabled={players.length < 1 || isStartingGame}
             />
           ) : (
             <h3 className="waiting-host-text">{t('WAITING_HOST')}</h3>

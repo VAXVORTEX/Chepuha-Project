@@ -136,6 +136,7 @@ const getInitialState = (): AppState => {
     hintsEnabled: false,
     colorHighlight: true,
     playerColor: '',
+    isStartingGame: false,
   };
 
   try {
@@ -1030,6 +1031,7 @@ function App() {
 
   const doGameStart = async () => {
     if (!sessionId) return;
+    setAppState(prev => ({ ...prev, isStartingGame: true }));
     
     // Ping Hugging Face space with the base voice to wake it up and load Silero
     fetch(`https://kikk22320-chepuha-tts.hf.space/tts?text=а&voice=mykyta`).catch(() => {});
@@ -1145,7 +1147,7 @@ function App() {
         playerCount: players.length,
       }));
     } catch (err: any) {
-      setAppState(prev => ({ ...prev, error: String(t('ERR_START' as any)) + err.message }));
+      setAppState(prev => ({ ...prev, error: String(t('ERR_START' as any)) + err.message, isStartingGame: false }));
     }
   };
 
@@ -1400,6 +1402,7 @@ function App() {
           playersListRef={playersListRef}
           cycleColor={cycleColor}
           onStartGame={doGameStart}
+          isStartingGame={appState.isStartingGame}
         />
       )}
 
@@ -1482,7 +1485,7 @@ function App() {
                 if (heldSheetObj && heldSheetObj.current_ai_question) {
                   return heldSheetObj.current_ai_question;
                 }
-                return '...';
+                return rawQuestion || '...';
               }
 
               if (rawQuestion?.startsWith('MATH_DYN_')) {
