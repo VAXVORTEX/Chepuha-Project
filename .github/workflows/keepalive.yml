@@ -1,0 +1,20 @@
+name: Supabase Keepalive
+
+on:
+  schedule:
+    # Run every day at 12:00 UTC
+    - cron: '0 12 * * *'
+  workflow_dispatch: # Allow manual trigger from the GitHub Actions tab
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST API
+        run: |
+          curl -s -X GET "https://rrxtcekxpzlomiecmoqy.supabase.co/rest/v1/games?select=id&limit=1" \
+          -H "apikey: sb_publishable_PotUKYXlrupLLi4hCmIySg_Ab9vvLJO" \
+          -H "Authorization: Bearer sb_publishable_PotUKYXlrupLLi4hCmIySg_Ab9vvLJO" \
+          -H "Content-Type: application/json"
+          
+          echo "Ping successful!"
