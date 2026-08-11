@@ -157,39 +157,29 @@ export async function generateCustomQuestions(
     language: 'uk' | 'en' = 'uk'
 ): Promise<string[]> {
     const systemPrompt = language === 'uk'
-        ? `Ти — розумний ведучий гри "Чепуха".
+        ? `Ти — креативний ведучий гри "Чепуха" (Mad Libs). Гравці будуть по черзі відповідати на твої питання, щоб скласти спільну смішну історію.
 Тобі дадуть тему: "${topic}".
-СПОЧАТКУ: Проаналізуй тему і визнач її категорію (Гра, Фільм/Книга, Відома Людина, Невідоме слово/Абревіатура). Якщо тема — це коротка ігрова абревіатура (наприклад, "MGRR", "CSGO", "GTA"), обов'язково розшифруй її у своїй "голові" (Metal Gear Rising, Counter-Strike, Grand Theft Auto) і використовуй лор повної гри!
-АДАПТАЦІЯ ПІД КАТЕГОРІЮ:
-- Якщо це ГРА (шутер, RPG, тощо): Головним героєм запитань є абстрактний "гравець", "герой" або керований об'єкт (наприклад, "танк", "робот"). ЗАБОРОНЕНО робити босів чи ворогів головними героями (вони — перешкоди, яких зустрічає гравець).
-- Якщо це ФІЛЬМ/КНИГА: Головний герой — це протагоніст твору. Питання мають базуватися на сюжеті та лиходіях.
-- Якщо це ВІДОМА ЛЮДИНА (спортсмен, блогер, історик): Головний герой — ця сама людина. Використовуй реальні факти, професію, колег (наприклад, для спортсмена — клуби, тренери).
-- Якщо це НЕВІДОМЕ СЛОВО, випадкові букви або абревіатура: НЕ РОБИ ВИГЛЯД, що це відома гра! Використовуй саме це слово як героя, або абсурдно здогадайся, що воно означає (наприклад, для абревіатури інституту питай про "ректора" чи "студента").
-ЗАВДАННЯ: Створи ${count} питань українською мовою.
-ПРАВИЛА:
-1. Питання мають бути ПРОСТИМИ та КОРОТКИМИ (максимум 4-7 слів).
-2. Питання мають йти логічним ланцюжком для створення історії (Хто? Куди пішов? З ким зустрівся? Де? Що зробили? Чим все закінчилось?).
-3. Пиши ПРИРОДНОЮ українською мовою. Уникай кострубатих фраз (замість "Якого імені" пиши просто "Хто"). НІКОЛИ не замінюй слова символами (не пиши "Що зробив '?'").
-4. Всі питання мають бути УНІКАЛЬНИМИ і глибоко пов'язаними з лором теми.
-КРИТИЧНО 1: АБСОЛЮТНО ЗАБОРОНЕНО використовувати плейсхолдери або узагальнення (на кшталт "{назва}", "[зброя]"). Ти ПОВИНЕН вписувати реальні, конкретні назви з лору цієї теми!
-КРИТИЧНО 2: УВАГА! ВСІ власні назви, імена босів, імена персонажів (як Raiden, а не Райден), назви предметів, зброї, ігор, локацій та ворогів ЗАВЖДИ залишай в ОРИГІНАЛІ (виключно АНГЛІЙСЬКОЮ мовою) і НІКОЛИ не перекладай та не транслітеруй кирилицею!
-Формат відповіді: СУВОРО JSON об'єкт з ключами "universe" (твій висновок про тему) та "questions" (масив рядків-питань).`
-        : `You are a smart host for the "Nonsense" game.
+СПОЧАТКУ: Проаналізуй тему. Якщо це гра, фільм чи аніме (або абревіатура як "CSGO", "MGRR") — розшифруй її та згадай ВСІ деталі лору (імена, зброя, локації, сленг, механіки).
+ЗАВДАННЯ: Створи ${count} питань українською мовою, які сформують сюжетний ланцюжок.
+КРИТИЧНІ ПРАВИЛА (ШТРАФ ЗА ПОРУШЕННЯ):
+1. НІЯКИХ МЕТА-ПИТАНЬ: Абсолютно ЗАБОРОНЕНО питати "Що це за гра?". Питання мають бути ВИКЛЮЧНО внутрішньосюжетними (in-universe). Ніби ми вже всередині цього світу.
+2. ЯКЩО ТЕМА ЦЕ ГРА: Головний герой — це персонаж гри! АБСОЛЮТНО ЗАБОРОНЕНО згадувати "геймерів", "гравців за комп'ютером" чи реальне життя. ТІЛЬКИ ігровий світ.
+3. ЧІТКИЙ ЛОР І ЗБРОЯ: Використовуй ТІЛЬКИ офіційну зброю, предмети та босів саме цієї гри. Ніколи не вигадуй і не додавай чужі предмети (наприклад, не питай про SCAR, якщо це не Fortnite).
+4. ФОРМАТ ЧЕПУХИ: Питання мають йти як ланцюжок подій. Наприклад: "Який герой?", "Куди вони пішли?", "Яку зброю знайшли?", "З яким босом зустрілися?", "Чим завершився бій?".
+5. ПРОСТОТА: Питання мають бути КОРОТКИМИ (максимум 4-7 слів).
+6. ІНОЗЕМНІ НАЗВИ В ОРИГІНАЛІ: Всі власні назви (боси, локації, предмети, персонажі) ЗАВЖДИ залишай в ОРИГІНАЛІ (англійською) і НІКОЛИ не транслітеруй кирилицею!
+Формат відповіді: СУВОРО JSON об'єкт з ключами "universe" (твій короткий висновок про тему) та "questions" (масив рядків-питань).`
+        : `You are a creative host for a Mad Libs style game ("Chepuha").
 Topic: "${topic}".
-FIRST: Analyze the topic and determine its Category (Game, Movie/Book, Famous Person, Unknown Word/Abbreviation). If the topic is a short gaming acronym (e.g. "MGRR", "CSGO", "GTA"), you MUST expand it in your "head" (Metal Gear Rising, Counter-Strike) and use the full game's lore!
-CATEGORY ADAPTATION:
-- If GAME: The main character is a "player", "hero", or controlled unit ("tank", "robot"). DO NOT make bosses or enemies the main characters (they are obstacles).
-- If MOVIE/BOOK: The main character is the protagonist. Base questions on the plot and villains.
-- If FAMOUS PERSON: The main character is the person. Use real facts, profession, and colleagues.
-- If UNKNOWN/ABBREVIATION: DO NOT pretend it's a famous game. Absurdly guess what it means or use the word itself as the hero.
-TASK: Create ${count} short questions.
-RULES:
-1. Questions must be SUPER SIMPLE and SHORT (max 4-6 words).
-2. They should provoke a funny story chain (Who? Where did they go? Who did they meet? What happened?).
-3. Write NATURAL questions. Do not use weird grammar. DO NOT replace names with punctuation like '?'.
-4. Questions must be UNIQUE and use deep lore.
-CRITICAL 1: ABSOLUTELY FORBIDDEN to use placeholders like "{name}" or "[weapon]". You MUST write CONCRETE, REAL names from the topic's lore!
-CRITICAL 2: Keep all specific proper nouns, characters (e.g. Raiden), bosses, items, weapons, and locations in their ORIGINAL English names! Do not translate or transliterate them.
+FIRST: Analyze the topic. If it's a game or movie, recall ALL exact lore details (names, weapons, locations).
+TASK: Create ${count} questions that form a story chain.
+CRITICAL RULES:
+1. NO META-QUESTIONS: STRICTLY FORBIDDEN to ask "What game is this?". Questions MUST be exclusively IN-UNIVERSE.
+2. IF IT'S A GAME: The hero is the character. STRICTLY FORBIDDEN to mention "gamers" or "players at computers".
+3. STRICT LORE: Use ONLY official weapons, items, and bosses of THIS specific universe. Never hallucinate weapons (e.g. no SCAR unless it's Fortnite).
+4. STORY CHAIN FORMAT: Questions must flow like a story. E.g.: "Which hero?", "Where did they go?", "What weapon did they find?", "Which boss did they meet?", "How did the battle end?".
+5. SHORT: Questions must be SHORT (max 4-7 words).
+6. KEEP ENGLISH NOUNS: Keep all proper nouns in ORIGINAL English!
 Output format: STRICTLY a JSON object with keys "universe" and "questions" (array of strings).`;
 
     const userPrompt = language === 'uk'
@@ -387,19 +377,19 @@ export async function generateNextQuestion(
     }
 
     let systemPrompt = language === 'uk'
-        ? `Ти — розумний ведучий гри "Чепуха". Тема: "${topic}".\nСПОЧАТКУ: Якщо тема це абревіатура (MGRR, CSGO) або написана кирилицею (МГРР, Терарія), розшифруй її (Metal Gear Rising, Counter-Strike). Якщо це КОНКРЕТНА частина гри/спін-офф (наприклад, MGRR), використовуй лор ВИКЛЮЧНО цієї частини (Райден, кіборги), а не всієї франшизи загалом!\nТвоє завдання: згенерувати СУПЕР КОРОТКЕ (максимум 3-7 слів) і СМІШНЕ запитання.\nКРИТИЧНО: Якщо це гра, використовуй ТІЛЬКИ ОФІЦІЙНИЙ лор. АБСОЛЮТНО ЗАБОРОНЕНО вигадувати неіснуючих босів чи модифікації! АБСОЛЮТНО ЗАБОРОНЕНО використовувати плейсхолдери.\nАБСОЛЮТНО ЗАБОРОНЕНО: ніколи не повторюй питання!\nКРИТИЧНО: ВСІ власні назви (боси, локації, предмети, персонажі) пиши ТІЛЬКИ АНГЛІЙСЬКОЮ і не транслітеруй! (наприклад "Що зробив Raiden?", а НЕ "Райден").\nПоверни ТІЛЬКИ текст питання.`
-        : `You are a smart host for the "Nonsense" game. Topic: "${topic}".\nFIRST: If topic is an acronym (MGRR), expand it. If it's a specific spin-off, stick strictly to its lore, not the broad franchise.\nGenerate a SUPER SHORT (max 3-7 words), and FUNNY question.\nCRITICAL: Strictly use OFFICIAL lore. DO NOT hallucinate names or use placeholders.\nABSOLUTELY FORBIDDEN: never repeat questions! Keep all proper nouns in original English.\nReturn ONLY the text of the question.`;
+        ? `Ти — креативний ведучий гри "Чепуха" (Mad Libs). Тема: "${topic}".\nСПОЧАТКУ: Розшифруй тему і згадай її офіційний лор.\nЗАВДАННЯ: Згенеруй СУПЕР КОРОТКЕ (3-7 слів) і СМІШНЕ запитання.\nКРИТИЧНІ ПРАВИЛА:\n1. НІЯКИХ МЕТА-ПИТАНЬ: ЗАБОРОНЕНО питати "Що це означає?", "Як це називається в цьому світі?", "Яка думка?". Питання має бути ВИКЛЮЧНО внутрішньосюжетним (in-universe)! Запитуй так, ніби гравець всередині гри.\n2. ФОРМАТ ЧЕПУХИ: Питай про дії або об'єкти (В кого влучили? Куди пішли? Що знайшли?).\n3. КОНКРЕТИКА: Використовуй реальні деталі лору цієї теми, а не загальні слова.\n4. БЕЗ ПЛЕЙСХОЛДЕРІВ.\n5. ОРИГІНАЛЬНІ НАЗВИ: Всі імена, зброю, локації пиши ТІЛЬКИ АНГЛІЙСЬКОЮ.\nПоверни ТІЛЬКИ текст питання.`
+        : `You are a creative host for a Mad Libs game. Topic: "${topic}".\nFIRST: Recall the official lore.\nTASK: Generate a SUPER SHORT (3-7 words) FUNNY question.\nCRITICAL RULES:\n1. NO META-QUESTIONS: FORBIDDEN to ask "What does this mean?", "What is it called?". Questions MUST be exclusively IN-UNIVERSE!\n2. STORY FORMAT: Ask about actions/places (Who? Where? What did they do?).\n3. LORE DETAILS: Use real details from this universe.\n4. NO PLACEHOLDERS.\n5. KEEP ENGLISH NOUNS.\nReturn ONLY the question text.`;
 
     let userPrompt = '';
 
     if (questionType === 'player_followup') {
         const lastMyAns = myPreviousAnswers[myPreviousAnswers.length - 1];
         if (language === 'uk') {
-            systemPrompt += `\nСПЕЦІАЛЬНЕ ПРАВИЛО: Ти маєш задати УТОЧНЮЮЧЕ питання, поєднавши його минулу відповідь ("${lastMyAns}") з поточною історією. АБСОЛЮТНО ЗАБОРОНЕНО використовувати мета-фрази ("минула відповідь", "попереднє повідомлення") або питання про думку гравця ("як ви вважаєте", "на вашу думку", "як ти думаєш"). Питання має стосуватися ЛОРУ і бути ЧІТКИМ (Хто? Де? Що зробив?). Питай природно, наче це частина сюжету!`;
-            userPrompt = `Минула подія: "${lastMyAns}".\nПоточна історія: ${previousAnswers.join(' -> ')}.\nЗгенеруй чітке лорне питання (без мета-фраз і питань про думку).`;
+            systemPrompt += `\nСПЕЦІАЛЬНЕ ПРАВИЛО: Гравець щойно відповів "${lastMyAns}". Твоє наступне питання має ЛОГІЧНО ПРОДОВЖУВАТИ цю відповідь у світі теми "${topic}". (Наприклад: якщо він написав "пуля", спитай "В якого ворога влучила ця пуля?" або "З якої зброї вилетіла пуля?"). АБСОЛЮТНО ЗАБОРОНЕНО використовувати мета-фрази ("твоя відповідь") або питати про значення слів! Тільки сюжет!`;
+            userPrompt = `Відповідь гравця: "${lastMyAns}".\nСюжет: ${previousAnswers.join(' -> ')}.\nЗгенеруй сюжетне уточнююче питання (макс 7 слів). Ніколи не питай про значення слів чи реальний світ!`;
         } else {
-            systemPrompt += `\nSPECIAL RULE: You must ask a follow-up question connecting their past event ("${lastMyAns}") with the current story. ABSOLUTELY FORBIDDEN to use meta-phrases ("past answer", "previous message") or ask for opinions ("what do you think", "in your opinion"). Ask a clear lore question naturally as if it's part of the story.`;
-            userPrompt = `Past event: "${lastMyAns}".\nCurrent story: ${previousAnswers.join(' -> ')}.\nGenerate a natural lore question (no meta-phrases, no opinion seeking).`;
+            systemPrompt += `\nSPECIAL RULE: The player just answered "${lastMyAns}". Your next question must logically CONTINUE this answer within the lore of "${topic}". E.g. if the answer is "bullet", ask "Which enemy did the bullet hit?". ABSOLUTELY FORBIDDEN to use meta-phrases or ask for definitions! Only plot!`;
+            userPrompt = `Player answer: "${lastMyAns}".\nPlot: ${previousAnswers.join(' -> ')}.\nGenerate an in-universe follow-up question (max 7 words).`;
         }
     }
 

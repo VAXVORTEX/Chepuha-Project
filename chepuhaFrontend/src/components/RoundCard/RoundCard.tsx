@@ -101,13 +101,13 @@ export const RoundCard = ({
                             </div>
                         )}
                         <div className={styles.buttonContainer}>
-                            <button
-                                className={styles.answerButton}
+                            <Button
+                                label={t('ANSWER_SUBMIT' as any) === 'ANSWER_SUBMIT' ? (language === 'uk' ? 'Відповісти' : 'Answer') : t('ANSWER_SUBMIT' as any) as string}
+                                variant="secondary"
+                                phase={Phases.Main}
                                 onClick={handleSubmit}
                                 disabled={!answer.trim()}
-                            >
-                                {t('ANSWER_SUBMIT' as any) === 'ANSWER_SUBMIT' ? (language === 'uk' ? 'Відповісти' : 'Answer') : t('ANSWER_SUBMIT' as any)}
-                            </button>
+                            />
                         </div>
                     </div>
                 )}

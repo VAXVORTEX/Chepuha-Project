@@ -89,11 +89,12 @@ const LobbyScreen: React.FC<LobbyScreenProps> = ({
         <div className="lobby-actions">
           {isHost ? (
             <Button
-              label={isStartingGame ? t('LOADING' as any) || 'Запуск...' : t('START_GAME')}
+              label={isStartingGame ? String(t('LOADING' as any) || 'Запуск...').replace('...', '') : t('START_GAME')}
               variant="primary"
               phase={phase}
               onClick={onStartGame}
               disabled={players.length < 1 || isStartingGame}
+              loading={isStartingGame}
             />
           ) : (
             <h3 className="waiting-host-text">{t('WAITING_HOST')}</h3>

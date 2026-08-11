@@ -1037,6 +1037,9 @@ function App() {
     fetch(`https://kikk22320-chepuha-tts.hf.space/tts?text=а&voice=mykyta`).catch(() => {});
     
     try {
+      // Искусственная задержка для отображения анимации загрузки
+      await new Promise(resolve => setTimeout(resolve, 2500));
+
       let gameTemplate = activeTemplate;
       let finalTemplateKey = selectedTemplate;
       
